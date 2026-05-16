@@ -3,6 +3,9 @@ package com.BPO.plantcare.ui.screens.identify
 import android.Manifest
 import android.content.Context
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.CameraController
@@ -20,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -168,6 +172,15 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
         }
     }
 
+    val pickMediaLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) {
+            val file = copyUriToCache(context, uri)
+            onPhotoCaptured(Uri.fromFile(file), file)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -178,6 +191,29 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
                 }
             },
         )
+
+        FilledIconButton(
+            onClick = {
+                pickMediaLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            },
+            shape = CircleShape,
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = Color.White.copy(alpha = 0.9f),
+                contentColor = Color.Black,
+            ),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 32.dp, bottom = 50.dp)
+                .size(48.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.PhotoLibrary,
+                contentDescription = "Elegir de galeria",
+                modifier = Modifier.size(24.dp),
+            )
+        }
 
         FilledIconButton(
             onClick = { takePhoto(context, controller, onPhotoCaptured) },
@@ -198,6 +234,14 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
             )
         }
     }
+}
+
+private fun copyUriToCache(context: Context, uri: Uri): File {
+    val file = File(context.cacheDir, "plantcare_${System.currentTimeMillis()}.jpg")
+    context.contentResolver.openInputStream(uri)?.use { input ->
+        file.outputStream().use { output -> input.copyTo(output) }
+    }
+    return file
 }
 
 @Composable
