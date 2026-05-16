@@ -53,6 +53,7 @@ import kotlin.math.max
 
 @Composable
 fun MyPlantsScreen(
+    onPlantClick: (Long) -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel(),
 ) {
     val plants by viewModel.plants.collectAsStateWithLifecycle()
@@ -70,6 +71,7 @@ fun MyPlantsScreen(
             items(plants, key = { it.id }) { plant ->
                 PlantCard(
                     plant = plant,
+                    onClick = { onPlantClick(plant.id) },
                     onWaterClick = { viewModel.onWatered(plant.id) },
                 )
             }
@@ -78,9 +80,10 @@ fun MyPlantsScreen(
 }
 
 @Composable
-private fun PlantCard(plant: Plant, onWaterClick: () -> Unit) {
+private fun PlantCard(plant: Plant, onClick: () -> Unit, onWaterClick: () -> Unit) {
     val status = plant.status()
     ElevatedCard(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {

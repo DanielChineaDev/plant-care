@@ -1,0 +1,454 @@
+package com.BPO.plantcare.ui.screens.plantdetail
+
+import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.LocalFlorist
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.WaterDrop
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.PlantStatus
+import com.BPO.plantcare.domain.model.WikipediaSummary
+import com.BPO.plantcare.domain.model.status
+import com.BPO.plantcare.ui.theme.StatusHealthy
+import com.BPO.plantcare.ui.theme.StatusThirsty
+import com.BPO.plantcare.ui.theme.StatusWarning
+import java.io.File
+import java.text.DateFormat
+import java.util.Date
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlantDetailScreen(
+    onBack: () -> Unit,
+    viewModel: PlantDetailViewModel = hiltViewModel(),
+) {
+    val plant by viewModel.plant.collectAsStateWithLifecycle()
+    val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showEditDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                PlantDetailEvent.Deleted -> onBack()
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(plant?.displayName.orEmpty()) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showEditDialog = true }) {
+                        Icon(Icons.Outlined.Edit, contentDescription = "Editar alias")
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Outlined.Delete, contentDescription = "Eliminar planta")
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        val current = plant
+        if (current == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            HeroImage(current)
+            TitleSection(current)
+            WateringCard(
+                plant = current,
+                onMarkWatered = viewModel::onMarkWatered,
+                onIntervalChange = viewModel::onIntervalChange,
+            )
+            TaxonomyCard(current)
+            WikipediaCard(wikipedia)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+
+    if (showEditDialog) {
+        EditNicknameDialog(
+            current = plant?.nickname.orEmpty(),
+            onConfirm = { newName ->
+                viewModel.onNicknameChange(newName)
+                showEditDialog = false
+            },
+            onDismiss = { showEditDialog = false },
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar planta") },
+            text = { Text("Esta accion no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.onDelete()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+            },
+        )
+    }
+}
+
+@Composable
+private fun HeroImage(plant: Plant) {
+    val model = plant.userPhotoPath?.let { File(it) } ?: plant.referenceImageUrl
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1.4f),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (model != null) {
+            AsyncImage(
+                model = model,
+                contentDescription = plant.displayName,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Outlined.LocalFlorist,
+                contentDescription = null,
+                modifier = Modifier.size(96.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TitleSection(plant: Plant) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = plant.displayName,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (plant.scientificName != plant.displayName) {
+            Text(
+                text = plant.scientificName,
+                style = MaterialTheme.typography.bodyMedium,
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        val status = plant.status()
+        AssistChip(
+            onClick = {},
+            enabled = false,
+            label = { Text("${status.emoji} ${status.label}") },
+            colors = AssistChipDefaults.assistChipColors(
+                disabledContainerColor = statusColor(status).copy(alpha = 0.9f),
+                disabledLabelColor = Color.White,
+            ),
+            modifier = Modifier.padding(top = 8.dp),
+        )
+    }
+}
+
+@Composable
+private fun WateringCard(
+    plant: Plant,
+    onMarkWatered: () -> Unit,
+    onIntervalChange: (Int) -> Unit,
+) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Riego",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Ultimo riego: ${formatDate(plant.lastWateredAt)}",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "Proximo riego: ${nextWateringHint(plant)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Cada",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilledTonalIconButton(
+                    onClick = { onIntervalChange(plant.wateringIntervalDays - 1) },
+                    modifier = Modifier.size(36.dp),
+                ) { Text("-", style = MaterialTheme.typography.titleMedium) }
+                Text(
+                    text = "${plant.wateringIntervalDays} dias",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                FilledTonalIconButton(
+                    onClick = { onIntervalChange(plant.wateringIntervalDays + 1) },
+                    modifier = Modifier.size(36.dp),
+                ) { Text("+", style = MaterialTheme.typography.titleMedium) }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = onMarkWatered,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.WaterDrop, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Marcar como regada")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaxonomyCard(plant: Plant) {
+    if (plant.family.isNullOrBlank() && plant.genus.isNullOrBlank()) return
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Taxonomia",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            plant.family?.let {
+                Text("Familia: $it", style = MaterialTheme.typography.bodyMedium)
+            }
+            plant.genus?.let {
+                Text("Genero: $it", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun WikipediaCard(state: WikipediaUiState) {
+    val context = LocalContext.current
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Sobre esta planta",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            when (state) {
+                is WikipediaUiState.Loading -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Cargando informacion de Wikipedia...", style = MaterialTheme.typography.bodySmall)
+                }
+
+                is WikipediaUiState.Loaded -> WikipediaContent(
+                    summary = state.summary,
+                    onOpenLink = { url ->
+                        context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                    },
+                )
+
+                is WikipediaUiState.NotFound -> Text(
+                    text = "Aun no tenemos descripcion para esta planta.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                is WikipediaUiState.Error -> Text(
+                    text = "No hemos podido cargar la informacion. ${state.message}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WikipediaContent(summary: WikipediaSummary, onOpenLink: (String) -> Unit) {
+    if (summary.thumbnailUrl != null) {
+        AsyncImage(
+            model = summary.thumbnailUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+    Text(
+        text = summary.extract,
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    if (summary.pageUrl != null) {
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(onClick = { onOpenLink(summary.pageUrl) }) {
+            Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Leer mas en Wikipedia (${summary.lang})")
+        }
+    }
+}
+
+@Composable
+private fun EditNicknameDialog(
+    current: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var text by rememberSaveable { mutableStateOf(current) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar alias") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Como la llamas") },
+                singleLine = true,
+            )
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(text) }) { Text("Guardar") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        },
+    )
+}
+
+private fun statusColor(status: PlantStatus): Color = when (status) {
+    PlantStatus.Healthy -> StatusHealthy
+    PlantStatus.Attention -> StatusWarning
+    PlantStatus.Thirsty -> StatusThirsty
+    PlantStatus.NotWatered -> Color(0xFF2E7D32)
+}
+
+private const val MS_PER_DAY = 24L * 60L * 60L * 1000L
+
+private fun formatDate(timestamp: Long?): String {
+    if (timestamp == null) return "Sin regar aun"
+    val df = DateFormat.getDateInstance(DateFormat.MEDIUM)
+    return df.format(Date(timestamp))
+}
+
+private fun nextWateringHint(plant: Plant): String {
+    val last = plant.lastWateredAt ?: return "cuando la riegues por primera vez"
+    val now = System.currentTimeMillis()
+    val daysSince = ((now - last) / MS_PER_DAY).toInt()
+    val daysUntil = plant.wateringIntervalDays - daysSince
+    return when {
+        daysUntil > 1 -> "en $daysUntil dias"
+        daysUntil == 1 -> "manana"
+        daysUntil == 0 -> "hoy"
+        else -> "atrasado ${-daysUntil} d"
+    }
+}

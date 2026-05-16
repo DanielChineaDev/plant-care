@@ -14,7 +14,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.BPO.plantcare.ui.navigation.PlantCareBottomBar
 import com.BPO.plantcare.ui.navigation.PlantCareNavHost
-import com.BPO.plantcare.ui.navigation.Routes
 import com.BPO.plantcare.ui.navigation.TopLevelDestination
 import com.BPO.plantcare.ui.theme.PlantCareTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,7 +38,6 @@ private fun PlantCareApp() {
     val currentRoute = backStackEntry?.destination?.route
 
     val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
-            && currentRoute != Routes.IDENTIFY
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
