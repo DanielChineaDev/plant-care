@@ -7,9 +7,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
+import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.profile.ProfileScreen
 import com.BPO.plantcare.ui.screens.search.SearchScreen
+
+object Routes {
+    const val IDENTIFY = "identify"
+}
 
 @Composable
 fun PlantCareNavHost(
@@ -21,10 +26,16 @@ fun PlantCareNavHost(
         startDestination = TopLevelDestination.Home.route,
         modifier = modifier,
     ) {
-        composable(TopLevelDestination.Home.route) { HomeScreen() }
+        composable(TopLevelDestination.Home.route) {
+            HomeScreen(onIdentifyClick = { navController.navigate(Routes.IDENTIFY) })
+        }
         composable(TopLevelDestination.MyPlants.route) { MyPlantsScreen() }
         composable(TopLevelDestination.Calendar.route) { CalendarScreen() }
         composable(TopLevelDestination.Search.route) { SearchScreen() }
         composable(TopLevelDestination.Profile.route) { ProfileScreen() }
+
+        composable(Routes.IDENTIFY) {
+            IdentifyScreen(onBack = { navController.popBackStack() })
+        }
     }
 }
