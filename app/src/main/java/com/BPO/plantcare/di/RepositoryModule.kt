@@ -2,9 +2,11 @@ package com.BPO.plantcare.di
 
 import com.BPO.plantcare.data.repository.PlantIdentificationRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantRepositoryImpl
+import com.BPO.plantcare.data.repository.WateringLogRepositoryImpl
 import com.BPO.plantcare.data.repository.WikipediaRepositoryImpl
 import com.BPO.plantcare.domain.repository.PlantIdentificationRepository
 import com.BPO.plantcare.domain.repository.PlantRepository
+import com.BPO.plantcare.domain.repository.WateringLogRepository
 import com.BPO.plantcare.domain.repository.WikipediaRepository
 import dagger.Binds
 import dagger.Module
@@ -27,6 +29,12 @@ abstract class RepositoryModule {
     abstract fun bindPlantRepository(
         impl: PlantRepositoryImpl
     ): PlantRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWateringLogRepository(
+        impl: WateringLogRepositoryImpl
+    ): WateringLogRepository
 
     @Binds
     @Singleton

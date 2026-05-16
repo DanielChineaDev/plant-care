@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.BPO.plantcare.data.local.PlantCareDatabase
 import com.BPO.plantcare.data.local.dao.PlantDao
+import com.BPO.plantcare.data.local.dao.WateringLogDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,4 +25,7 @@ object DatabaseModule {
 
     @Provides
     fun providePlantDao(db: PlantCareDatabase): PlantDao = db.plantDao()
+
+    @Provides
+    fun provideWateringLogDao(db: PlantCareDatabase): WateringLogDao = db.wateringLogDao()
 }

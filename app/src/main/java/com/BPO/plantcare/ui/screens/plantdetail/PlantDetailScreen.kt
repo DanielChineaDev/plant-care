@@ -67,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantStatus
+import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.WikipediaSummary
 import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.theme.StatusHealthy
@@ -83,6 +84,7 @@ fun PlantDetailScreen(
     viewModel: PlantDetailViewModel = hiltViewModel(),
 ) {
     val plant by viewModel.plant.collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -137,6 +139,10 @@ fun PlantDetailScreen(
                 plant = current,
                 onMarkWatered = viewModel::onMarkWatered,
                 onIntervalChange = viewModel::onIntervalChange,
+            )
+            HistoryCard(
+                history = history,
+                onDeleteLog = viewModel::onDeleteWateringLog,
             )
             TaxonomyCard(current)
             WikipediaCard(wikipedia)
@@ -423,6 +429,95 @@ private fun EditNicknameDialog(
             TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
     )
+}
+
+@Composable
+private fun HistoryCard(
+    history: List<WateringLog>,
+    onDeleteLog: (Long) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Historial de riegos",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (history.isEmpty()) {
+                Text(
+                    text = "Aun no has registrado ningun riego.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                return@Column
+            }
+
+            val visible = history.take(MAX_VISIBLE_LOGS)
+            visible.forEach { log ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.WaterDrop,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = formatDate(log.timestamp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = relativeAgo(log.timestamp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    IconButton(onClick = { onDeleteLog(log.id) }) {
+                        Icon(
+                            Icons.Outlined.Delete,
+                            contentDescription = "Eliminar riego",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                }
+            }
+            if (history.size > MAX_VISIBLE_LOGS) {
+                Text(
+                    text = "Y ${history.size - MAX_VISIBLE_LOGS} mas...",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+    }
+}
+
+private const val MAX_VISIBLE_LOGS = 10
+
+private fun relativeAgo(timestamp: Long): String {
+    val days = ((System.currentTimeMillis() - timestamp) / MS_PER_DAY).toInt()
+    return when {
+        days < 1 -> "Hoy"
+        days == 1 -> "Ayer"
+        days < 7 -> "Hace $days dias"
+        days < 30 -> "Hace ${days / 7} semanas"
+        else -> "Hace ${days / 30} meses"
+    }
 }
 
 private fun statusColor(status: PlantStatus): Color = when (status) {

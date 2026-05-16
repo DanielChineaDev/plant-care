@@ -4,11 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.WikipediaSummary
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
+import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
 import com.BPO.plantcare.domain.usecase.GetWikipediaSummaryUseCase
 import com.BPO.plantcare.domain.usecase.MarkPlantWateredUseCase
 import com.BPO.plantcare.domain.usecase.ObservePlantUseCase
+import com.BPO.plantcare.domain.usecase.ObserveWateringHistoryUseCase
 import com.BPO.plantcare.domain.usecase.UpdatePlantUseCase
 import com.BPO.plantcare.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,9 +41,11 @@ sealed interface PlantDetailEvent {
 class PlantDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     observePlant: ObservePlantUseCase,
+    observeWateringHistory: ObserveWateringHistoryUseCase,
     private val updatePlant: UpdatePlantUseCase,
     private val deletePlant: DeletePlantUseCase,
     private val markWatered: MarkPlantWateredUseCase,
+    private val deleteWateringLog: DeleteWateringLogUseCase,
     private val getWikipediaSummary: GetWikipediaSummaryUseCase,
 ) : ViewModel() {
 
@@ -50,6 +55,12 @@ class PlantDetailViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = null,
+    )
+
+    val history: StateFlow<List<WateringLog>> = observeWateringHistory(plantId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
     )
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
@@ -106,6 +117,10 @@ class PlantDetailViewModel @Inject constructor(
 
     fun onMarkWatered() {
         viewModelScope.launch { markWatered(plantId) }
+    }
+
+    fun onDeleteWateringLog(logId: Long) {
+        viewModelScope.launch { deleteWateringLog(logId) }
     }
 
     fun onDelete() {
