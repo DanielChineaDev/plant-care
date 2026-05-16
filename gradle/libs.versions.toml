@@ -34,6 +34,9 @@ workManager = "2.10.0"
 # Permissions
 accompanistPermissions = "0.36.0"
 
+# Calendar
+kizitonwoseCalendar = "2.5.4"
+
 # Testing
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -98,6 +101,9 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 
 # Permissions
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
+
+# Calendar
+kizitonwose-calendar-compose = { group = "com.kizitonwose.calendar", name = "compose", version.ref = "kizitonwoseCalendar" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

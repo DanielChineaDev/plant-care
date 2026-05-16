@@ -115,6 +115,9 @@ dependencies {
     // Permissions
     implementation(libs.accompanist.permissions)
 
+    // Calendar
+    implementation(libs.kizitonwose.calendar.compose)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
