@@ -45,3 +45,13 @@ fun Plant.status(now: Long = System.currentTimeMillis()): PlantStatus {
         else -> PlantStatus.Thirsty
     }
 }
+
+/**
+ * True si la planta deberia regarse hoy (intervalo cumplido desde el ultimo riego;
+ * si nunca se rego, desde la fecha de alta).
+ */
+fun Plant.needsWatering(now: Long = System.currentTimeMillis()): Boolean {
+    val reference = lastWateredAt ?: addedAt
+    val intervalMs = wateringIntervalDays.toLong() * 24L * 60L * 60L * 1000L
+    return (now - reference) >= intervalMs
+}
