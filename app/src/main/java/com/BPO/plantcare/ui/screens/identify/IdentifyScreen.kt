@@ -31,12 +31,15 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.BPO.plantcare.domain.model.PlantSuggestion
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,10 +65,21 @@ fun IdentifyScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (cameraPermission.status !is PermissionStatus.Granted) {
             cameraPermission.launchPermissionRequest()
+        }
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            val message = when (event) {
+                is IdentifyEvent.PlantAdded -> "${event.displayName} añadida a Mis plantas"
+                is IdentifyEvent.AddFailed -> event.message
+            }
+            snackbarHostState.showSnackbar(message)
         }
     }
 
@@ -80,6 +94,7 @@ fun IdentifyScreen(
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         when (val status = cameraPermission.status) {
             is PermissionStatus.Granted -> IdentifyContent(
@@ -88,6 +103,7 @@ fun IdentifyScreen(
                 onPhotoCaptured = viewModel::onPhotoCaptured,
                 onIdentify = viewModel::identify,
                 onRetake = viewModel::retake,
+                onAddToMyPlants = viewModel::addSuggestionToMyPlants,
             )
 
             is PermissionStatus.Denied -> PermissionRationale(
@@ -106,6 +122,7 @@ private fun IdentifyContent(
     onPhotoCaptured: (Uri, File) -> Unit,
     onIdentify: () -> Unit,
     onRetake: () -> Unit,
+    onAddToMyPlants: (PlantSuggestion) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -127,6 +144,7 @@ private fun IdentifyContent(
                 photoUri = state.photoUri,
                 suggestions = state.suggestions,
                 onRetake = onRetake,
+                onAddToMyPlants = onAddToMyPlants,
             )
 
             is IdentifyUiState.Error -> ErrorView(

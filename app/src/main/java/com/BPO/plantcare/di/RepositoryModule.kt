@@ -1,7 +1,9 @@
 package com.BPO.plantcare.di
 
 import com.BPO.plantcare.data.repository.PlantIdentificationRepositoryImpl
+import com.BPO.plantcare.data.repository.PlantRepositoryImpl
 import com.BPO.plantcare.domain.repository.PlantIdentificationRepository
+import com.BPO.plantcare.domain.repository.PlantRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindPlantIdentificationRepository(
         impl: PlantIdentificationRepositoryImpl
     ): PlantIdentificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPlantRepository(
+        impl: PlantRepositoryImpl
+    ): PlantRepository
 }

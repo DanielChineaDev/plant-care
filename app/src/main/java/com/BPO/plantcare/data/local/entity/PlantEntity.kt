@@ -1,0 +1,51 @@
+package com.BPO.plantcare.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.BPO.plantcare.domain.model.Plant
+
+@Entity(tableName = "plants")
+data class PlantEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val nickname: String?,
+    val scientificName: String,
+    val commonName: String?,
+    val family: String?,
+    val genus: String?,
+    val referenceImageUrl: String?,
+    val userPhotoPath: String?,
+    val addedAt: Long,
+    val lastWateredAt: Long?,
+    val wateringIntervalDays: Int,
+    val notes: String?,
+)
+
+fun PlantEntity.toDomain(): Plant = Plant(
+    id = id,
+    nickname = nickname,
+    scientificName = scientificName,
+    commonName = commonName,
+    family = family,
+    genus = genus,
+    referenceImageUrl = referenceImageUrl,
+    userPhotoPath = userPhotoPath,
+    addedAt = addedAt,
+    lastWateredAt = lastWateredAt,
+    wateringIntervalDays = wateringIntervalDays,
+    notes = notes,
+)
+
+fun Plant.toEntity(): PlantEntity = PlantEntity(
+    id = id,
+    nickname = nickname,
+    scientificName = scientificName,
+    commonName = commonName,
+    family = family,
+    genus = genus,
+    referenceImageUrl = referenceImageUrl,
+    userPhotoPath = userPhotoPath,
+    addedAt = addedAt,
+    lastWateredAt = lastWateredAt,
+    wateringIntervalDays = wateringIntervalDays,
+    notes = notes,
+)

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,11 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -42,22 +44,21 @@ fun ResultsView(
     photoUri: Uri,
     suggestions: List<PlantSuggestion>,
     onRetake: () -> Unit,
+    onAddToMyPlants: (PlantSuggestion) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                AsyncImage(
-                    model = photoUri,
-                    contentDescription = "Foto identificada",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp),
-                    contentScale = ContentScale.Crop,
-                )
-            }
+            AsyncImage(
+                model = photoUri,
+                contentDescription = "Foto identificada",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+                contentScale = ContentScale.Crop,
+            )
         }
         item {
             Text(
@@ -69,6 +70,7 @@ fun ResultsView(
         items(suggestions) { suggestion ->
             SuggestionCard(
                 suggestion = suggestion,
+                onAddClick = { onAddToMyPlants(suggestion) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp),
@@ -92,54 +94,63 @@ fun ResultsView(
 @Composable
 private fun SuggestionCard(
     suggestion: PlantSuggestion,
+    onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         modifier = modifier,
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ThumbnailOrFallback(suggestion.imageUrl)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = suggestion.commonNames.firstOrNull() ?: suggestion.scientificName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ThumbnailOrFallback(suggestion.imageUrl)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = suggestion.commonNames.firstOrNull() ?: suggestion.scientificName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (suggestion.commonNames.isNotEmpty()) {
+                        Text(
+                            text = suggestion.scientificName,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    suggestion.family?.let {
+                        Text(
+                            text = "Familia: $it",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                LinearProgressIndicator(
+                    progress = { suggestion.score.toFloat().coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
                 )
-                if (suggestion.commonNames.isNotEmpty()) {
-                    Text(
-                        text = suggestion.scientificName,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                suggestion.family?.let {
-                    Text(
-                        text = "Familia: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    LinearProgressIndicator(
-                        progress = { suggestion.score.toFloat().coerceIn(0f, 1f) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${(suggestion.score * 100).toInt()}%",
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${(suggestion.score * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            FilledTonalButton(
+                onClick = onAddClick,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Añadir a mis plantas")
             }
         }
     }
