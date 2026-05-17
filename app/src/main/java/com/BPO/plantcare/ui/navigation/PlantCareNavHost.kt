@@ -21,6 +21,7 @@ import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
 import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
+import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
@@ -29,6 +30,7 @@ import com.BPO.plantcare.ui.screens.search.SearchScreen
 
 object Routes {
     const val IDENTIFY = "identify"
+    const val LIGHT_METER = "light_meter"
 
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
@@ -99,7 +101,9 @@ fun PlantCareNavHost(
         composable(TopLevelDestination.Search.route) {
             SearchScreen(onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) })
         }
-        composable(TopLevelDestination.Profile.route) { ProfileScreen() }
+        composable(TopLevelDestination.Profile.route) {
+            ProfileScreen(onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) })
+        }
 
         composable(
             Routes.IDENTIFY,
@@ -109,6 +113,16 @@ fun PlantCareNavHost(
             popExitTransition = slidePopExit,
         ) {
             IdentifyScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            Routes.LIGHT_METER,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            LightMeterScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

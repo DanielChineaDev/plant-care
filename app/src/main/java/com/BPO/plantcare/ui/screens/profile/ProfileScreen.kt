@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
@@ -46,7 +47,10 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    onOpenLightMeter: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel(),
+) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
 
     Column(
@@ -89,6 +93,30 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
             onToggle = viewModel::setTravelEnabled,
             onRangeChange = viewModel::setTravelRange,
         )
+
+        ToolsCard(onOpenLightMeter = onOpenLightMeter)
+    }
+}
+
+@Composable
+private fun ToolsCard(onOpenLightMeter: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Herramientas",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedButton(onClick = onOpenLightMeter, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.LightMode, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Medir luz de un sitio")
+            }
+        }
     }
 }
 
