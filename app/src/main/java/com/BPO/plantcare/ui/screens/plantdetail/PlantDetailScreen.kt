@@ -3,6 +3,7 @@ package com.BPO.plantcare.ui.screens.plantdetail
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,6 +90,7 @@ import java.util.Date
 @Composable
 fun PlantDetailScreen(
     onBack: () -> Unit,
+    onPhotoClick: (plantId: Long, photoId: Long) -> Unit,
     viewModel: PlantDetailViewModel = hiltViewModel(),
 ) {
     val plant by viewModel.plant.collectAsStateWithLifecycle()
@@ -162,6 +164,9 @@ fun PlantDetailScreen(
                 photos = photos,
                 onAddPhoto = viewModel::onAddDiaryPhoto,
                 onDeletePhoto = viewModel::onDeleteDiaryPhoto,
+                onPhotoClick = { photoId ->
+                    plant?.id?.let { onPhotoClick(it, photoId) }
+                },
             )
             HistoryCard(
                 history = history,
@@ -342,6 +347,7 @@ private fun DiaryCard(
     photos: List<PlantPhoto>,
     onAddPhoto: (File) -> Unit,
     onDeletePhoto: (Long) -> Unit,
+    onPhotoClick: (Long) -> Unit,
 ) {
     val context = LocalContext.current
     val pickMedia = rememberLauncherForActivityResult(
@@ -426,6 +432,7 @@ private fun DiaryCard(
                 items(photos, key = { it.id }) { photo ->
                     DiaryThumbnail(
                         photo = photo,
+                        onClick = { onPhotoClick(photo.id) },
                         onDelete = { onDeletePhoto(photo.id) },
                     )
                 }
@@ -437,6 +444,7 @@ private fun DiaryCard(
 @Composable
 private fun DiaryThumbnail(
     photo: PlantPhoto,
+    onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -447,7 +455,8 @@ private fun DiaryThumbnail(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(RoundedCornerShape(12.dp)),
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(onClick = onClick),
             )
             IconButton(
                 onClick = onDelete,
