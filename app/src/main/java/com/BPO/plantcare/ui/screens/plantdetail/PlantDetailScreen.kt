@@ -70,6 +70,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.core.storage.copyUriToCache
+import com.BPO.plantcare.domain.model.GuideMatch
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.PlantStatus
@@ -150,8 +151,12 @@ fun PlantDetailScreen(
                 onMarkWatered = viewModel::onMarkWatered,
                 onIntervalChange = viewModel::onIntervalChange,
             )
-            careGuide?.let {
-                CareGuideCard(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            careGuide?.let { match ->
+                CareGuideCard(
+                    guide = match.guide,
+                    genusApproximation = (match as? GuideMatch.Genus)?.genusName,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
             }
             DiaryCard(
                 photos = photos,

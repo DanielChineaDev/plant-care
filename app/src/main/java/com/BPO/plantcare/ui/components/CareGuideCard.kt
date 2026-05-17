@@ -30,6 +30,7 @@ import com.BPO.plantcare.ui.theme.StatusWarning
 fun CareGuideCard(
     guide: PlantCareGuide,
     modifier: Modifier = Modifier,
+    genusApproximation: String? = null,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -38,6 +39,13 @@ fun CareGuideCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
+            if (genusApproximation != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                GenusApproximationBanner(
+                    genus = genusApproximation,
+                    referenceSpecies = guide.scientificName,
+                )
+            }
             Spacer(modifier = Modifier.height(12.dp))
 
             Row(
@@ -144,6 +152,32 @@ fun ToxicChip() {
             disabledLabelColor = StatusThirsty,
         ),
     )
+}
+
+@Composable
+private fun GenusApproximationBanner(genus: String, referenceSpecies: String) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        ),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = "Datos aproximados del genero ${genus.replaceFirstChar { it.titlecase() }}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Tu especie aun no esta en el catalogo. Estos cuidados son los de " +
+                        "$referenceSpecies, una pariente cercana. Pueden variar ligeramente.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+    }
 }
 
 @Composable

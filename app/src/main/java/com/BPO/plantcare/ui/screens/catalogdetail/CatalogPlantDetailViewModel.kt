@@ -35,7 +35,7 @@ class CatalogPlantDetailViewModel @Inject constructor(
 
     val scientificName: String = checkNotNull(savedStateHandle.get<String>(NavArgs.SCIENTIFIC_NAME))
 
-    val guide: PlantCareGuide? = getCareGuide(scientificName)
+    val guide: PlantCareGuide? = getCareGuide(scientificName)?.guide
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
     val wikipedia: StateFlow<WikipediaUiState> = _wikipedia.asStateFlow()

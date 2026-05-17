@@ -3,8 +3,8 @@ package com.BPO.plantcare.ui.screens.plantdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.BPO.plantcare.domain.model.GuideMatch
 import com.BPO.plantcare.domain.model.Plant
-import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
@@ -68,7 +68,7 @@ class PlantDetailViewModel @Inject constructor(
         initialValue = emptyList(),
     )
 
-    val careGuide: StateFlow<PlantCareGuide?> = plant
+    val careGuide: StateFlow<GuideMatch?> = plant
         .map { p -> p?.scientificName?.let(getCareGuide::invoke) }
         .stateIn(
             scope = viewModelScope,

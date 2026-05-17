@@ -5,9 +5,9 @@ import com.BPO.plantcare.domain.model.PlantCareGuide
 interface PlantCatalogRepository {
     fun all(): List<PlantCareGuide>
 
-    /**
-     * Busca por nombre cientifico exacto (case-insensitive).
-     * Devuelve null si no esta en el catalogo.
-     */
+    /** Match exacto por nombre cientifico (case-insensitive). */
     fun findByScientificName(scientificName: String): PlantCareGuide?
+
+    /** Primera entrada del catalogo que pertenezca a ese genero. */
+    fun findByGenus(genus: String): PlantCareGuide?
 }

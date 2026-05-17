@@ -18,6 +18,11 @@ class PlantCatalogRepositoryImpl @Inject constructor(
     private val byName: Map<String, PlantCareGuide> by lazy {
         catalog.associateBy { it.scientificName.lowercase().trim() }
     }
+    private val byGenus: Map<String, PlantCareGuide> by lazy {
+        // Si hay varias especies del mismo genero, nos quedamos con la primera.
+        catalog.groupBy { genusOf(it.scientificName) }
+            .mapValues { (_, list) -> list.first() }
+    }
 
     override fun all(): List<PlantCareGuide> = catalog
 
@@ -25,6 +30,14 @@ class PlantCatalogRepositoryImpl @Inject constructor(
         val key = scientificName.lowercase().trim()
         return byName[key]
     }
+
+    override fun findByGenus(genus: String): PlantCareGuide? {
+        val key = genus.lowercase().trim()
+        return byGenus[key]
+    }
+
+    private fun genusOf(scientificName: String): String =
+        scientificName.lowercase().substringBefore(" ").trim()
 
     private fun loadCatalog(): List<PlantCareGuide> = runCatching {
         val raw = context.assets.open(ASSET_FILE).bufferedReader().use { it.readText() }

@@ -3,7 +3,6 @@ package com.BPO.plantcare.domain.usecase
 import com.BPO.plantcare.core.storage.PhotoStorage
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantSuggestion
-import com.BPO.plantcare.domain.repository.PlantCatalogRepository
 import com.BPO.plantcare.domain.repository.PlantRepository
 import java.io.File
 import javax.inject.Inject
@@ -11,7 +10,7 @@ import javax.inject.Inject
 class AddPlantFromSuggestionUseCase @Inject constructor(
     private val repository: PlantRepository,
     private val photoStorage: PhotoStorage,
-    private val catalog: PlantCatalogRepository,
+    private val getCareGuide: GetPlantCareGuideUseCase,
 ) {
     suspend operator fun invoke(
         suggestion: PlantSuggestion,
@@ -20,7 +19,8 @@ class AddPlantFromSuggestionUseCase @Inject constructor(
         wateringIntervalDays: Int? = null,
     ): Result<Long> = runCatching {
         val persistedPath = capturedPhoto?.let { photoStorage.persist(it) }
-        val guide = catalog.findByScientificName(suggestion.scientificName)
+        val match = getCareGuide(suggestion.scientificName)
+        val guide = match?.guide
         val interval = wateringIntervalDays
             ?: guide?.wateringIntervalDays
             ?: DEFAULT_WATERING_DAYS
