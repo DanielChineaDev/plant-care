@@ -1,10 +1,13 @@
 package com.BPO.plantcare.ui.screens.profile
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.core.location.LocationProvider
 import com.BPO.plantcare.core.work.WateringReminderManager
 import com.BPO.plantcare.domain.model.UserSettings
+import com.BPO.plantcare.domain.repository.AuthRepository
+import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.PreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -18,6 +21,8 @@ import javax.inject.Inject
 sealed interface ProfileEvent {
     data object LocationSaved : ProfileEvent
     data object LocationUnavailable : ProfileEvent
+    data class SignInFailed(val message: String) : ProfileEvent
+    data object SignedOut : ProfileEvent
 }
 
 @HiltViewModel
@@ -25,12 +30,19 @@ class ProfileViewModel @Inject constructor(
     private val preferences: PreferencesRepository,
     private val reminderManager: WateringReminderManager,
     private val locationProvider: LocationProvider,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     val settings: StateFlow<UserSettings> = preferences.settings.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = UserSettings(),
+    )
+
+    val authState: StateFlow<AuthState> = authRepository.authState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = AuthState.Loading,
     )
 
     private val _events = Channel<ProfileEvent>(capacity = Channel.BUFFERED)
@@ -74,5 +86,24 @@ class ProfileViewModel @Inject constructor(
 
     fun testWateringNotification() {
         reminderManager.runNow()
+    }
+
+    fun signInWithGoogle(activityContext: Context) {
+        viewModelScope.launch {
+            authRepository.signInWithGoogle(activityContext).onFailure { e ->
+                _events.send(
+                    ProfileEvent.SignInFailed(
+                        e.localizedMessage ?: "Error al iniciar sesion con Google"
+                    )
+                )
+            }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _events.send(ProfileEvent.SignedOut)
+        }
     }
 }

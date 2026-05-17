@@ -47,12 +47,21 @@ import androidx.compose.runtime.setValue
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.BPO.plantcare.domain.repository.AuthState
 import java.text.DateFormat
 import java.util.Date
 
@@ -64,8 +73,10 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val authState by viewModel.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -73,6 +84,8 @@ fun ProfileScreen(
                 ProfileEvent.LocationSaved -> "Ubicacion guardada"
                 ProfileEvent.LocationUnavailable ->
                     "No se pudo obtener la ubicacion. Abre Google Maps un momento o activa GPS y reintenta."
+                is ProfileEvent.SignInFailed -> "Error de login: ${event.message}"
+                ProfileEvent.SignedOut -> "Sesion cerrada"
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -88,25 +101,11 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Spacer(modifier = Modifier.size(8.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = null,
-                modifier = Modifier.size(96.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = "Tu perfil",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-            Text(
-                text = "Pronto podras crear tu cuenta y unirte a comunidades.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        AuthHeaderCard(
+            authState = authState,
+            onSignIn = { viewModel.signInWithGoogle(context) },
+            onSignOut = { viewModel.signOut() },
+        )
 
         NotificationsCard(
             settings = settings,
@@ -451,3 +450,92 @@ private fun HourSelector(hour: Int, onHourChange: (Int) -> Unit) {
 }
 
 private fun formatHour(hour: Int): String = "%02d:00".format(hour)
+
+@Composable
+private fun AuthHeaderCard(
+    authState: AuthState,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            when (authState) {
+                AuthState.Loading -> CircularProgressIndicator(modifier = Modifier.size(40.dp))
+
+                AuthState.SignedOut -> {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Text(
+                        text = "Inicia sesion",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                    Text(
+                        text = "Sincroniza tus plantas, unete a comunidades y comparte tu coleccion.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                    )
+                    Button(onClick = onSignIn) {
+                        Text("Iniciar sesion con Google")
+                    }
+                }
+
+                is AuthState.SignedIn -> {
+                    val photo = authState.profile.photoUrl
+                    if (photo != null) {
+                        AsyncImage(
+                            model = photo,
+                            contentDescription = authState.profile.displayName,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                    Text(
+                        text = authState.profile.displayName.orEmpty(),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                    authState.profile.email?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                    Spacer(modifier = Modifier.size(8.dp))
+                    OutlinedButton(onClick = onSignOut) { Text("Cerrar sesion") }
+                }
+            }
+        }
+    }
+}
