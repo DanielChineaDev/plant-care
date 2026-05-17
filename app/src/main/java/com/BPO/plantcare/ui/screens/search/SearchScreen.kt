@@ -1,15 +1,252 @@
 package com.BPO.plantcare.ui.screens.search
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import com.BPO.plantcare.ui.screens.PlaceholderScreen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.domain.model.CareDifficulty
+import com.BPO.plantcare.domain.model.LightLevel
+import com.BPO.plantcare.domain.model.PlantCareGuide
 
 @Composable
-fun SearchScreen() {
-    PlaceholderScreen(
-        title = "Catálogo de plantas",
-        subtitle = "Explora especies por origen, dificultad, luz y mucho más.",
-        icon = Icons.Outlined.Search,
+fun SearchScreen(
+    onPlantClick: (String) -> Unit,
+    viewModel: SearchViewModel = hiltViewModel(),
+) {
+    val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val results by viewModel.results.collectAsStateWithLifecycle()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchBar(
+            query = filters.query,
+            onQueryChange = viewModel::onQueryChange,
+        )
+        FiltersRow(
+            filters = filters,
+            onLocationChange = viewModel::setLocation,
+            onDifficultyToggle = viewModel::toggleDifficulty,
+            onLightToggle = viewModel::toggleLight,
+            onClear = viewModel::clearAll,
+        )
+        if (results.isEmpty()) {
+            EmptyResults(filters.query)
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(results, key = { it.scientificName }) { guide ->
+                    CatalogCard(guide = guide, onClick = { onPlantClick(guide.scientificName) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        placeholder = { Text("Busca por nombre comun o cientifico") },
+        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                }
+            }
+        },
+        singleLine = true,
     )
+}
+
+@Composable
+private fun FiltersRow(
+    filters: SearchFilters,
+    onLocationChange: (LocationFilter) -> Unit,
+    onDifficultyToggle: (CareDifficulty) -> Unit,
+    onLightToggle: (LightLevel) -> Unit,
+    onClear: () -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FilterChip(
+                selected = filters.location == LocationFilter.INDOOR,
+                onClick = {
+                    onLocationChange(
+                        if (filters.location == LocationFilter.INDOOR) LocationFilter.ALL
+                        else LocationFilter.INDOOR
+                    )
+                },
+                label = { Text("Interior") },
+            )
+            FilterChip(
+                selected = filters.location == LocationFilter.OUTDOOR,
+                onClick = {
+                    onLocationChange(
+                        if (filters.location == LocationFilter.OUTDOOR) LocationFilter.ALL
+                        else LocationFilter.OUTDOOR
+                    )
+                },
+                label = { Text("Exterior") },
+            )
+            CareDifficulty.entries.forEach { d ->
+                FilterChip(
+                    selected = filters.difficulty == d,
+                    onClick = { onDifficultyToggle(d) },
+                    label = { Text(d.label) },
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LightLevel.entries.forEach { l ->
+                FilterChip(
+                    selected = filters.light == l,
+                    onClick = { onLightToggle(l) },
+                    label = { Text(l.label) },
+                    colors = FilterChipDefaults.filterChipColors(),
+                )
+            }
+            if (filters.hasActiveFilters) {
+                TextButton(onClick = onClear) {
+                    Text("Limpiar filtros")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatalogCard(guide: PlantCareGuide, onClick: () -> Unit) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.LocalFlorist,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp),
+                )
+            }
+            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Text(
+                    text = guide.commonNames.firstOrNull() ?: guide.scientificName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = guide.scientificName,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(
+                    text = "${guide.difficulty.label} · ${guide.light.label}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyResults(query: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Search,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = if (query.isBlank())
+                "Ningun resultado con los filtros actuales"
+            else "Sin resultados para \"$query\"",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+    }
 }

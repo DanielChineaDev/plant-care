@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.model.WateringLog
-import com.BPO.plantcare.domain.model.WikipediaSummary
+import com.BPO.plantcare.ui.screens.common.WikipediaUiState
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
 import com.BPO.plantcare.domain.usecase.GetPlantCareGuideUseCase
@@ -28,13 +28,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-sealed interface WikipediaUiState {
-    data object Loading : WikipediaUiState
-    data class Loaded(val summary: WikipediaSummary) : WikipediaUiState
-    data object NotFound : WikipediaUiState
-    data class Error(val message: String) : WikipediaUiState
-}
 
 sealed interface PlantDetailEvent {
     data object Deleted : PlantDetailEvent

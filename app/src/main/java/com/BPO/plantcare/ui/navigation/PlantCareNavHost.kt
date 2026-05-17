@@ -1,5 +1,6 @@
 package com.BPO.plantcare.ui.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -8,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
+import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
 import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
@@ -21,11 +23,15 @@ object Routes {
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
     const val PLANT_DETAIL_PATTERN = "$PLANT_DETAIL/{${NavArgs.PLANT_ID}}"
 
-    val immersiveRoutes = setOf(IDENTIFY, PLANT_DETAIL_PATTERN)
+    private const val CATALOG_DETAIL = "catalog"
+    fun catalogDetail(scientificName: String) =
+        "$CATALOG_DETAIL/${Uri.encode(scientificName)}"
+    const val CATALOG_DETAIL_PATTERN = "$CATALOG_DETAIL/{${NavArgs.SCIENTIFIC_NAME}}"
 }
 
 object NavArgs {
     const val PLANT_ID = "plantId"
+    const val SCIENTIFIC_NAME = "scientificName"
 }
 
 @Composable
@@ -45,7 +51,9 @@ fun PlantCareNavHost(
             MyPlantsScreen(onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) })
         }
         composable(TopLevelDestination.Calendar.route) { CalendarScreen() }
-        composable(TopLevelDestination.Search.route) { SearchScreen() }
+        composable(TopLevelDestination.Search.route) {
+            SearchScreen(onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) })
+        }
         composable(TopLevelDestination.Profile.route) { ProfileScreen() }
 
         composable(Routes.IDENTIFY) {
@@ -57,6 +65,13 @@ fun PlantCareNavHost(
             arguments = listOf(navArgument(NavArgs.PLANT_ID) { type = NavType.LongType }),
         ) {
             PlantDetailScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            route = Routes.CATALOG_DETAIL_PATTERN,
+            arguments = listOf(navArgument(NavArgs.SCIENTIFIC_NAME) { type = NavType.StringType }),
+        ) {
+            CatalogPlantDetailScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.BPO.plantcare.ui.screens.plantdetail
 
-import android.content.Intent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,14 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocalFlorist
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -53,25 +49,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.Plant
-import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
-import com.BPO.plantcare.domain.model.WikipediaSummary
 import com.BPO.plantcare.domain.model.status
+import com.BPO.plantcare.ui.components.CareGuideCard
+import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
 import com.BPO.plantcare.ui.theme.StatusWarning
@@ -124,9 +115,10 @@ fun PlantDetailScreen(
     ) { padding ->
         val current = plant
         if (current == null) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center,
+            ) { CircularProgressIndicator() }
             return@Scaffold
         }
 
@@ -143,13 +135,15 @@ fun PlantDetailScreen(
                 onMarkWatered = viewModel::onMarkWatered,
                 onIntervalChange = viewModel::onIntervalChange,
             )
-            careGuide?.let { CareGuideCard(it) }
+            careGuide?.let {
+                CareGuideCard(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            }
             HistoryCard(
                 history = history,
                 onDeleteLog = viewModel::onDeleteWateringLog,
             )
             TaxonomyCard(current)
-            WikipediaCard(wikipedia)
+            WikipediaCard(wikipedia, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -263,10 +257,7 @@ private fun WateringCard(
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Ultimo riego: ${formatDate(plant.lastWateredAt)}",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text("Ultimo riego: ${formatDate(plant.lastWateredAt)}", style = MaterialTheme.typography.bodyMedium)
             Text(
                 text = "Proximo riego: ${nextWateringHint(plant)}",
                 style = MaterialTheme.typography.bodyMedium,
@@ -275,10 +266,7 @@ private fun WateringCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Cada",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Text("Cada", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.width(8.dp))
                 FilledTonalIconButton(
                     onClick = { onIntervalChange(plant.wateringIntervalDays - 1) },
@@ -297,10 +285,7 @@ private fun WateringCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = onMarkWatered,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Button(onClick = onMarkWatered, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.WaterDrop, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Marcar como regada")
@@ -319,265 +304,16 @@ private fun TaxonomyCard(plant: Plant) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Taxonomia",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text("Taxonomia", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(8.dp))
-            plant.family?.let {
-                Text("Familia: $it", style = MaterialTheme.typography.bodyMedium)
-            }
-            plant.genus?.let {
-                Text("Genero: $it", style = MaterialTheme.typography.bodyMedium)
-            }
+            plant.family?.let { Text("Familia: $it", style = MaterialTheme.typography.bodyMedium) }
+            plant.genus?.let { Text("Genero: $it", style = MaterialTheme.typography.bodyMedium) }
         }
     }
 }
 
 @Composable
-private fun WikipediaCard(state: WikipediaUiState) {
-    val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Sobre esta planta",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            when (state) {
-                is WikipediaUiState.Loading -> Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("Cargando informacion de Wikipedia...", style = MaterialTheme.typography.bodySmall)
-                }
-
-                is WikipediaUiState.Loaded -> WikipediaContent(
-                    summary = state.summary,
-                    onOpenLink = { url ->
-                        context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                    },
-                )
-
-                is WikipediaUiState.NotFound -> Text(
-                    text = "Aun no tenemos descripcion para esta planta.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                is WikipediaUiState.Error -> Text(
-                    text = "No hemos podido cargar la informacion. ${state.message}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WikipediaContent(summary: WikipediaSummary, onOpenLink: (String) -> Unit) {
-    if (summary.thumbnailUrl != null) {
-        AsyncImage(
-            model = summary.thumbnailUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop,
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-    }
-    Text(
-        text = summary.extract,
-        style = MaterialTheme.typography.bodyMedium,
-    )
-    if (summary.pageUrl != null) {
-        Spacer(modifier = Modifier.height(8.dp))
-        TextButton(onClick = { onOpenLink(summary.pageUrl) }) {
-            Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Leer mas en Wikipedia (${summary.lang})")
-        }
-    }
-}
-
-@Composable
-private fun EditNicknameDialog(
-    current: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var text by rememberSaveable { mutableStateOf(current) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Editar alias") },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Como la llamas") },
-                singleLine = true,
-            )
-        },
-        confirmButton = {
-            Button(onClick = { onConfirm(text) }) { Text("Guardar") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
-        },
-    )
-}
-
-@Composable
-private fun CareGuideCard(guide: PlantCareGuide) {
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Cuidados",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Badges: dificultad + ubicacion + toxicidad
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                DifficultyChip(guide.difficulty)
-                LocationChip(indoor = guide.indoor, outdoor = guide.outdoor)
-                if (guide.toxicToPets) ToxicChip()
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            CareRow(label = "Luz", value = guide.light.label)
-            CareRow(label = "Humedad", value = guide.humidity.label)
-            CareRow(label = "Riego", value = "Cada ${guide.wateringIntervalDays} dias")
-            guide.wateringNotes?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 16.dp, top = 2.dp, bottom = 6.dp),
-                )
-            }
-            CareRow(label = "Sustrato", value = guide.substrate)
-            CareRow(label = "Abono", value = guide.fertilizing)
-            CareRow(label = "Trasplante", value = guide.repotting)
-
-            guide.funFact?.let { fact ->
-                Spacer(modifier = Modifier.height(12.dp))
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "✨ Sabías que...",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = fact,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DifficultyChip(difficulty: CareDifficulty) {
-    val color = when (difficulty) {
-        CareDifficulty.EASY -> StatusHealthy
-        CareDifficulty.MEDIUM -> StatusWarning
-        CareDifficulty.HARD -> StatusThirsty
-        CareDifficulty.EXPERT -> Color(0xFF8E24AA)
-        CareDifficulty.PRO -> Color(0xFF3949AB)
-    }
-    AssistChip(
-        onClick = {},
-        enabled = false,
-        label = { Text(difficulty.label) },
-        colors = AssistChipDefaults.assistChipColors(
-            disabledContainerColor = color.copy(alpha = 0.9f),
-            disabledLabelColor = Color.White,
-        ),
-    )
-}
-
-@Composable
-private fun LocationChip(indoor: Boolean, outdoor: Boolean) {
-    val label = when {
-        indoor && outdoor -> "Interior / exterior"
-        indoor -> "Interior"
-        outdoor -> "Exterior"
-        else -> return
-    }
-    AssistChip(
-        onClick = {},
-        enabled = false,
-        label = { Text(label) },
-        colors = AssistChipDefaults.assistChipColors(
-            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
-    )
-}
-
-@Composable
-private fun ToxicChip() {
-    AssistChip(
-        onClick = {},
-        enabled = false,
-        label = { Text("⚠ Tóxica para mascotas") },
-        colors = AssistChipDefaults.assistChipColors(
-            disabledContainerColor = StatusThirsty.copy(alpha = 0.15f),
-            disabledLabelColor = StatusThirsty,
-        ),
-    )
-}
-
-@Composable
-private fun CareRow(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-}
-
-@Composable
-private fun HistoryCard(
-    history: List<WateringLog>,
-    onDeleteLog: (Long) -> Unit,
-) {
+private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (Long) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -585,11 +321,7 @@ private fun HistoryCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Historial de riegos",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text("Historial de riegos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(8.dp))
 
             if (history.isEmpty()) {
@@ -617,10 +349,7 @@ private fun HistoryCard(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = formatDate(log.timestamp),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
+                        Text(formatDate(log.timestamp), style = MaterialTheme.typography.bodyMedium)
                         Text(
                             text = relativeAgo(log.timestamp),
                             style = MaterialTheme.typography.bodySmall,
@@ -649,18 +378,27 @@ private fun HistoryCard(
     }
 }
 
-private const val MAX_VISIBLE_LOGS = 10
-
-private fun relativeAgo(timestamp: Long): String {
-    val days = ((System.currentTimeMillis() - timestamp) / MS_PER_DAY).toInt()
-    return when {
-        days < 1 -> "Hoy"
-        days == 1 -> "Ayer"
-        days < 7 -> "Hace $days dias"
-        days < 30 -> "Hace ${days / 7} semanas"
-        else -> "Hace ${days / 30} meses"
-    }
+@Composable
+private fun EditNicknameDialog(current: String, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    var text by rememberSaveable { mutableStateOf(current) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar alias") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Como la llamas") },
+                singleLine = true,
+            )
+        },
+        confirmButton = { Button(onClick = { onConfirm(text) }) { Text("Guardar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
 }
+
+private const val MAX_VISIBLE_LOGS = 10
+private const val MS_PER_DAY = 24L * 60L * 60L * 1000L
 
 private fun statusColor(status: PlantStatus): Color = when (status) {
     PlantStatus.Healthy -> StatusHealthy
@@ -668,8 +406,6 @@ private fun statusColor(status: PlantStatus): Color = when (status) {
     PlantStatus.Thirsty -> StatusThirsty
     PlantStatus.NotWatered -> Color(0xFF2E7D32)
 }
-
-private const val MS_PER_DAY = 24L * 60L * 60L * 1000L
 
 private fun formatDate(timestamp: Long?): String {
     if (timestamp == null) return "Sin regar aun"
@@ -687,5 +423,16 @@ private fun nextWateringHint(plant: Plant): String {
         daysUntil == 1 -> "manana"
         daysUntil == 0 -> "hoy"
         else -> "atrasado ${-daysUntil} d"
+    }
+}
+
+private fun relativeAgo(timestamp: Long): String {
+    val days = ((System.currentTimeMillis() - timestamp) / MS_PER_DAY).toInt()
+    return when {
+        days < 1 -> "Hoy"
+        days == 1 -> "Ayer"
+        days < 7 -> "Hace $days dias"
+        days < 30 -> "Hace ${days / 7} semanas"
+        else -> "Hace ${days / 30} meses"
     }
 }
