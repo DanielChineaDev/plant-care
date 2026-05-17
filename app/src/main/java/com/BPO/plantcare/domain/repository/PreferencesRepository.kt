@@ -7,4 +7,6 @@ interface PreferencesRepository {
     val settings: Flow<UserSettings>
     suspend fun setNotificationsEnabled(enabled: Boolean)
     suspend fun setReminderHour(hour: Int)
+    suspend fun setTravelEnabled(enabled: Boolean)
+    suspend fun setTravelRange(start: Long?, end: Long?)
 }

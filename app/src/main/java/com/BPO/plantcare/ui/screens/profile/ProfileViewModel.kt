@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    preferences: PreferencesRepository,
+    private val preferences: PreferencesRepository,
     private val reminderManager: WateringReminderManager,
 ) : ViewModel() {
 
@@ -30,6 +30,14 @@ class ProfileViewModel @Inject constructor(
 
     fun setReminderHour(hour: Int) {
         viewModelScope.launch { reminderManager.setHour(hour) }
+    }
+
+    fun setTravelEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferences.setTravelEnabled(enabled) }
+    }
+
+    fun setTravelRange(start: Long?, end: Long?) {
+        viewModelScope.launch { preferences.setTravelRange(start, end) }
     }
 
     fun testWateringNotification() {

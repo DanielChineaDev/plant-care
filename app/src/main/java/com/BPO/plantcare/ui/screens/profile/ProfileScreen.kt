@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -25,6 +28,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.text.DateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,61 +77,183 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
             )
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Notificaciones",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
+        NotificationsCard(
+            settings = settings,
+            onToggle = viewModel::setNotificationsEnabled,
+            onHourChange = viewModel::setReminderHour,
+            onTest = viewModel::testWateringNotification,
+        )
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Recordatorio diario de riego",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            text = "Te avisamos cada manana de las plantas que toca regar.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(
-                        checked = settings.notificationsEnabled,
-                        onCheckedChange = viewModel::setNotificationsEnabled,
+        TravelModeCard(
+            settings = settings,
+            onToggle = viewModel::setTravelEnabled,
+            onRangeChange = viewModel::setTravelRange,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationsCard(
+    settings: com.BPO.plantcare.domain.model.UserSettings,
+    onToggle: (Boolean) -> Unit,
+    onHourChange: (Int) -> Unit,
+    onTest: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Notificaciones",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Recordatorio diario de riego", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Te avisamos cada manana de las plantas que toca regar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                Switch(checked = settings.notificationsEnabled, onCheckedChange = onToggle)
+            }
 
-                if (settings.notificationsEnabled) {
-                    Spacer(modifier = Modifier.size(12.dp))
-                    HourSelector(
-                        hour = settings.reminderHour,
-                        onHourChange = viewModel::setReminderHour,
-                    )
-                }
-
+            if (settings.notificationsEnabled) {
                 Spacer(modifier = Modifier.size(12.dp))
-                OutlinedButton(
-                    onClick = { viewModel.testWateringNotification() },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.NotificationsActive, contentDescription = null)
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text("Probar notificacion de riego")
-                }
+                HourSelector(hour = settings.reminderHour, onHourChange = onHourChange)
+            }
+
+            Spacer(modifier = Modifier.size(12.dp))
+            OutlinedButton(onClick = onTest, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.NotificationsActive, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Probar notificacion de riego")
             }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TravelModeCard(
+    settings: com.BPO.plantcare.domain.model.UserSettings,
+    onToggle: (Boolean) -> Unit,
+    onRangeChange: (Long?, Long?) -> Unit,
+) {
+    var pickerOpen by remember { mutableStateOf<TravelPicker?>(null) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Flight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Modo viaje",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Pausar notificaciones", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Mientras estes de viaje no recibiras avisos de riego.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = settings.travelEnabled, onCheckedChange = onToggle)
+            }
+
+            if (settings.travelEnabled) {
+                Spacer(modifier = Modifier.size(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = { pickerOpen = TravelPicker.Start },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Desde: ${formatOrPlaceholder(settings.travelStart)}")
+                    }
+                    OutlinedButton(
+                        onClick = { pickerOpen = TravelPicker.End },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("Hasta: ${formatOrPlaceholder(settings.travelEnd)}")
+                    }
+                }
+                if (settings.isCurrentlyOnTrip()) {
+                    Text(
+                        text = "✈ Estas de viaje ahora. Las notificaciones estan pausadas.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        }
+    }
+
+    pickerOpen?.let { which ->
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis = when (which) {
+                TravelPicker.Start -> settings.travelStart ?: System.currentTimeMillis()
+                TravelPicker.End -> settings.travelEnd ?: System.currentTimeMillis()
+            },
+        )
+        DatePickerDialog(
+            onDismissRequest = { pickerOpen = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    val newMillis = state.selectedDateMillis
+                    if (newMillis != null) {
+                        if (which == TravelPicker.Start) {
+                            onRangeChange(newMillis, settings.travelEnd)
+                        } else {
+                            onRangeChange(settings.travelStart, newMillis)
+                        }
+                    }
+                    pickerOpen = null
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pickerOpen = null }) { Text("Cancelar") }
+            },
+        ) {
+            DatePicker(state = state)
+        }
+    }
+}
+
+private enum class TravelPicker { Start, End }
+
+private fun formatOrPlaceholder(timestamp: Long?): String =
+    timestamp?.let { DateFormat.getDateInstance(DateFormat.SHORT).format(Date(it)) }
+        ?: "elegir"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,10 +273,7 @@ private fun HourSelector(hour: Int, onHourChange: (Int) -> Unit) {
                 .menuAnchor()
                 .fillMaxWidth(),
         )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             (0..23).forEach { h ->
                 DropdownMenuItem(
                     text = { Text(formatHour(h)) },
