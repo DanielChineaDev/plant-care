@@ -1,6 +1,7 @@
 package com.BPO.plantcare.di
 
 import com.BPO.plantcare.BuildConfig
+import com.BPO.plantcare.data.remote.OpenMeteoApi
 import com.BPO.plantcare.data.remote.PlantNetApi
 import com.BPO.plantcare.data.remote.WikipediaApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -23,6 +24,7 @@ object NetworkModule {
 
     private const val RETROFIT_PLANTNET = "plantnet"
     private const val RETROFIT_WIKIPEDIA = "wikipedia"
+    private const val RETROFIT_OPENMETEO = "openmeteo"
 
     @Provides
     @Singleton
@@ -68,6 +70,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named(RETROFIT_OPENMETEO)
+    fun provideOpenMeteoRetrofit(json: Json, client: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(OpenMeteoApi.BASE_URL)
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+
+    @Provides
+    @Singleton
     fun providePlantNetApi(@Named(RETROFIT_PLANTNET) retrofit: Retrofit): PlantNetApi =
         retrofit.create(PlantNetApi::class.java)
 
@@ -75,4 +87,9 @@ object NetworkModule {
     @Singleton
     fun provideWikipediaApi(@Named(RETROFIT_WIKIPEDIA) retrofit: Retrofit): WikipediaApi =
         retrofit.create(WikipediaApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideOpenMeteoApi(@Named(RETROFIT_OPENMETEO) retrofit: Retrofit): OpenMeteoApi =
+        retrofit.create(OpenMeteoApi::class.java)
 }

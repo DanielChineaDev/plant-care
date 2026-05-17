@@ -2,6 +2,7 @@ package com.BPO.plantcare.data.preferences
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -28,6 +29,10 @@ class PreferencesRepositoryImpl @Inject constructor(
             travelEnabled = prefs[Keys.TRAVEL_ENABLED] ?: false,
             travelStart = prefs[Keys.TRAVEL_START],
             travelEnd = prefs[Keys.TRAVEL_END],
+            weatherAware = prefs[Keys.WEATHER_AWARE] ?: false,
+            latitude = prefs[Keys.LATITUDE],
+            longitude = prefs[Keys.LONGITUDE],
+            locationUpdatedAt = prefs[Keys.LOCATION_UPDATED_AT],
         )
     }
 
@@ -50,11 +55,28 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setWeatherAware(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.WEATHER_AWARE] = enabled }
+    }
+
+    override suspend fun setLocation(latitude: Double?, longitude: Double?, updatedAt: Long?) {
+        context.dataStore.edit { prefs ->
+            if (latitude == null) prefs.remove(Keys.LATITUDE) else prefs[Keys.LATITUDE] = latitude
+            if (longitude == null) prefs.remove(Keys.LONGITUDE) else prefs[Keys.LONGITUDE] = longitude
+            if (updatedAt == null) prefs.remove(Keys.LOCATION_UPDATED_AT)
+            else prefs[Keys.LOCATION_UPDATED_AT] = updatedAt
+        }
+    }
+
     private object Keys {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
         val TRAVEL_ENABLED = booleanPreferencesKey("travel_enabled")
         val TRAVEL_START = longPreferencesKey("travel_start")
         val TRAVEL_END = longPreferencesKey("travel_end")
+        val WEATHER_AWARE = booleanPreferencesKey("weather_aware")
+        val LATITUDE = doublePreferencesKey("latitude")
+        val LONGITUDE = doublePreferencesKey("longitude")
+        val LOCATION_UPDATED_AT = longPreferencesKey("location_updated_at")
     }
 }

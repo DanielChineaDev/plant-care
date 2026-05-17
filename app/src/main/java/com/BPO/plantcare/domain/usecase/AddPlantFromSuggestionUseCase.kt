@@ -24,6 +24,15 @@ class AddPlantFromSuggestionUseCase @Inject constructor(
         val interval = wateringIntervalDays
             ?: guide?.wateringIntervalDays
             ?: DEFAULT_WATERING_DAYS
+        // Inferimos exterior/interior del catalogo. Si la especie es ambigua
+        // (indoor y outdoor a la vez) dejamos null para que el usuario decida.
+        val inferredOutdoor: Boolean? = when {
+            guide == null -> null
+            guide.indoor && guide.outdoor -> null
+            guide.outdoor -> true
+            guide.indoor -> false
+            else -> null
+        }
         val plant = Plant(
             nickname = nickname,
             scientificName = suggestion.scientificName,
@@ -36,6 +45,7 @@ class AddPlantFromSuggestionUseCase @Inject constructor(
             lastWateredAt = null,
             wateringIntervalDays = interval,
             notes = null,
+            isOutdoor = inferredOutdoor,
         )
         repository.add(plant)
     }

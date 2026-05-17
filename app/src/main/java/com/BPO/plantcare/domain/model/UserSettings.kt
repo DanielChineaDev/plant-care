@@ -6,6 +6,10 @@ data class UserSettings(
     val travelEnabled: Boolean = false,
     val travelStart: Long? = null,
     val travelEnd: Long? = null,
+    val weatherAware: Boolean = false,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val locationUpdatedAt: Long? = null,
 ) {
     /** True si las notificaciones deben suprimirse ahora por estar de viaje. */
     fun isCurrentlyOnTrip(now: Long = System.currentTimeMillis()): Boolean {
@@ -14,4 +18,6 @@ data class UserSettings(
         val end = travelEnd ?: return false
         return now in start..end
     }
+
+    val hasLocation: Boolean get() = latitude != null && longitude != null
 }

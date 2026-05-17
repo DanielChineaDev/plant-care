@@ -9,4 +9,6 @@ interface PreferencesRepository {
     suspend fun setReminderHour(hour: Int)
     suspend fun setTravelEnabled(enabled: Boolean)
     suspend fun setTravelRange(start: Long?, end: Long?)
+    suspend fun setWeatherAware(enabled: Boolean)
+    suspend fun setLocation(latitude: Double?, longitude: Double?, updatedAt: Long?)
 }

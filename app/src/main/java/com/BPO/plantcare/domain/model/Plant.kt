@@ -13,6 +13,7 @@ data class Plant(
     val lastWateredAt: Long?,
     val wateringIntervalDays: Int,
     val notes: String?,
+    val isOutdoor: Boolean? = null,
 ) {
     val displayName: String
         get() = nickname?.takeIf { it.isNotBlank() }

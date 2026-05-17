@@ -11,8 +11,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import android.Manifest
+import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
@@ -27,15 +30,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -45,17 +55,32 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.text.DateFormat
 import java.util.Date
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(
     onOpenLightMeter: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
 
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            val msg = when (event) {
+                ProfileEvent.LocationSaved -> "Ubicacion guardada"
+                ProfileEvent.LocationUnavailable ->
+                    "No se pudo obtener la ubicacion. Abre Google Maps un momento o activa GPS y reintenta."
+            }
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
+
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -94,7 +119,103 @@ fun ProfileScreen(
             onRangeChange = viewModel::setTravelRange,
         )
 
+        WeatherCard(
+            settings = settings,
+            hasPermission = locationPermission.status is PermissionStatus.Granted,
+            onToggle = viewModel::setWeatherAware,
+            onRequestPermission = { locationPermission.launchPermissionRequest() },
+            onRefreshLocation = viewModel::refreshLocation,
+            onClearLocation = viewModel::clearLocation,
+        )
+
         ToolsCard(onOpenLightMeter = onOpenLightMeter)
+    }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WeatherCard(
+    settings: com.BPO.plantcare.domain.model.UserSettings,
+    hasPermission: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onRequestPermission: () -> Unit,
+    onRefreshLocation: () -> Unit,
+    onClearLocation: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Cloud,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Clima",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Saltar riego si llovio", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Para plantas marcadas como exterior, omitimos su recordatorio si han caido al menos 5 mm de lluvia en las ultimas 24h en tu zona.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = settings.weatherAware, onCheckedChange = onToggle)
+            }
+
+            if (settings.weatherAware) {
+                Spacer(modifier = Modifier.size(12.dp))
+                if (!hasPermission) {
+                    OutlinedButton(
+                        onClick = onRequestPermission,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null)
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text("Conceder permiso de ubicacion")
+                    }
+                } else {
+                    Text(
+                        text = if (settings.hasLocation)
+                            "Ubicacion guardada: ${"%.3f".format(settings.latitude)}, " +
+                                    "${"%.3f".format(settings.longitude)}"
+                        else "Sin ubicacion guardada.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = onRefreshLocation,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(Icons.Outlined.LocationOn, contentDescription = null)
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(if (settings.hasLocation) "Actualizar" else "Obtener")
+                        }
+                        if (settings.hasLocation) {
+                            TextButton(onClick = onClearLocation) { Text("Borrar") }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
