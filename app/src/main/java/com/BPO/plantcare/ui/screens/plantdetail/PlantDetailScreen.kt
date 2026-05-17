@@ -65,7 +65,9 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.WikipediaSummary
@@ -85,6 +87,7 @@ fun PlantDetailScreen(
 ) {
     val plant by viewModel.plant.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
+    val careGuide by viewModel.careGuide.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -140,6 +143,7 @@ fun PlantDetailScreen(
                 onMarkWatered = viewModel::onMarkWatered,
                 onIntervalChange = viewModel::onIntervalChange,
             )
+            careGuide?.let { CareGuideCard(it) }
             HistoryCard(
                 history = history,
                 onDeleteLog = viewModel::onDeleteWateringLog,
@@ -429,6 +433,144 @@ private fun EditNicknameDialog(
             TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
     )
+}
+
+@Composable
+private fun CareGuideCard(guide: PlantCareGuide) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Cuidados",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Badges: dificultad + ubicacion + toxicidad
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                DifficultyChip(guide.difficulty)
+                LocationChip(indoor = guide.indoor, outdoor = guide.outdoor)
+                if (guide.toxicToPets) ToxicChip()
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            CareRow(label = "Luz", value = guide.light.label)
+            CareRow(label = "Humedad", value = guide.humidity.label)
+            CareRow(label = "Riego", value = "Cada ${guide.wateringIntervalDays} dias")
+            guide.wateringNotes?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, top = 2.dp, bottom = 6.dp),
+                )
+            }
+            CareRow(label = "Sustrato", value = guide.substrate)
+            CareRow(label = "Abono", value = guide.fertilizing)
+            CareRow(label = "Trasplante", value = guide.repotting)
+
+            guide.funFact?.let { fact ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "✨ Sabías que...",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = fact,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DifficultyChip(difficulty: CareDifficulty) {
+    val color = when (difficulty) {
+        CareDifficulty.EASY -> StatusHealthy
+        CareDifficulty.MEDIUM -> StatusWarning
+        CareDifficulty.HARD -> StatusThirsty
+        CareDifficulty.EXPERT -> Color(0xFF8E24AA)
+        CareDifficulty.PRO -> Color(0xFF3949AB)
+    }
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = { Text(difficulty.label) },
+        colors = AssistChipDefaults.assistChipColors(
+            disabledContainerColor = color.copy(alpha = 0.9f),
+            disabledLabelColor = Color.White,
+        ),
+    )
+}
+
+@Composable
+private fun LocationChip(indoor: Boolean, outdoor: Boolean) {
+    val label = when {
+        indoor && outdoor -> "Interior / exterior"
+        indoor -> "Interior"
+        outdoor -> "Exterior"
+        else -> return
+    }
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = { Text(label) },
+        colors = AssistChipDefaults.assistChipColors(
+            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+    )
+}
+
+@Composable
+private fun ToxicChip() {
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = { Text("⚠ Tóxica para mascotas") },
+        colors = AssistChipDefaults.assistChipColors(
+            disabledContainerColor = StatusThirsty.copy(alpha = 0.15f),
+            disabledLabelColor = StatusThirsty,
+        ),
+    )
+}
+
+@Composable
+private fun CareRow(label: String, value: String) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
 }
 
 @Composable

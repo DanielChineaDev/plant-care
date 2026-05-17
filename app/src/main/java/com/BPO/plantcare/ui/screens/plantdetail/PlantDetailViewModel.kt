@@ -4,10 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.WikipediaSummary
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
+import com.BPO.plantcare.domain.usecase.GetPlantCareGuideUseCase
 import com.BPO.plantcare.domain.usecase.GetWikipediaSummaryUseCase
 import com.BPO.plantcare.domain.usecase.MarkPlantWateredUseCase
 import com.BPO.plantcare.domain.usecase.ObservePlantUseCase
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -47,6 +50,7 @@ class PlantDetailViewModel @Inject constructor(
     private val markWatered: MarkPlantWateredUseCase,
     private val deleteWateringLog: DeleteWateringLogUseCase,
     private val getWikipediaSummary: GetWikipediaSummaryUseCase,
+    private val getCareGuide: GetPlantCareGuideUseCase,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -62,6 +66,14 @@ class PlantDetailViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList(),
     )
+
+    val careGuide: StateFlow<PlantCareGuide?> = plant
+        .map { p -> p?.scientificName?.let(getCareGuide::invoke) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
     val wikipedia: StateFlow<WikipediaUiState> = _wikipedia.asStateFlow()

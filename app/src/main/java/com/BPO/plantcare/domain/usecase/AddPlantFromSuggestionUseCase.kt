@@ -3,6 +3,7 @@ package com.BPO.plantcare.domain.usecase
 import com.BPO.plantcare.core.storage.PhotoStorage
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantSuggestion
+import com.BPO.plantcare.domain.repository.PlantCatalogRepository
 import com.BPO.plantcare.domain.repository.PlantRepository
 import java.io.File
 import javax.inject.Inject
@@ -10,25 +11,30 @@ import javax.inject.Inject
 class AddPlantFromSuggestionUseCase @Inject constructor(
     private val repository: PlantRepository,
     private val photoStorage: PhotoStorage,
+    private val catalog: PlantCatalogRepository,
 ) {
     suspend operator fun invoke(
         suggestion: PlantSuggestion,
         capturedPhoto: File?,
         nickname: String? = null,
-        wateringIntervalDays: Int = DEFAULT_WATERING_DAYS,
+        wateringIntervalDays: Int? = null,
     ): Result<Long> = runCatching {
         val persistedPath = capturedPhoto?.let { photoStorage.persist(it) }
+        val guide = catalog.findByScientificName(suggestion.scientificName)
+        val interval = wateringIntervalDays
+            ?: guide?.wateringIntervalDays
+            ?: DEFAULT_WATERING_DAYS
         val plant = Plant(
             nickname = nickname,
             scientificName = suggestion.scientificName,
-            commonName = suggestion.commonNames.firstOrNull(),
+            commonName = suggestion.commonNames.firstOrNull() ?: guide?.commonNames?.firstOrNull(),
             family = suggestion.family,
             genus = suggestion.genus,
             referenceImageUrl = suggestion.imageUrl,
             userPhotoPath = persistedPath,
             addedAt = System.currentTimeMillis(),
             lastWateredAt = null,
-            wateringIntervalDays = wateringIntervalDays,
+            wateringIntervalDays = interval,
             notes = null,
         )
         repository.add(plant)
