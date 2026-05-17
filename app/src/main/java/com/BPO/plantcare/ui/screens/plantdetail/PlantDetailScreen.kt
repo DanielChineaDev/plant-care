@@ -46,8 +46,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -106,6 +108,16 @@ fun PlantDetailScreen(
         viewModel.events.collect { event ->
             when (event) {
                 PlantDetailEvent.Deleted -> onBack()
+                is PlantDetailEvent.WateringLogDeleted -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = "Riego eliminado",
+                        actionLabel = "Deshacer",
+                        duration = SnackbarDuration.Short,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDeleteWateringLog(event.log)
+                    }
+                }
             }
         }
     }
@@ -170,7 +182,7 @@ fun PlantDetailScreen(
             )
             HistoryCard(
                 history = history,
-                onDeleteLog = viewModel::onDeleteWateringLog,
+                onDeleteLog = { log -> viewModel.onDeleteWateringLog(log) },
             )
             TaxonomyCard(current)
             WikipediaCard(wikipedia, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
@@ -490,7 +502,7 @@ private fun formatShortDate(timestamp: Long): String {
 }
 
 @Composable
-private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (Long) -> Unit) {
+private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (WateringLog) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -533,7 +545,7 @@ private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (Long) -> Unit)
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    IconButton(onClick = { onDeleteLog(log.id) }) {
+                    IconButton(onClick = { onDeleteLog(log) }) {
                         Icon(
                             Icons.Outlined.Delete,
                             contentDescription = "Eliminar riego",

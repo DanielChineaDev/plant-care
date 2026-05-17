@@ -8,6 +8,7 @@ import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
+import com.BPO.plantcare.domain.usecase.AddWateringLogUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
@@ -36,6 +37,7 @@ import javax.inject.Inject
 
 sealed interface PlantDetailEvent {
     data object Deleted : PlantDetailEvent
+    data class WateringLogDeleted(val log: WateringLog) : PlantDetailEvent
 }
 
 @HiltViewModel
@@ -47,6 +49,7 @@ class PlantDetailViewModel @Inject constructor(
     private val deletePlant: DeletePlantUseCase,
     private val markWatered: MarkPlantWateredUseCase,
     private val deleteWateringLog: DeleteWateringLogUseCase,
+    private val addWateringLog: AddWateringLogUseCase,
     private val getWikipediaSummary: GetWikipediaSummaryUseCase,
     private val getCareGuide: GetPlantCareGuideUseCase,
     observePhotos: ObservePlantPhotosUseCase,
@@ -138,8 +141,15 @@ class PlantDetailViewModel @Inject constructor(
         viewModelScope.launch { markWatered(plantId) }
     }
 
-    fun onDeleteWateringLog(logId: Long) {
-        viewModelScope.launch { deleteWateringLog(logId) }
+    fun onDeleteWateringLog(log: WateringLog) {
+        viewModelScope.launch {
+            deleteWateringLog(log.id)
+            _events.send(PlantDetailEvent.WateringLogDeleted(log))
+        }
+    }
+
+    fun undoDeleteWateringLog(log: WateringLog) {
+        viewModelScope.launch { addWateringLog(log) }
     }
 
     fun onAddDiaryPhoto(file: File) {

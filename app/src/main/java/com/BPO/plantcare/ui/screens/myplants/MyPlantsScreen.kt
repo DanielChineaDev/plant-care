@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material.icons.outlined.WaterDrop
@@ -54,12 +55,13 @@ import kotlin.math.max
 @Composable
 fun MyPlantsScreen(
     onPlantClick: (Long) -> Unit,
+    onIdentifyClick: () -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel(),
 ) {
     val plants by viewModel.plants.collectAsStateWithLifecycle()
 
     if (plants.isEmpty()) {
-        EmptyState()
+        EmptyState(onIdentifyClick = onIdentifyClick)
     } else {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -191,7 +193,7 @@ private fun StatusBadge(status: PlantStatus, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun EmptyState() {
+private fun EmptyState(onIdentifyClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -217,6 +219,14 @@ private fun EmptyState() {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )
+        androidx.compose.material3.Button(
+            onClick = onIdentifyClick,
+            modifier = Modifier.padding(top = 24.dp),
+        ) {
+            Icon(imageVector = Icons.Outlined.CameraAlt, contentDescription = null)
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(8.dp))
+            Text("Identificar mi primera planta")
+        }
     }
 }
 

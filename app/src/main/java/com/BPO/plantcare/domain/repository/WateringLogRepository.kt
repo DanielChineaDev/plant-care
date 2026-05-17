@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface WateringLogRepository {
     fun observeAll(): Flow<List<WateringLog>>
     fun observeForPlant(plantId: Long): Flow<List<WateringLog>>
+    suspend fun add(log: WateringLog): Long
     suspend fun delete(id: Long)
 }
