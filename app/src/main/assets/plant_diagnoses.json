@@ -1,0 +1,490 @@
+[
+  {
+    "id": "aphids",
+    "name": "Pulgones",
+    "scientificName": "Aphidoidea",
+    "category": "PEST",
+    "severity": "MEDIUM",
+    "summary": "Insectos pequeños (1-3 mm) verdes, negros o marrones que se agrupan en brotes tiernos y envés de hojas. Chupan la savia y debilitan la planta.",
+    "symptoms": [
+      "Brotes nuevos retorcidos o deformados",
+      "Hojas pegajosas (melaza azucarada que segregan)",
+      "Aparición de hormigas (las protegen para alimentarse de la melaza)",
+      "Hongo negruzco (negrilla) sobre la melaza",
+      "Colonias visibles a simple vista en el envés y tallos tiernos"
+    ],
+    "causes": [
+      "Plantas debilitadas por exceso de nitrógeno",
+      "Falta de depredadores naturales (mariquitas, crisopas)",
+      "Estrés hídrico o térmico"
+    ],
+    "treatment": [
+      "Pulveriza con jabón potásico al 1-2% (10-20 ml por litro de agua) cada 5-7 días",
+      "Aplica al amanecer o al atardecer, nunca a pleno sol",
+      "Para infestaciones graves usa aceite de neem diluido según etiqueta",
+      "Limpia hojas individualmente con bastoncillo y alcohol si son pocas"
+    ],
+    "prevention": [
+      "Revisa los brotes nuevos cada semana",
+      "Pulveriza periódicamente con agua a presión para eliminar colonias incipientes",
+      "Fomenta mariquitas y otros depredadores en exterior",
+      "Evita el exceso de abono nitrogenado"
+    ]
+  },
+  {
+    "id": "mealybug",
+    "name": "Cochinilla algodonosa",
+    "scientificName": "Pseudococcidae",
+    "category": "PEST",
+    "severity": "MEDIUM",
+    "summary": "Insectos blancos cubiertos de una capa cerosa que parecen pequeños copos de algodón. Se esconden en axilas, envés y raíces.",
+    "symptoms": [
+      "Masas algodonosas blancas en uniones de hojas y tallos",
+      "Hojas amarillas que caen",
+      "Pegajosidad y aparición de negrilla",
+      "Crecimiento detenido"
+    ],
+    "causes": [
+      "Ambiente cálido y seco prolongado",
+      "Plantas hacinadas con poca ventilación",
+      "Plantas nuevas no aisladas durante cuarentena"
+    ],
+    "treatment": [
+      "Frota cada cochinilla con un bastoncillo empapado en alcohol isopropílico al 70%",
+      "Repite cada 4-5 días durante 3 semanas (los huevos van eclosionando)",
+      "Pulveriza la planta entera con jabón potásico tras la primera limpieza",
+      "Si está en las raíces, desecha el sustrato, lava las raíces y trasplanta"
+    ],
+    "prevention": [
+      "Cuarentena de 2 semanas a toda planta nueva antes de juntarla con las demás",
+      "Limpia hojas y revisa axilas mensualmente",
+      "Mantén buena ventilación y humedad ambiente"
+    ]
+  },
+  {
+    "id": "scale_insects",
+    "name": "Cochinilla parda",
+    "scientificName": "Coccidae",
+    "category": "PEST",
+    "severity": "MEDIUM",
+    "summary": "Caparazones marrones de 2-5 mm adheridos a tallos y nervios de hojas. Aparentan ser parte de la planta, pero son insectos chupadores.",
+    "symptoms": [
+      "Bultitos marrones inmóviles en tallos y envés",
+      "Hojas amarillentas",
+      "Pegajosidad (melaza)",
+      "Negrilla en hojas inferiores"
+    ],
+    "causes": [
+      "Aire seco y calefacción",
+      "Falta de ventilación",
+      "Plantas estresadas o débiles"
+    ],
+    "treatment": [
+      "Rasca cada cochinilla con la uña o un palillo (se desprenden con cuidado)",
+      "Pulveriza con aceite de neem o jabón potásico tras el rascado",
+      "Repite el tratamiento cada semana durante un mes",
+      "Poda ramas muy infestadas para acelerar la recuperación"
+    ],
+    "prevention": [
+      "Inspecciona ramas y envés mensualmente",
+      "Mejora la ventilación alrededor de la planta",
+      "Pulveriza hojas regularmente para subir la humedad ambiente"
+    ]
+  },
+  {
+    "id": "spider_mite",
+    "name": "Araña roja",
+    "scientificName": "Tetranychus urticae",
+    "category": "PEST",
+    "severity": "HIGH",
+    "summary": "Ácaros minúsculos (0.5 mm) que viven en el envés y tejen telarañas finas. Prosperan con calor y sequedad. Pueden matar una planta en semanas.",
+    "symptoms": [
+      "Puntitos amarillos o blancos en las hojas (picaduras)",
+      "Telarañas finas entre hojas y tallos",
+      "Hojas que se vuelven bronceadas y caen",
+      "Polvillo en el envés visible con lupa"
+    ],
+    "causes": [
+      "Ambiente cálido (>25°C) y muy seco",
+      "Falta de pulverización del follaje",
+      "Plantas en interior con calefacción"
+    ],
+    "treatment": [
+      "Pulveriza con agua a presión el envés cada 2-3 días para alterar las telarañas",
+      "Aplica acaricida específico o aceite de neem cada 5 días durante 3 semanas",
+      "Aumenta la humedad ambiente al 60-70% con bandejas de agua o humidificador",
+      "Aísla la planta para evitar contagio a las vecinas"
+    ],
+    "prevention": [
+      "Pulveriza hojas con agua varias veces por semana",
+      "Mantén humedad ambiente por encima del 50%",
+      "Revisa el envés periódicamente, sobre todo en verano"
+    ]
+  },
+  {
+    "id": "whitefly",
+    "name": "Mosca blanca",
+    "scientificName": "Aleyrodidae",
+    "category": "PEST",
+    "severity": "MEDIUM",
+    "summary": "Pequeños insectos blancos voladores (1-2 mm) que se posan en el envés. Al sacudir la planta forman una nube blanca característica.",
+    "symptoms": [
+      "Nube blanca al mover la planta",
+      "Hojas amarillas y pegajosas",
+      "Larvas planas y traslúcidas en el envés",
+      "Negrilla por la melaza"
+    ],
+    "causes": [
+      "Ambiente cálido y húmedo",
+      "Cultivos densos sin ventilación",
+      "Exceso de abono nitrogenado"
+    ],
+    "treatment": [
+      "Coloca trampas amarillas adhesivas cerca de la planta (atraen adultos)",
+      "Pulveriza el envés con jabón potásico al amanecer cada 4-5 días",
+      "Aplica aceite de neem para huevos y larvas",
+      "Aspira los adultos con un aspirador manual antes de tratar"
+    ],
+    "prevention": [
+      "Trampas amarillas preventivas durante la temporada cálida",
+      "Mantén espacio entre plantas para ventilar",
+      "Evita el exceso de riego y abono"
+    ]
+  },
+  {
+    "id": "fungus_gnats",
+    "name": "Mosquitos del sustrato",
+    "scientificName": "Sciaridae",
+    "category": "PEST",
+    "severity": "LOW",
+    "summary": "Pequeños mosquitos negros (2-3 mm) que vuelan alrededor del sustrato húmedo. Las larvas se alimentan de raíces tiernas y materia orgánica.",
+    "symptoms": [
+      "Mosquitos volando al regar o tocar el sustrato",
+      "Larvas blancas con cabeza negra en los 2 cm superiores del sustrato",
+      "Crecimiento lento (en infestaciones grandes)"
+    ],
+    "causes": [
+      "Sustrato constantemente húmedo en superficie",
+      "Sustrato rico en materia orgánica sin descomponer",
+      "Riego excesivo"
+    ],
+    "treatment": [
+      "Deja secar el sustrato superficial entre riegos (corta el ciclo de las larvas)",
+      "Cubre la tierra con 1 cm de arena gruesa o gravilla para impedir oviposición",
+      "Coloca trampas amarillas para los adultos",
+      "Riega con solución de Bacillus thuringiensis var. israelensis (Bti) para matar larvas"
+    ],
+    "prevention": [
+      "No regar hasta que los 2-3 cm superiores estén secos",
+      "Usar sustrato de calidad bien descompuesto",
+      "Buen drenaje en la maceta"
+    ]
+  },
+  {
+    "id": "thrips",
+    "name": "Trips",
+    "scientificName": "Thysanoptera",
+    "category": "PEST",
+    "severity": "MEDIUM",
+    "summary": "Insectos alargados de 1-2 mm, color marrón o negro, muy ágiles. Raspan tejidos y chupan la savia. Pueden transmitir virus.",
+    "symptoms": [
+      "Manchas plateadas o blanquecinas en hojas con puntitos negros (excrementos)",
+      "Hojas y pétalos deformados",
+      "Brotes que no llegan a abrir",
+      "Flores con manchas o despigmentación"
+    ],
+    "causes": [
+      "Ambiente seco y cálido",
+      "Plantas nuevas con trips importados",
+      "Cultivo continuo de la misma especie"
+    ],
+    "treatment": [
+      "Trampas adhesivas azules (más efectivas que amarillas para trips)",
+      "Aplica aceite de neem o azadiractina cada 5 días durante 3 semanas",
+      "Poda las flores muy afectadas para reducir población",
+      "Aumenta la humedad ambiente"
+    ],
+    "prevention": [
+      "Cuarentena de plantas nuevas",
+      "Pulveriza hojas regularmente",
+      "Trampas azules preventivas en zonas problemáticas"
+    ]
+  },
+  {
+    "id": "powdery_mildew",
+    "name": "Oidio",
+    "scientificName": "Erysiphales",
+    "category": "FUNGAL",
+    "severity": "MEDIUM",
+    "summary": "Polvo blanco harinoso que cubre el haz de las hojas. Hongo muy común en climas cálidos y secos con noches frescas.",
+    "symptoms": [
+      "Capa blanca harinosa en el haz de las hojas",
+      "Hojas amarillas que caen",
+      "Brotes deformados",
+      "Flores que no abren bien"
+    ],
+    "causes": [
+      "Cambios bruscos de temperatura día/noche",
+      "Mala ventilación entre plantas",
+      "Exceso de abono nitrogenado"
+    ],
+    "treatment": [
+      "Pulveriza con bicarbonato sódico (5g/L) + jabón potásico (3 ml/L) cada 5 días",
+      "Como alternativa, usa azufre mojable según la etiqueta",
+      "Retira hojas muy afectadas y tíralas (no al compost)",
+      "Mejora la ventilación moviendo o podando la planta"
+    ],
+    "prevention": [
+      "Asegura buena ventilación entre plantas",
+      "Riega al pie, nunca mojes las hojas",
+      "Evita el exceso de abono nitrogenado"
+    ]
+  },
+  {
+    "id": "downy_mildew",
+    "name": "Mildiu",
+    "scientificName": "Peronosporaceae",
+    "category": "FUNGAL",
+    "severity": "HIGH",
+    "summary": "Manchas amarillas en el haz y pelusilla grisácea en el envés. Aparece con humedad alta y temperaturas suaves. Muy destructivo si no se trata pronto.",
+    "symptoms": [
+      "Manchas amarillas angulosas en el haz",
+      "Borrilla grisácea o violácea en el envés",
+      "Hojas que se secan y caen",
+      "Tallos y frutos con lesiones marrones"
+    ],
+    "causes": [
+      "Humedad ambiente prolongada",
+      "Hojas mojadas durante muchas horas",
+      "Mala ventilación"
+    ],
+    "treatment": [
+      "Retira y destruye todas las hojas afectadas",
+      "Pulveriza con oxicloruro de cobre o caldo bordelés siguiendo la etiqueta",
+      "Repite cada 7-10 días hasta detener la enfermedad",
+      "Aísla la planta para evitar contagio"
+    ],
+    "prevention": [
+      "Riega siempre al pie por la mañana, no por la noche",
+      "Evita encharcar el follaje",
+      "Mejora la ventilación y separación entre plantas",
+      "Tratamientos preventivos con cobre al inicio de la primavera en cultivos sensibles"
+    ]
+  },
+  {
+    "id": "gray_mold",
+    "name": "Botritis (moho gris)",
+    "scientificName": "Botrytis cinerea",
+    "category": "FUNGAL",
+    "severity": "HIGH",
+    "summary": "Hongo oportunista que produce un moho grisáceo y velloso sobre hojas, flores y frutos. Aparece con humedad alta y tejidos dañados.",
+    "symptoms": [
+      "Moho gris-marrón aterciopelado",
+      "Pudrición acuosa de flores y frutos",
+      "Manchas marrones que se expanden rápido",
+      "Olor a podrido en zonas afectadas"
+    ],
+    "causes": [
+      "Humedad ambiente >80% prolongada",
+      "Heridas en la planta (poda, golpes)",
+      "Mala ventilación"
+    ],
+    "treatment": [
+      "Retira inmediatamente todo lo afectado y tíralo (no al compost)",
+      "Reduce el riego y mejora la ventilación drásticamente",
+      "Pulveriza con fungicida específico (iprodiona o equivalente) si está disponible",
+      "En interior, baja la humedad y aleja la planta de fuentes de vapor"
+    ],
+    "prevention": [
+      "Mantén humedad ambiente moderada (<70%)",
+      "Desinfecta herramientas de poda con alcohol",
+      "Buena circulación de aire",
+      "Riega al pie y temprano por la mañana"
+    ]
+  },
+  {
+    "id": "rust",
+    "name": "Roya",
+    "scientificName": "Pucciniales",
+    "category": "FUNGAL",
+    "severity": "MEDIUM",
+    "summary": "Pústulas anaranjadas, marrones o amarillas en el envés de las hojas que parecen óxido. Cada especie de roya ataca a especies concretas.",
+    "symptoms": [
+      "Pústulas color óxido en el envés",
+      "Manchas amarillas correspondientes en el haz",
+      "Hojas que se secan y caen prematuramente",
+      "Debilitamiento general"
+    ],
+    "causes": [
+      "Humedad foliar prolongada",
+      "Temperaturas suaves (15-22°C)",
+      "Esporas traídas por el viento o restos vegetales"
+    ],
+    "treatment": [
+      "Retira hojas afectadas y quema o tira aparte",
+      "Pulveriza con fungicida a base de cobre o azufre cada 10 días",
+      "Mejora la circulación de aire podando si es necesario"
+    ],
+    "prevention": [
+      "Limpia restos vegetales del suelo en otoño",
+      "Riega al pie, evita mojar el follaje",
+      "Variedades resistentes cuando estén disponibles"
+    ]
+  },
+  {
+    "id": "root_rot",
+    "name": "Pudrición de raíces",
+    "scientificName": null,
+    "category": "FUNGAL",
+    "severity": "HIGH",
+    "summary": "Las raíces se vuelven blandas, marrones y huelen a podrido. Causado por exceso de riego que ahoga las raíces y favorece hongos del suelo (Pythium, Fusarium).",
+    "symptoms": [
+      "Hojas amarillas o marrones aunque el sustrato esté húmedo",
+      "Hojas inferiores caídas, marchitez general",
+      "Tallo blando en la base",
+      "Raíces marrones, blandas, malolientes (al sacar la planta)"
+    ],
+    "causes": [
+      "Riego excesivo o demasiado frecuente",
+      "Maceta sin drenaje o plato con agua estancada",
+      "Sustrato muy compactado",
+      "Trasplante a maceta demasiado grande"
+    ],
+    "treatment": [
+      "Saca la planta de la maceta y retira todo el sustrato",
+      "Corta con tijeras esterilizadas todas las raíces marrones/blandas",
+      "Espolvorea las raíces sanas con canela en polvo (fungicida natural)",
+      "Trasplanta a maceta nueva con sustrato fresco y muy drenante",
+      "No riegues durante 5-7 días tras el trasplante"
+    ],
+    "prevention": [
+      "Riega solo cuando los primeros cm del sustrato estén secos",
+      "Usa macetas con agujeros de drenaje",
+      "Sustrato adecuado a cada especie",
+      "Vacía siempre el plato 10 min después de regar"
+    ]
+  },
+  {
+    "id": "yellow_leaves",
+    "name": "Clorosis (hojas amarillas)",
+    "scientificName": null,
+    "category": "PHYSIOLOGICAL",
+    "severity": "MEDIUM",
+    "summary": "Amarillamiento de las hojas, normalmente entre los nervios que permanecen verdes. Suele ser deficiencia de hierro o magnesio, pero también puede ser exceso de riego.",
+    "symptoms": [
+      "Hojas amarillas con nervios verdes (clorosis férrica)",
+      "Hojas inferiores amarillas que caen",
+      "Crecimiento detenido",
+      "Pérdida de color general"
+    ],
+    "causes": [
+      "Agua del grifo con mucha cal (sube el pH y bloquea el hierro)",
+      "Sustrato agotado o demasiado alcalino",
+      "Exceso o defecto de riego",
+      "Falta de luz"
+    ],
+    "treatment": [
+      "Aplica un quelato de hierro (Fe-EDDHA) según etiqueta cuando los nervios están verdes y el resto amarillo",
+      "Si crees que es deficiencia general, abona con NPK + micronutrientes",
+      "Si el sustrato es viejo, trasplanta con sustrato fresco",
+      "Revisa el riego: ni encharcado ni reseco"
+    ],
+    "prevention": [
+      "Usa agua de lluvia o filtrada en plantas sensibles a la cal",
+      "Renueva el sustrato cada 1-2 años",
+      "Abona en temporada de crecimiento"
+    ]
+  },
+  {
+    "id": "sunburn",
+    "name": "Quemadura solar",
+    "scientificName": null,
+    "category": "PHYSIOLOGICAL",
+    "severity": "MEDIUM",
+    "summary": "Manchas marrones secas y crujientes en las zonas más expuestas al sol. Frecuente al pasar una planta de interior a exterior o tras una poda fuerte.",
+    "symptoms": [
+      "Manchas marrones o blanquecinas secas",
+      "Zonas afectadas crujientes al tacto",
+      "Sobre todo en hojas orientadas al sol",
+      "Bordes y centros quemados"
+    ],
+    "causes": [
+      "Cambio brusco de luz baja a sol directo",
+      "Sol intenso del mediodía en verano",
+      "Cristal de ventana que actúa como lupa"
+    ],
+    "treatment": [
+      "Mueve la planta a luz indirecta de inmediato",
+      "Recorta solo las hojas muy dañadas",
+      "Aumenta la humedad ambiente para acelerar recuperación",
+      "No abones ni trasplantes mientras se recupera"
+    ],
+    "prevention": [
+      "Aclimata progresivamente al sol: 1 hora el primer día, dobla cada vez",
+      "Evita el sol directo del mediodía en verano",
+      "Cuidado con ventanas que enfocan luz"
+    ]
+  },
+  {
+    "id": "tip_burn",
+    "name": "Puntas marrones",
+    "scientificName": null,
+    "category": "PHYSIOLOGICAL",
+    "severity": "LOW",
+    "summary": "Bordes y puntas de hojas marrones o secas. Suele ser acumulación de sales, agua del grifo con cal, baja humedad ambiente o sustrato demasiado seco.",
+    "symptoms": [
+      "Puntas y bordes marrones, secos al tacto",
+      "Resto de la hoja sano",
+      "Borde a veces con halo amarillo",
+      "Más visible en plantas tropicales (calatea, maranta, etc.)"
+    ],
+    "causes": [
+      "Agua del grifo con mucha cal o flúor",
+      "Humedad ambiente baja (<40%)",
+      "Fertilización excesiva (acumulación de sales)",
+      "Periodos de sustrato muy seco"
+    ],
+    "treatment": [
+      "Cambia al riego con agua de lluvia, filtrada o reposada 24h",
+      "Lava el sustrato regando abundante 2-3 veces para arrastrar sales",
+      "Recorta las puntas marrones con tijera siguiendo la forma original de la hoja",
+      "Pulveriza el follaje 1-2 veces al día"
+    ],
+    "prevention": [
+      "Agua sin cal para plantas sensibles",
+      "Humedad ambiente >50%",
+      "Riego regular sin extremos",
+      "No abusar del abono"
+    ]
+  },
+  {
+    "id": "edema",
+    "name": "Edema (hidropesía)",
+    "scientificName": null,
+    "category": "PHYSIOLOGICAL",
+    "severity": "LOW",
+    "summary": "Pequeñas protuberancias o ampollas en el envés de las hojas. La planta absorbe más agua de la que puede transpirar. Frecuente en geranios, suculentas e hiedras.",
+    "symptoms": [
+      "Bultitos como verrugas blanquecinas o corchosas en el envés",
+      "A veces gotitas en el envés (gutación)",
+      "Hojas más rígidas o quebradizas",
+      "Síntomas reversibles si se corrige el riego"
+    ],
+    "causes": [
+      "Riego excesivo en momentos de poca evaporación (humedad alta, frío)",
+      "Mala ventilación",
+      "Días grises tras días soleados con mucho riego"
+    ],
+    "treatment": [
+      "Reduce el riego inmediatamente",
+      "Mejora la ventilación alrededor de la planta",
+      "Mueve a un sitio con más luz si es posible",
+      "Las hojas afectadas no se curan pero las nuevas saldrán sanas"
+    ],
+    "prevention": [
+      "Riega temprano por la mañana",
+      "Ajusta el riego a la luz y temperatura disponibles",
+      "Buena ventilación, especialmente en otoño/invierno"
+    ]
+  }
+]

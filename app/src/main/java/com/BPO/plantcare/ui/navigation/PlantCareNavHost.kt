@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
+import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisDetailScreen
+import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisListScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
 import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
@@ -31,6 +33,11 @@ import com.BPO.plantcare.ui.screens.search.SearchScreen
 object Routes {
     const val IDENTIFY = "identify"
     const val LIGHT_METER = "light_meter"
+    const val DIAGNOSIS_LIST = "diagnosis"
+
+    private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
+    fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
+    const val DIAGNOSIS_DETAIL_PATTERN = "$DIAGNOSIS_DETAIL/{${NavArgs.DIAGNOSIS_ID}}"
 
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
@@ -52,6 +59,7 @@ object NavArgs {
     const val PLANT_ID = "plantId"
     const val PHOTO_ID = "photoId"
     const val SCIENTIFIC_NAME = "scientificName"
+    const val DIAGNOSIS_ID = "diagnosisId"
 }
 
 private const val ANIM = 280
@@ -102,7 +110,10 @@ fun PlantCareNavHost(
             SearchScreen(onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) })
         }
         composable(TopLevelDestination.Profile.route) {
-            ProfileScreen(onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) })
+            ProfileScreen(
+                onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
+                onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+            )
         }
 
         composable(
@@ -123,6 +134,30 @@ fun PlantCareNavHost(
             popExitTransition = slidePopExit,
         ) {
             LightMeterScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            Routes.DIAGNOSIS_LIST,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            DiagnosisListScreen(
+                onBack = { navController.popBackStack() },
+                onDiagnosisClick = { id -> navController.navigate(Routes.diagnosisDetail(id)) },
+            )
+        }
+
+        composable(
+            route = Routes.DIAGNOSIS_DETAIL_PATTERN,
+            arguments = listOf(navArgument(NavArgs.DIAGNOSIS_ID) { type = NavType.StringType }),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            DiagnosisDetailScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

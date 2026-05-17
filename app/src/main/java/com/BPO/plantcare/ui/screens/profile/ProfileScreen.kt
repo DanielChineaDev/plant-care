@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import android.Manifest
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.HealthAndSafety
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
@@ -59,6 +60,7 @@ import java.util.Date
 @Composable
 fun ProfileScreen(
     onOpenLightMeter: () -> Unit,
+    onOpenDiagnosis: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -128,7 +130,10 @@ fun ProfileScreen(
             onClearLocation = viewModel::clearLocation,
         )
 
-        ToolsCard(onOpenLightMeter = onOpenLightMeter)
+        ToolsCard(
+            onOpenLightMeter = onOpenLightMeter,
+            onOpenDiagnosis = onOpenDiagnosis,
+        )
     }
     }
 }
@@ -220,7 +225,10 @@ private fun WeatherCard(
 }
 
 @Composable
-private fun ToolsCard(onOpenLightMeter: () -> Unit) {
+private fun ToolsCard(
+    onOpenLightMeter: () -> Unit,
+    onOpenDiagnosis: () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -236,6 +244,12 @@ private fun ToolsCard(onOpenLightMeter: () -> Unit) {
                 Icon(Icons.Outlined.LightMode, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
                 Text("Medir luz de un sitio")
+            }
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedButton(onClick = onOpenDiagnosis, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.HealthAndSafety, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Diagnostico de plagas y enfermedades")
             }
         }
     }
