@@ -1,0 +1,63 @@
+package com.BPO.plantcare.data.local.migrations
+
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+/**
+ * Migraciones del esquema de Room.
+ *
+ * Checklist al subir version:
+ * 1. Bumpea @Database(version = N+1)
+ * 2. Anade aqui una Migration(N, N+1)
+ * 3. Anade la migracion a DatabaseModule.addMigrations(...)
+ * 4. Verifica en un dispositivo con datos de la version anterior
+ */
+
+/** v1 -> v2: anade tabla watering_logs (historial de riegos). */
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `watering_logs` (
+                `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                `plantId` INTEGER NOT NULL,
+                `timestamp` INTEGER NOT NULL,
+                `note` TEXT,
+                FOREIGN KEY(`plantId`) REFERENCES `plants`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_watering_logs_plantId` ON `watering_logs` (`plantId`)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_watering_logs_timestamp` ON `watering_logs` (`timestamp`)"
+        )
+    }
+}
+
+/** v2 -> v3: anade tabla plant_photos (diario fotografico). */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `plant_photos` (
+                `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                `plantId` INTEGER NOT NULL,
+                `path` TEXT NOT NULL,
+                `timestamp` INTEGER NOT NULL,
+                `note` TEXT,
+                FOREIGN KEY(`plantId`) REFERENCES `plants`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_plant_photos_plantId` ON `plant_photos` (`plantId`)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_plant_photos_timestamp` ON `plant_photos` (`timestamp`)"
+        )
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)

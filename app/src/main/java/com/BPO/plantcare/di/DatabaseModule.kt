@@ -6,6 +6,7 @@ import com.BPO.plantcare.data.local.PlantCareDatabase
 import com.BPO.plantcare.data.local.dao.PlantDao
 import com.BPO.plantcare.data.local.dao.PlantPhotoDao
 import com.BPO.plantcare.data.local.dao.WateringLogDao
+import com.BPO.plantcare.data.local.migrations.ALL_MIGRATIONS
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +22,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PlantCareDatabase =
         Room.databaseBuilder(context, PlantCareDatabase::class.java, PlantCareDatabase.NAME)
-            .fallbackToDestructiveMigration()
+            .addMigrations(*ALL_MIGRATIONS)
             .build()
 
     @Provides
