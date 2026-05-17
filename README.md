@@ -1,56 +1,180 @@
-# PlantCare
+# 🌱 PlantCare
 
-Aplicación Android para identificar plantas por foto, llevar el seguimiento de sus cuidados (riego, trasplante, abono…) y aprender sobre ellas.
+Aplicación Android para identificar plantas por foto, llevar el seguimiento de sus cuidados (riego, trasplante, abono…) y descubrir nuevas especies. Pensada para que tus plantas estén siempre felices 😊 y nunca se te olvide regarlas.
 
-## Stack técnico
+> **Estado:** MVP funcional completo, en desarrollo activo.
+> **Repo:** [github.com/DanielChineaDev/PlantCare](https://github.com/DanielChineaDev/PlantCare)
 
-- **Kotlin 2.2** + **Jetpack Compose** (Material 3)
-- **Hilt** para inyección de dependencias
-- **Navigation Compose** (bottom navigation)
-- **Room** + **DataStore** (persistencia local)
-- **Retrofit** + **OkHttp** + **Kotlinx Serialization** (red)
-- **CameraX** + **Coil 3** (cámara e imágenes)
-- **WorkManager** (recordatorios de riego)
-- **PlantNet API** para identificación de especies
-- **Firebase** *(pendiente)*: Auth, Firestore, Storage, FCM, Crashlytics
+---
 
-## Arquitectura
+## ✨ Features
 
-MVVM + Clean Architecture (capas `data` / `domain` / `ui`).
+### 🔍 Identificación
+- Identificación de plantas por foto con **PlantNet API** (gratis, 500 IDs/día)
+- Captura con cámara (CameraX) o elección desde **galería del sistema** (Photo Picker moderno)
+- Lista de sugerencias con thumbnail, nombre común, nombre científico, familia y barra de confianza
+- Botón "Añadir a mis plantas" directamente desde cada sugerencia
+
+### 🪴 Mis plantas
+- Persistencia local con **Room** (con migraciones reales, sin destructive fallback)
+- Grid 2-col con foto, nombre, próximo riego e **indicador de estado**:
+  - 😊 Feliz · 😐 Atenta · 🥵 Sedienta · 🌱 Sin regar aún
+- Botón rápido de gota para marcar como regada desde la tarjeta
+- **Snackbar "Deshacer"** al borrar un riego del historial
+
+### 📋 Ficha de planta
+- Hero con la foto del usuario o referencia de PlantNet
+- Edición de alias con dialog
+- **Cuidados** (luz, humedad, riego, sustrato, abono, trasplante, toxicidad para mascotas, curiosidad) cuando la especie está en el catálogo
+- **Match por género**: si tu especie no está en el catálogo pero hay otra del mismo género, muestra los cuidados con un aviso de "datos aproximados"
+- **Diario fotográfico** con thumbnails horizontales y visor fullscreen (zoom + swipe)
+- **Historial de riegos** completo con timeline y opción de borrar entradas erróneas
+- **Sobre esta planta**: descripción cargada de Wikipedia (español → fallback inglés) con thumbnail y enlace al artículo
+- Eliminar planta con confirmación (borra también fotos y logs en cascada)
+
+### 📅 Calendario
+- Vista mensual con **Kizitonwose Calendar Compose**
+- Card "Tareas de hoy" arriba con lista de riegos pendientes
+- Puntos verdes en cada día con eventos
+- Tap en un día → eventos detallados (regados pasados / pendientes / atrasados)
+
+### 🔎 Buscador
+- Catálogo navegable con búsqueda por texto
+- Filtros: ubicación (interior/exterior), dificultad, nivel de luz
+- Ficha de catálogo con foto de Wikipedia + cuidados + botón "Añadir a mis plantas"
+
+### 🔔 Recordatorios
+- Notificación diaria con WorkManager listando las plantas que toca regar hoy
+- **Hora configurable** desde Perfil (dropdown 00:00..23:00)
+- Switch ON/OFF para activar/desactivar
+- Botón "Probar notificación" para verificar sin esperar
+
+### 🏠 Widget de pantalla de inicio
+- Widget Glance que muestra "Hoy toca regar: X plantas" + lista
+- Refresco al instante cuando riegas/añades/borras desde la app
+- Refresco automático cada 30 min por el sistema y a la hora del recordatorio
+- Toque → abre la app
+
+### 🎨 UI/UX
+- Material 3 con paleta vegetal (light + dark) — verde hoja, marrón tierra, dorado sol
+- Bottom nav con **badges numéricos** en Mis plantas y Calendario
+- Transiciones suaves entre pantallas (cross-fade tabs, slide horizontal detalles)
+- Hero CTA en empty states ("Identificar mi primera planta")
+
+---
+
+## 🛠 Stack técnico
+
+| Área | Tecnología |
+|------|-----------|
+| Lenguaje | **Kotlin 2.0.21** |
+| UI | **Jetpack Compose** + Material 3 |
+| Arquitectura | MVVM + Clean Architecture (data / domain / ui) |
+| DI | **Hilt** 2.52 (KSP) |
+| Navegación | Navigation Compose 2.8 |
+| Persistencia | **Room** 2.6 (con migraciones manuales) + DataStore Preferences |
+| Red | Retrofit + OkHttp + Kotlinx Serialization |
+| Imágenes | **Coil 3** + CameraX |
+| Background | **WorkManager** + Hilt-Work |
+| Widget | **Glance** 1.1 (AppWidget + Material3) |
+| Calendario | Kizitonwose Calendar Compose 2.5 |
+| Permisos | Accompanist Permissions |
+| Build | AGP 8.7.3 + Gradle 8.10.2 |
+
+### APIs externas (todas gratuitas)
+- **PlantNet** — identificación de plantas por foto
+- **Wikipedia REST** — descripción enciclopédica (español + inglés fallback)
+
+---
+
+## 🏗 Arquitectura
 
 ```
 com.BPO.plantcare/
-├── PlantCareApplication.kt
-├── MainActivity.kt
-├── core/        # utils, theme transversal
-├── data/        # repos, Room, APIs, Firebase
-├── domain/      # modelos, use cases
-├── di/          # módulos Hilt
+├── PlantCareApplication.kt        # @HiltAndroidApp, registra canal y arranca scheduler
+├── MainActivity.kt                 # @AndroidEntryPoint con Scaffold + bottom nav
+├── core/
+│   ├── notification/               # NotificationChannel + WateringNotifier
+│   ├── storage/                    # PhotoStorage (filesDir/plant_photos) + UriExt
+│   ├── widget/                     # Glance AppWidget + Hilt EntryPoint
+│   └── work/                       # HiltWorker + Scheduler + Manager
+├── data/
+│   ├── local/                      # Room DB, DAOs, entities, migrations
+│   ├── preferences/                # DataStore impl
+│   ├── remote/                     # PlantNet + Wikipedia Retrofit APIs + DTOs
+│   └── repository/                 # Implementaciones de los repositorios
+├── domain/
+│   ├── model/                      # Plant, PlantCareGuide, WateringLog, etc.
+│   ├── repository/                 # Interfaces puras (sin Android)
+│   └── usecase/                    # Casos de uso por intent
+├── di/                             # Modulos Hilt (Network, Database, Repository)
 └── ui/
-    ├── theme/   # Color, Typography, Theme
-    ├── navigation/
-    └── screens/
-        ├── home/
-        ├── myplants/
-        ├── calendar/
-        ├── search/
-        └── profile/
+    ├── components/                 # CareGuideCard, WikipediaCard (compartidos)
+    ├── navigation/                 # NavHost + bottom bar + destinations
+    ├── screens/
+    │   ├── home/                   # CTA principal
+    │   ├── identify/               # Cámara + galería + resultados
+    │   ├── myplants/               # Grid 2-col con badges
+    │   ├── plantdetail/            # Ficha completa
+    │   ├── calendar/               # Vista mensual
+    │   ├── search/                 # Catálogo con filtros
+    │   ├── catalogdetail/          # Ficha de especie del catálogo
+    │   ├── photoviewer/            # Visor fullscreen con zoom
+    │   ├── profile/                # Ajustes de notificaciones
+    │   └── common/                 # State holders compartidos
+    └── theme/                      # Colores + tipografía + tema M3
 ```
 
-## Configuración local
+---
 
-1. Abre el proyecto en **Android Studio** (Narwhal 2025.3.4 Patch 1 o superior).
-2. Tu `local.properties` debe contener:
+## ⚙️ Configuración local
+
+1. Clona el repo:
+   ```bash
+   git clone https://github.com/DanielChineaDev/PlantCare.git
    ```
+2. Abre el proyecto en **Android Studio Narwhal** (2025.3.4 Patch 1 o superior).
+3. Edita `local.properties` y añade tu API key de PlantNet:
+   ```properties
    sdk.dir=...
-   PLANTNET_API_KEY=tu_api_key
+   PLANTNET_API_KEY=tu_api_key_aqui
    ```
-   *(Pide una key gratuita en https://my.plantnet.org)*
-3. *Gradle sync* y *Run* sobre un dispositivo Android 8.0+ (API 26+).
+   Consigue una key gratuita (500 IDs/día) en [my.plantnet.org](https://my.plantnet.org).
+4. **Sync** y **Run** sobre un dispositivo Android 8.0+ (API 26+).
 
-## Roadmap
+---
 
-- **Fase 1 — MVP**: cámara, identificación con PlantNet, ficha de planta, mis plantas, recordatorios de riego.
-- **Fase 2 — Cuidado avanzado**: calendario completo, diario fotográfico, diagnóstico por foto, catálogo y buscador con filtros.
-- **Fase 3 — Social**: comunidades, foro, chat, perfiles públicos.
-- **Fase 4 — Monetización + iOS**: freemium (RevenueCat) y versión SwiftUI.
+## 🚀 Roadmap
+
+### ✅ Fase 1 — MVP completo
+- Identificación con PlantNet (cámara y galería)
+- Mis plantas con Room + estados visuales
+- Ficha de planta con Wikipedia + cuidados (catálogo de 30 especies con match por género)
+- Calendario funcional con historial completo de riegos
+- Recordatorios diarios configurables con WorkManager
+- Diario fotográfico con visor fullscreen
+- Widget de pantalla de inicio con Glance
+- UI/UX pulida: transiciones, badges, undo, empty states
+
+### 🔄 Fase 2 — En consideración
+- Catálogo ampliado a 60+ especies
+- Detección de plagas/enfermedades por foto
+- Integración con clima (saltar riego si llovió)
+- Sensor de luz para verificar si un sitio es bueno para una planta
+- Modo "estoy de viaje" para pausar/compartir recordatorios
+
+### 🔮 Fase 3 — Social
+- Login con Google + perfil en Firebase
+- Comunidades / foros temáticos
+- Chat entre usuarios
+- Perfiles públicos con colecciones compartibles
+
+### 💰 Fase 4 — Monetización + iOS
+- Freemium con RevenueCat (Android + iOS unificado)
+- Versión iOS en SwiftUI compartiendo backend
+
+---
+
+## 📜 Licencia
+
+Proyecto personal de [@DanielChineaDev](https://github.com/DanielChineaDev). Sin licencia pública por el momento.
