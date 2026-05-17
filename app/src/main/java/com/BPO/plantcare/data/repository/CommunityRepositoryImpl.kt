@@ -1,5 +1,6 @@
 package com.BPO.plantcare.data.repository
 
+import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
 import com.BPO.plantcare.domain.repository.CommunityRepository
@@ -31,8 +32,7 @@ class CommunityRepositoryImpl @Inject constructor(
     override fun observeCommunities(): Flow<List<Community>> {
         val communitiesFlow = communitiesSnapshotFlow()
         val uid = currentUid()
-        val membershipFlow = if (uid == null) flowOf(emptySet())
-        else userMembershipFlow(uid)
+        val membershipFlow = if (uid == null) flowOf(emptySet()) else userMembershipFlow(uid)
         return combine(communitiesFlow, membershipFlow) { list, joined ->
             list.map { it.copy(isMember = it.id in joined) }
         }
@@ -62,9 +62,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
             awaitClose { reg.remove() }
         }
-        return combine(docFlow, memberFlow) { c, isMember ->
-            c?.copy(isMember = isMember)
-        }
+        return combine(docFlow, memberFlow) { c, isMember -> c?.copy(isMember = isMember) }
     }
 
     private fun communitiesSnapshotFlow(): Flow<List<Community>> = callbackFlow {
@@ -80,8 +78,6 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     private fun userMembershipFlow(uid: String): Flow<Set<String>> = callbackFlow {
-        // collectionGroup("members") con filtro por user no se puede sin indice
-        // compuesto; en su lugar usamos un mirror per-user en users/{uid}/joinedCommunities.
         val reg = firestore.collection(USERS).document(uid)
             .collection(JOINED_COMMUNITIES)
             .addSnapshotListener { snap, err ->
@@ -109,7 +105,6 @@ class CommunityRepositoryImpl @Inject constructor(
             "memberCount" to 0L,
         )
         doc.set(data).await()
-        // El creador se une automaticamente.
         joinCommunityInternal(uid, doc.id)
         doc.id
     }
@@ -168,6 +163,51 @@ class CommunityRepositoryImpl @Inject constructor(
             awaitClose { reg.remove() }
         }
 
+    override fun observeLikedPostsInCommunity(communityId: String): Flow<Set<String>> {
+        val uid = currentUid() ?: return flowOf(emptySet())
+        return callbackFlow {
+            val reg = firestore.collection(USERS).document(uid)
+                .collection(POST_LIKES)
+                .whereEqualTo("communityId", communityId)
+                .addSnapshotListener { snap, err ->
+                    if (err != null) {
+                        trySend(emptySet()); return@addSnapshotListener
+                    }
+                    trySend(snap?.documents?.map { it.id }?.toSet() ?: emptySet())
+                }
+            awaitClose { reg.remove() }
+        }
+    }
+
+    override fun observePost(communityId: String, postId: String): Flow<CommunityPost?> {
+        val uid = currentUid()
+        val docFlow: Flow<CommunityPost?> = callbackFlow {
+            val reg = firestore.collection(COMMUNITIES).document(communityId)
+                .collection(POSTS).document(postId)
+                .addSnapshotListener { snap, err ->
+                    if (err != null) {
+                        trySend(null); return@addSnapshotListener
+                    }
+                    trySend(snap?.toPost(communityId))
+                }
+            awaitClose { reg.remove() }
+        }
+        if (uid == null) return docFlow
+        val likeFlow: Flow<Boolean> = callbackFlow {
+            val reg = firestore.collection(COMMUNITIES).document(communityId)
+                .collection(POSTS).document(postId)
+                .collection(LIKES).document(uid)
+                .addSnapshotListener { snap, err ->
+                    if (err != null) {
+                        trySend(false); return@addSnapshotListener
+                    }
+                    trySend(snap?.exists() == true)
+                }
+            awaitClose { reg.remove() }
+        }
+        return combine(docFlow, likeFlow) { p, liked -> p?.copy(isLikedByMe = liked) }
+    }
+
     override suspend fun createPost(communityId: String, text: String): Result<String> =
         runCatching {
             val user = firebaseAuth.currentUser ?: error("Inicia sesion para publicar")
@@ -179,10 +219,105 @@ class CommunityRepositoryImpl @Inject constructor(
                 "authorPhoto" to user.photoUrl?.toString(),
                 "text" to text,
                 "createdAt" to FieldValue.serverTimestamp(),
+                "likeCount" to 0L,
+                "commentCount" to 0L,
             )
             doc.set(data).await()
             doc.id
         }
+
+    override suspend fun toggleLike(communityId: String, postId: String): Result<Unit> =
+        runCatching {
+            val uid = requireUid()
+            val postRef = firestore.collection(COMMUNITIES).document(communityId)
+                .collection(POSTS).document(postId)
+            val likeRef = postRef.collection(LIKES).document(uid)
+            val mirrorRef = firestore.collection(USERS).document(uid)
+                .collection(POST_LIKES).document(postId)
+            firestore.runTransaction { tx ->
+                val existing = tx.get(likeRef)
+                if (existing.exists()) {
+                    tx.delete(likeRef)
+                    tx.delete(mirrorRef)
+                    tx.update(postRef, "likeCount", FieldValue.increment(-1))
+                } else {
+                    tx.set(likeRef, mapOf("likedAt" to FieldValue.serverTimestamp()))
+                    tx.set(
+                        mirrorRef,
+                        mapOf(
+                            "communityId" to communityId,
+                            "likedAt" to FieldValue.serverTimestamp(),
+                        ),
+                    )
+                    tx.update(postRef, "likeCount", FieldValue.increment(1))
+                }
+                null
+            }.await()
+        }
+
+    // ---- Comments ----
+
+    override fun observeComments(communityId: String, postId: String): Flow<List<Comment>> =
+        callbackFlow {
+            val reg = firestore.collection(COMMUNITIES).document(communityId)
+                .collection(POSTS).document(postId)
+                .collection(COMMENTS)
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener { snap, err ->
+                    if (err != null) {
+                        trySend(emptyList()); return@addSnapshotListener
+                    }
+                    val comments = snap?.documents?.mapNotNull { it.toComment(postId) }.orEmpty()
+                    trySend(comments)
+                }
+            awaitClose { reg.remove() }
+        }
+
+    override suspend fun addComment(
+        communityId: String,
+        postId: String,
+        text: String,
+    ): Result<String> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Inicia sesion para comentar")
+        val postRef = firestore.collection(COMMUNITIES).document(communityId)
+            .collection(POSTS).document(postId)
+        val commentRef = postRef.collection(COMMENTS).document()
+        firestore.runTransaction { tx ->
+            tx.set(
+                commentRef,
+                mapOf(
+                    "authorUid" to user.uid,
+                    "authorName" to (user.displayName ?: ""),
+                    "authorPhoto" to user.photoUrl?.toString(),
+                    "text" to text,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            tx.update(postRef, "commentCount", FieldValue.increment(1))
+            null
+        }.await()
+        commentRef.id
+    }
+
+    override suspend fun deleteComment(
+        communityId: String,
+        postId: String,
+        commentId: String,
+    ): Result<Unit> = runCatching {
+        val uid = requireUid()
+        val postRef = firestore.collection(COMMUNITIES).document(communityId)
+            .collection(POSTS).document(postId)
+        val commentRef = postRef.collection(COMMENTS).document(commentId)
+        firestore.runTransaction { tx ->
+            val snap = tx.get(commentRef)
+            if (!snap.exists()) return@runTransaction null
+            val author = snap.getString("authorUid")
+            if (author != uid) error("Solo el autor puede borrar el comentario")
+            tx.delete(commentRef)
+            tx.update(postRef, "commentCount", FieldValue.increment(-1))
+            null
+        }.await()
+    }
 
     // ---- Helpers ----
 
@@ -212,6 +347,21 @@ class CommunityRepositoryImpl @Inject constructor(
             authorPhoto = getString("authorPhoto"),
             text = getString("text").orEmpty(),
             createdAt = (getDate("createdAt") ?: Date(0)).time,
+            likeCount = getLong("likeCount") ?: 0L,
+            commentCount = getLong("commentCount") ?: 0L,
+        )
+    }
+
+    private fun DocumentSnapshot.toComment(postId: String): Comment? {
+        if (!exists()) return null
+        return Comment(
+            id = id,
+            postId = postId,
+            authorUid = getString("authorUid").orEmpty(),
+            authorName = getString("authorName").orEmpty(),
+            authorPhoto = getString("authorPhoto"),
+            text = getString("text").orEmpty(),
+            createdAt = (getDate("createdAt") ?: Date(0)).time,
         )
     }
 
@@ -219,7 +369,10 @@ class CommunityRepositoryImpl @Inject constructor(
         private const val COMMUNITIES = "communities"
         private const val MEMBERS = "members"
         private const val POSTS = "posts"
+        private const val LIKES = "likes"
+        private const val COMMENTS = "comments"
         private const val USERS = "users"
         private const val JOINED_COMMUNITIES = "joinedCommunities"
+        private const val POST_LIKES = "postLikes"
     }
 }

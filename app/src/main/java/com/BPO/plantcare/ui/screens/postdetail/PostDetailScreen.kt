@@ -1,4 +1,4 @@
-package com.BPO.plantcare.ui.screens.communityfeed
+package com.BPO.plantcare.ui.screens.postdetail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,29 +17,26 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,31 +51,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.BPO.plantcare.domain.model.Community
+import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommunityFeedScreen(
+fun PostDetailScreen(
     onBack: () -> Unit,
-    onPostClick: (communityId: String, postId: String) -> Unit,
-    viewModel: CommunityFeedViewModel = hiltViewModel(),
+    viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
-    val community by viewModel.community.collectAsStateWithLifecycle()
-    val posts by viewModel.posts.collectAsStateWithLifecycle()
+    val post by viewModel.post.collectAsStateWithLifecycle()
+    val comments by viewModel.comments.collectAsStateWithLifecycle()
     val isSignedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
+    val currentUid by viewModel.currentUid.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showCreatePost by remember { mutableStateOf(false) }
+    var commentText by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                is FeedEvent.Error -> event.message.ifBlank { "Error" }
-                FeedEvent.PostCreated -> "Publicado"
+                is PostDetailEvent.Error -> event.message.ifBlank { "Error" }
+                PostDetailEvent.CommentPosted -> {
+                    commentText = ""
+                    "Comentario publicado"
+                }
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -85,7 +86,7 @@ fun CommunityFeedScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(community?.name.orEmpty()) },
+                title = { Text("Publicación") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
@@ -94,15 +95,17 @@ fun CommunityFeedScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            if (isSignedIn && community?.isMember == true) {
-                FloatingActionButton(onClick = { showCreatePost = true }) {
-                    Icon(Icons.Outlined.Add, contentDescription = "Nuevo post")
-                }
+        bottomBar = {
+            if (isSignedIn) {
+                CommentInput(
+                    value = commentText,
+                    onChange = { commentText = it },
+                    onSend = { viewModel.addComment(commentText) },
+                )
             }
         },
     ) { padding ->
-        val current = community
+        val current = post
         if (current == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -115,117 +118,69 @@ fun CommunityFeedScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                CommunityHeader(
-                    community = current,
+                PostHeader(
+                    post = current,
                     canInteract = isSignedIn,
-                    onJoinToggle = viewModel::toggleMembership,
+                    onLikeClick = viewModel::toggleLike,
                 )
             }
-            if (posts.isEmpty()) {
-                item { EmptyFeed(isSignedIn = isSignedIn, isMember = current.isMember) }
-            } else {
-                items(posts, key = { it.id }) { post ->
-                    PostCard(
-                        post = post,
-                        canInteract = isSignedIn,
-                        onClick = { onPostClick(current.id, post.id) },
-                        onLikeClick = { viewModel.toggleLike(post.id) },
-                    )
-                }
-            }
-        }
-    }
-
-    if (showCreatePost) {
-        CreatePostDialog(
-            onConfirm = {
-                viewModel.createPost(it)
-                showCreatePost = false
-            },
-            onDismiss = { showCreatePost = false },
-        )
-    }
-}
-
-@Composable
-private fun CommunityHeader(
-    community: Community,
-    canInteract: Boolean,
-    onJoinToggle: () -> Unit,
-) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = community.emoji, fontSize = 36.sp)
-                Spacer(modifier = Modifier.size(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = community.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = "${community.memberCount} miembros",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
-                if (canInteract) {
-                    if (community.isMember) {
-                        OutlinedButton(onClick = onJoinToggle) { Text("Salir") }
-                    } else {
-                        Button(onClick = onJoinToggle) { Text("Unirme") }
-                    }
-                }
-            }
-            if (community.description.isNotBlank()) {
-                Spacer(modifier = Modifier.size(8.dp))
+            item {
                 Text(
-                    text = community.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    text = "Comentarios (${current.commentCount})",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
                 )
+            }
+            if (comments.isEmpty()) {
+                item {
+                    Text(
+                        text = "Aun no hay comentarios.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                items(comments, key = { it.id }) { comment ->
+                    CommentRow(
+                        comment = comment,
+                        isMine = comment.authorUid == currentUid,
+                        onDelete = { viewModel.deleteComment(comment.id) },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun PostCard(
+private fun PostHeader(
     post: CommunityPost,
     canInteract: Boolean,
-    onClick: () -> Unit,
     onLikeClick: () -> Unit,
 ) {
-    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (post.authorPhoto != null) {
                     AsyncImage(
                         model = post.authorPhoto,
                         contentDescription = post.authorName,
-                        modifier = Modifier.size(36.dp).clip(CircleShape),
+                        modifier = Modifier.size(40.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(36.dp).clip(CircleShape),
+                        modifier = Modifier.size(40.dp).clip(CircleShape),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
-                Spacer(modifier = Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = post.authorName.ifBlank { "Anonimo" },
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
@@ -235,7 +190,7 @@ private fun PostCard(
                     )
                 }
             }
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(12.dp))
             Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.size(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -247,13 +202,13 @@ private fun PostCard(
                     Icon(
                         imageVector = if (post.isLikedByMe) Icons.Filled.Favorite
                         else Icons.Outlined.FavoriteBorder,
-                        contentDescription = if (post.isLikedByMe) "Quitar like" else "Like",
+                        contentDescription = null,
                         tint = if (post.isLikedByMe) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Text(
-                    text = post.likeCount.toString(),
+                    text = "${post.likeCount}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -266,7 +221,7 @@ private fun PostCard(
                 )
                 Spacer(modifier = Modifier.size(6.dp))
                 Text(
-                    text = post.commentCount.toString(),
+                    text = "${post.commentCount}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -276,56 +231,87 @@ private fun PostCard(
 }
 
 @Composable
-private fun EmptyFeed(isSignedIn: Boolean, isMember: Boolean) {
+private fun CommentRow(comment: Comment, isMine: Boolean, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Aun no hay publicaciones",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            val sub = when {
-                !isSignedIn -> "Inicia sesion para escribir el primer post."
-                !isMember -> "Unete a la comunidad para publicar."
-                else -> "Pulsa el boton + para escribir el primer post."
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            if (comment.authorPhoto != null) {
+                AsyncImage(
+                    model = comment.authorPhoto,
+                    contentDescription = comment.authorName,
+                    modifier = Modifier.size(28.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp).clip(CircleShape),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
-            Text(
-                text = sub,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = comment.authorName.ifBlank { "Anonimo" },
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = relativeTime(comment.createdAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(text = comment.text, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (isMine) {
+                IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        Icons.Outlined.Delete,
+                        contentDescription = "Borrar",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun CreatePostDialog(
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var text by rememberSaveable { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nuevo post") },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Que quieres contar?") },
-                minLines = 3,
-                maxLines = 8,
-            )
-        },
-        confirmButton = {
-            Button(enabled = text.isNotBlank(), onClick = { onConfirm(text) }) {
-                Text("Publicar")
-            }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
-    )
+private fun CommentInput(value: String, onChange: (String) -> Unit, onSend: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .navigationBarsPadding()
+            .imePadding(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onChange,
+            placeholder = { Text("Escribe un comentario") },
+            modifier = Modifier.weight(1f),
+            maxLines = 4,
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        FilledIconButton(
+            onClick = onSend,
+            enabled = value.isNotBlank(),
+        ) {
+            Icon(Icons.Outlined.Send, contentDescription = "Enviar")
+        }
+    }
 }
 
 private const val MS_PER_MIN = 60_000L

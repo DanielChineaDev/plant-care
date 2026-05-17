@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -41,12 +42,17 @@ class CommunityFeedViewModel @Inject constructor(
             initialValue = null,
         )
 
-    val posts: StateFlow<List<CommunityPost>> =
-        communityRepository.observePosts(communityId).stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList(),
-        )
+    /** Posts del feed enriquecidos con isLikedByMe a partir del mirror del user. */
+    val posts: StateFlow<List<CommunityPost>> = combine(
+        communityRepository.observePosts(communityId),
+        communityRepository.observeLikedPostsInCommunity(communityId),
+    ) { posts, liked ->
+        posts.map { it.copy(isLikedByMe = it.id in liked) }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
     val isSignedIn: StateFlow<Boolean> = authRepository.authState
         .map { it is AuthState.SignedIn }
@@ -78,6 +84,14 @@ class CommunityFeedViewModel @Inject constructor(
                 communityRepository.joinCommunity(communityId)
             }
             result.onFailure { _events.send(FeedEvent.Error(it.localizedMessage.orEmpty())) }
+        }
+    }
+
+    fun toggleLike(postId: String) {
+        viewModelScope.launch {
+            communityRepository.toggleLike(communityId, postId).onFailure {
+                _events.send(FeedEvent.Error(it.localizedMessage.orEmpty()))
+            }
         }
     }
 }

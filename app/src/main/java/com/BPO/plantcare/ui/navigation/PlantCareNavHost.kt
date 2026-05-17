@@ -21,6 +21,7 @@ import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
 import com.BPO.plantcare.ui.screens.communities.CommunitiesListScreen
 import com.BPO.plantcare.ui.screens.communityfeed.CommunityFeedScreen
+import com.BPO.plantcare.ui.screens.postdetail.PostDetailScreen
 import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisDetailScreen
 import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisListScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
@@ -46,6 +47,11 @@ object Routes {
     fun communityFeed(id: String) = "$COMMUNITY_FEED/$id"
     const val COMMUNITY_FEED_PATTERN = "$COMMUNITY_FEED/{${NavArgs.COMMUNITY_ID}}"
 
+    private const val POST_DETAIL = "post_detail"
+    fun postDetail(communityId: String, postId: String) = "$POST_DETAIL/$communityId/$postId"
+    const val POST_DETAIL_PATTERN =
+        "$POST_DETAIL/{${NavArgs.COMMUNITY_ID}}/{${NavArgs.POST_ID}}"
+
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
     const val PLANT_DETAIL_PATTERN = "$PLANT_DETAIL/{${NavArgs.PLANT_ID}}"
@@ -68,6 +74,7 @@ object NavArgs {
     const val SCIENTIFIC_NAME = "scientificName"
     const val DIAGNOSIS_ID = "diagnosisId"
     const val COMMUNITY_ID = "communityId"
+    const val POST_ID = "postId"
 }
 
 private const val ANIM = 280
@@ -190,7 +197,24 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            CommunityFeedScreen(onBack = { navController.popBackStack() })
+            CommunityFeedScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+            )
+        }
+
+        composable(
+            route = Routes.POST_DETAIL_PATTERN,
+            arguments = listOf(
+                navArgument(NavArgs.COMMUNITY_ID) { type = NavType.StringType },
+                navArgument(NavArgs.POST_ID) { type = NavType.StringType },
+            ),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            PostDetailScreen(onBack = { navController.popBackStack() })
         }
 
         composable(
