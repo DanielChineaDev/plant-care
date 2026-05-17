@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
+import com.BPO.plantcare.ui.screens.communities.CommunitiesListScreen
+import com.BPO.plantcare.ui.screens.communityfeed.CommunityFeedScreen
 import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisDetailScreen
 import com.BPO.plantcare.ui.screens.diagnosis.DiagnosisListScreen
 import com.BPO.plantcare.ui.screens.home.HomeScreen
@@ -34,10 +36,15 @@ object Routes {
     const val IDENTIFY = "identify"
     const val LIGHT_METER = "light_meter"
     const val DIAGNOSIS_LIST = "diagnosis"
+    const val COMMUNITIES = "communities"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
     const val DIAGNOSIS_DETAIL_PATTERN = "$DIAGNOSIS_DETAIL/{${NavArgs.DIAGNOSIS_ID}}"
+
+    private const val COMMUNITY_FEED = "community_feed"
+    fun communityFeed(id: String) = "$COMMUNITY_FEED/$id"
+    const val COMMUNITY_FEED_PATTERN = "$COMMUNITY_FEED/{${NavArgs.COMMUNITY_ID}}"
 
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
@@ -60,6 +67,7 @@ object NavArgs {
     const val PHOTO_ID = "photoId"
     const val SCIENTIFIC_NAME = "scientificName"
     const val DIAGNOSIS_ID = "diagnosisId"
+    const val COMMUNITY_ID = "communityId"
 }
 
 private const val ANIM = 280
@@ -97,6 +105,7 @@ fun PlantCareNavHost(
             HomeScreen(
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
+                onCommunitiesClick = { navController.navigate(Routes.COMMUNITIES) },
             )
         }
         composable(TopLevelDestination.MyPlants.route) {
@@ -158,6 +167,30 @@ fun PlantCareNavHost(
             popExitTransition = slidePopExit,
         ) {
             DiagnosisDetailScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            Routes.COMMUNITIES,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            CommunitiesListScreen(
+                onBack = { navController.popBackStack() },
+                onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
+            )
+        }
+
+        composable(
+            route = Routes.COMMUNITY_FEED_PATTERN,
+            arguments = listOf(navArgument(NavArgs.COMMUNITY_ID) { type = NavType.StringType }),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            CommunityFeedScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

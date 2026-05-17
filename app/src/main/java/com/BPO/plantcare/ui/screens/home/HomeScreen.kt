@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Card
@@ -50,6 +51,7 @@ import java.io.File
 fun HomeScreen(
     onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
+    onCommunitiesClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -67,6 +69,7 @@ fun HomeScreen(
         recents = recents,
         onIdentifyClick = onIdentifyClick,
         onPlantClick = onPlantClick,
+        onCommunitiesClick = onCommunitiesClick,
     )
 }
 
@@ -75,6 +78,7 @@ private fun HomeContent(
     recents: List<Plant>,
     onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
+    onCommunitiesClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -96,6 +100,8 @@ private fun HomeContent(
         )
 
         IdentifyHeroCard(onClick = onIdentifyClick)
+
+        CommunitiesCard(onClick = onCommunitiesClick)
 
         Text(
             text = "Plantas recientes",
@@ -150,6 +156,51 @@ private fun IdentifyHeroCard(onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
+        }
+    }
+}
+
+@Composable
+private fun CommunitiesCard(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        ),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Groups,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(32.dp),
+                )
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Comunidades",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                Text(
+                    text = "Únete a foros temáticos y comparte experiencias.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
         }
     }
 }
