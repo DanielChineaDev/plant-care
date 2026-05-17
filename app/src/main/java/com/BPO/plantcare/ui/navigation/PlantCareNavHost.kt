@@ -84,7 +84,10 @@ fun PlantCareNavHost(
         popExitTransition = { fadeOut(tween(ANIM)) },
     ) {
         composable(TopLevelDestination.Home.route) {
-            HomeScreen(onIdentifyClick = { navController.navigate(Routes.IDENTIFY) })
+            HomeScreen(
+                onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
+                onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
+            )
         }
         composable(TopLevelDestination.MyPlants.route) {
             MyPlantsScreen(

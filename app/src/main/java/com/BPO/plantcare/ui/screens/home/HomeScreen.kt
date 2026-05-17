@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,18 +27,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.BPO.plantcare.domain.model.Plant
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import java.io.File
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun HomeScreen(onIdentifyClick: () -> Unit) {
+fun HomeScreen(
+    onIdentifyClick: () -> Unit,
+    onPlantClick: (Long) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val notifPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
         LaunchedEffect(notifPermission.status) {
@@ -46,11 +62,20 @@ fun HomeScreen(onIdentifyClick: () -> Unit) {
             }
         }
     }
-    HomeContent(onIdentifyClick = onIdentifyClick)
+    val recents by viewModel.recentPlants.collectAsStateWithLifecycle()
+    HomeContent(
+        recents = recents,
+        onIdentifyClick = onIdentifyClick,
+        onPlantClick = onPlantClick,
+    )
 }
 
 @Composable
-private fun HomeContent(onIdentifyClick: () -> Unit) {
+private fun HomeContent(
+    recents: List<Plant>,
+    onIdentifyClick: () -> Unit,
+    onPlantClick: (Long) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -73,11 +98,15 @@ private fun HomeContent(onIdentifyClick: () -> Unit) {
         IdentifyHeroCard(onClick = onIdentifyClick)
 
         Text(
-            text = "Identificaciones recientes",
+            text = "Plantas recientes",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 8.dp),
         )
-        EmptyRecentCard()
+        if (recents.isEmpty()) {
+            EmptyRecentCard()
+        } else {
+            RecentPlantsRow(plants = recents, onPlantClick = onPlantClick)
+        }
     }
 }
 
@@ -126,6 +155,70 @@ private fun IdentifyHeroCard(onClick: () -> Unit) {
 }
 
 @Composable
+private fun RecentPlantsRow(plants: List<Plant>, onPlantClick: (Long) -> Unit) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(vertical = 4.dp),
+    ) {
+        items(plants, key = { it.id }) { plant ->
+            RecentPlantTile(plant = plant, onClick = { onPlantClick(plant.id) })
+        }
+    }
+}
+
+@Composable
+private fun RecentPlantTile(plant: Plant, onClick: () -> Unit) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.size(width = 140.dp, height = 180.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(110.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                val model = plant.userPhotoPath?.let { File(it) } ?: plant.referenceImageUrl
+                if (model != null) {
+                    AsyncImage(
+                        model = model,
+                        contentDescription = plant.displayName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.LocalFlorist,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp),
+                    )
+                }
+            }
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = plant.displayName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = plant.scientificName,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun EmptyRecentCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -147,7 +240,7 @@ private fun EmptyRecentCard() {
                 modifier = Modifier.size(40.dp),
             )
             Text(
-                text = "Aún no has identificado ninguna planta",
+                text = "Aún no has añadido ninguna planta",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

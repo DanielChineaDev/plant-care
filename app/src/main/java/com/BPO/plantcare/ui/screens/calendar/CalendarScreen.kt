@@ -13,10 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
@@ -69,30 +68,32 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
     val today = remember { LocalDate.now() }
     var selectedDate by remember { mutableStateOf(today) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        TodayTasksCard(
-            tasks = events[today].orEmpty().filter { it.type == CalendarEventType.WateringDue },
-            onWatered = viewModel::onWatered,
-        )
-
-        MonthCalendar(
-            events = events,
-            selectedDate = selectedDate,
-            today = today,
-            onDateSelected = { selectedDate = it },
-        )
-
-        DayEventsCard(
-            date = selectedDate,
-            events = events[selectedDate].orEmpty(),
-            onWatered = viewModel::onWatered,
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
+    // Importante: HorizontalCalendar de Kizitonwose NO se puede meter dentro
+    // de un Column.verticalScroll (constraints de altura infinita -> crash).
+    // Usamos LazyColumn como contenedor scrollable seguro.
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            TodayTasksCard(
+                tasks = events[today].orEmpty().filter { it.type == CalendarEventType.WateringDue },
+                onWatered = viewModel::onWatered,
+            )
+        }
+        item {
+            MonthCalendar(
+                events = events,
+                selectedDate = selectedDate,
+                today = today,
+                onDateSelected = { selectedDate = it },
+            )
+        }
+        item {
+            DayEventsCard(
+                date = selectedDate,
+                events = events[selectedDate].orEmpty(),
+                onWatered = viewModel::onWatered,
+            )
+        }
+        item { Spacer(modifier = Modifier.height(24.dp)) }
     }
 }
 
