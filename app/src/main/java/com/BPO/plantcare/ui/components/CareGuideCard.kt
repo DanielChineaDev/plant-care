@@ -7,17 +7,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cached
+import androidx.compose.material.icons.outlined.Eco
+import androidx.compose.material.icons.outlined.InvertColors
+import androidx.compose.material.icons.outlined.WaterDrop
+import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material.icons.outlined.Yard
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.BPO.plantcare.domain.model.CareDifficulty
@@ -59,20 +70,24 @@ fun CareGuideCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            CareRow(label = "Luz", value = guide.light.label)
-            CareRow(label = "Humedad", value = guide.humidity.label)
-            CareRow(label = "Riego", value = "Cada ${guide.wateringIntervalDays} dias")
+            CareRow(icon = Icons.Outlined.WbSunny, label = "Luz", value = guide.light.label)
+            CareRow(icon = Icons.Outlined.InvertColors, label = "Humedad", value = guide.humidity.label)
+            CareRow(
+                icon = Icons.Outlined.WaterDrop,
+                label = "Riego",
+                value = "Cada ${guide.wateringIntervalDays} dias",
+            )
             guide.wateringNotes?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 16.dp, top = 2.dp, bottom = 6.dp),
+                    modifier = Modifier.padding(start = 32.dp, top = 2.dp, bottom = 6.dp),
                 )
             }
-            CareRow(label = "Sustrato", value = guide.substrate)
-            CareRow(label = "Abono", value = guide.fertilizing)
-            CareRow(label = "Trasplante", value = guide.repotting)
+            CareRow(icon = Icons.Outlined.Yard, label = "Sustrato", value = guide.substrate)
+            CareRow(icon = Icons.Outlined.Eco, label = "Abono", value = guide.fertilizing)
+            CareRow(icon = Icons.Outlined.Cached, label = "Trasplante", value = guide.repotting)
 
             guide.funFact?.let { fact ->
                 Spacer(modifier = Modifier.height(12.dp))
@@ -181,17 +196,31 @@ private fun GenusApproximationBanner(genus: String, referenceSpecies: String) {
 }
 
 @Composable
-private fun CareRow(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
+private fun CareRow(icon: ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(20.dp)
+                .padding(top = 2.dp),
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
