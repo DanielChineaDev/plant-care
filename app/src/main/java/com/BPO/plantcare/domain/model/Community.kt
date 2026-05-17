@@ -18,6 +18,7 @@ data class CommunityPost(
     val authorName: String,
     val authorPhoto: String?,
     val text: String,
+    val photoUrl: String? = null,
     val createdAt: Long,
     val likeCount: Long = 0,
     val commentCount: Long = 0,

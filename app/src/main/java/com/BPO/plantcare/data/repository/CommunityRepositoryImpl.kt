@@ -1,5 +1,6 @@
 package com.BPO.plantcare.data.repository
 
+import android.net.Uri
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
@@ -9,12 +10,14 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +26,7 @@ import javax.inject.Singleton
 class CommunityRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
+    private val firebaseStorage: FirebaseStorage,
 ) : CommunityRepository {
 
     private fun currentUid(): String? = firebaseAuth.currentUser?.uid
@@ -208,23 +212,38 @@ class CommunityRepositoryImpl @Inject constructor(
         return combine(docFlow, likeFlow) { p, liked -> p?.copy(isLikedByMe = liked) }
     }
 
-    override suspend fun createPost(communityId: String, text: String): Result<String> =
-        runCatching {
-            val user = firebaseAuth.currentUser ?: error("Inicia sesion para publicar")
-            val doc = firestore.collection(COMMUNITIES).document(communityId)
-                .collection(POSTS).document()
-            val data = mapOf(
-                "authorUid" to user.uid,
-                "authorName" to (user.displayName ?: ""),
-                "authorPhoto" to user.photoUrl?.toString(),
-                "text" to text,
-                "createdAt" to FieldValue.serverTimestamp(),
-                "likeCount" to 0L,
-                "commentCount" to 0L,
-            )
-            doc.set(data).await()
-            doc.id
-        }
+    override suspend fun createPost(
+        communityId: String,
+        text: String,
+        photoFile: File?,
+    ): Result<String> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Inicia sesion para publicar")
+        val doc = firestore.collection(COMMUNITIES).document(communityId)
+            .collection(POSTS).document()
+        // Si hay foto, la subimos PRIMERO a Storage en un path estable
+        // construido con el id del doc. Asi si falla la subida no queda un
+        // post sin imagen, y si falla el set del doc el archivo queda
+        // huerfano (asumible para MVP).
+        val photoUrl: String? = if (photoFile != null) {
+            val storageRef = firebaseStorage.reference
+                .child("community_posts/$communityId/${doc.id}.jpg")
+            storageRef.putFile(Uri.fromFile(photoFile)).await()
+            storageRef.downloadUrl.await().toString()
+        } else null
+
+        val data = mapOf(
+            "authorUid" to user.uid,
+            "authorName" to (user.displayName ?: ""),
+            "authorPhoto" to user.photoUrl?.toString(),
+            "text" to text,
+            "photoUrl" to photoUrl,
+            "createdAt" to FieldValue.serverTimestamp(),
+            "likeCount" to 0L,
+            "commentCount" to 0L,
+        )
+        doc.set(data).await()
+        doc.id
+    }
 
     override suspend fun toggleLike(communityId: String, postId: String): Result<Unit> =
         runCatching {
@@ -346,6 +365,7 @@ class CommunityRepositoryImpl @Inject constructor(
             authorName = getString("authorName").orEmpty(),
             authorPhoto = getString("authorPhoto"),
             text = getString("text").orEmpty(),
+            photoUrl = getString("photoUrl"),
             createdAt = (getDate("createdAt") ?: Date(0)).time,
             likeCount = getLong("likeCount") ?: 0L,
             commentCount = getLong("commentCount") ?: 0L,

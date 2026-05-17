@@ -4,6 +4,7 @@ import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 interface CommunityRepository {
     fun observeCommunities(): Flow<List<Community>>
@@ -15,7 +16,8 @@ interface CommunityRepository {
     fun observePosts(communityId: String, limit: Int = 50): Flow<List<CommunityPost>>
     /** Set de IDs de posts likeados por el usuario actual en la comunidad. */
     fun observeLikedPostsInCommunity(communityId: String): Flow<Set<String>>
-    suspend fun createPost(communityId: String, text: String): Result<String>
+    /** [photoFile] opcional: si != null se sube a Firebase Storage y se guarda la URL. */
+    suspend fun createPost(communityId: String, text: String, photoFile: File? = null): Result<String>
     suspend fun toggleLike(communityId: String, postId: String): Result<Unit>
 
     fun observePost(communityId: String, postId: String): Flow<CommunityPost?>

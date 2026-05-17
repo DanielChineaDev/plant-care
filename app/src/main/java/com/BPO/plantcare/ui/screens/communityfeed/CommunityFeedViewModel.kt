@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 sealed interface FeedEvent {
@@ -65,10 +66,10 @@ class CommunityFeedViewModel @Inject constructor(
     private val _events = Channel<FeedEvent>(capacity = Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    fun createPost(text: String) {
-        if (text.isBlank()) return
+    fun createPost(text: String, photoFile: File?) {
+        if (text.isBlank() && photoFile == null) return
         viewModelScope.launch {
-            communityRepository.createPost(communityId, text.trim()).fold(
+            communityRepository.createPost(communityId, text.trim(), photoFile).fold(
                 onSuccess = { _events.send(FeedEvent.PostCreated) },
                 onFailure = { _events.send(FeedEvent.Error(it.localizedMessage.orEmpty())) },
             )

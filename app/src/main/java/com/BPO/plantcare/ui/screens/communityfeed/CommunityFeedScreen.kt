@@ -1,25 +1,35 @@
 package com.BPO.plantcare.ui.screens.communityfeed
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -50,12 +60,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.core.storage.copyUriToCache
+import java.io.File
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
 
@@ -138,8 +152,8 @@ fun CommunityFeedScreen(
 
     if (showCreatePost) {
         CreatePostDialog(
-            onConfirm = {
-                viewModel.createPost(it)
+            onConfirm = { text, photo ->
+                viewModel.createPost(text, photo)
                 showCreatePost = false
             },
             onDismiss = { showCreatePost = false },
@@ -235,8 +249,22 @@ private fun PostCard(
                     )
                 }
             }
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
+            if (post.text.isNotBlank()) {
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
+            }
+            if (post.photoUrl != null) {
+                Spacer(modifier = Modifier.size(8.dp))
+                AsyncImage(
+                    model = post.photoUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                )
+            }
             Spacer(modifier = Modifier.size(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -303,26 +331,108 @@ private fun EmptyFeed(isSignedIn: Boolean, isMember: Boolean) {
 
 @Composable
 private fun CreatePostDialog(
-    onConfirm: (String) -> Unit,
+    onConfirm: (text: String, photoFile: File?) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
     var text by rememberSaveable { mutableStateOf("") }
+    var photoFile by remember { mutableStateOf<File?>(null) }
+    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { success ->
+        val file = pendingCameraFile
+        if (success && file != null) photoFile = file
+        pendingCameraFile = null
+    }
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) photoFile = copyUriToCache(context, uri)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Nuevo post") },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Que quieres contar?") },
-                minLines = 3,
-                maxLines = 8,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Que quieres contar?") },
+                    minLines = 3,
+                    maxLines = 6,
+                )
+                if (photoFile != null) {
+                    Box {
+                        AsyncImage(
+                            model = photoFile,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1.4f)
+                                .clip(RoundedCornerShape(12.dp)),
+                        )
+                        IconButton(
+                            onClick = { photoFile = null },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(32.dp),
+                        ) {
+                            Icon(
+                                Icons.Outlined.Close,
+                                contentDescription = "Quitar foto",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            val file = File(
+                                context.cacheDir,
+                                "post_${System.currentTimeMillis()}.jpg",
+                            ).apply { createNewFile() }
+                            pendingCameraFile = file
+                            val uri: Uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.fileprovider",
+                                file,
+                            )
+                            cameraLauncher.launch(uri)
+                        },
+                    ) {
+                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
+                        Spacer(modifier = Modifier.size(6.dp))
+                        Text("Camara")
+                    }
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            galleryLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                ),
+                            )
+                        },
+                    ) {
+                        Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
+                        Spacer(modifier = Modifier.size(6.dp))
+                        Text("Galeria")
+                    }
+                }
+            }
         },
         confirmButton = {
-            Button(enabled = text.isNotBlank(), onClick = { onConfirm(text) }) {
-                Text("Publicar")
-            }
+            Button(
+                enabled = text.isNotBlank() || photoFile != null,
+                onClick = { onConfirm(text, photoFile) },
+            ) { Text("Publicar") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
     )

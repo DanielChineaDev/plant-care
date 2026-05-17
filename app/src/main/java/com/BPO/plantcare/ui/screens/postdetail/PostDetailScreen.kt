@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -190,8 +193,22 @@ private fun PostHeader(
                     )
                 }
             }
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
+            if (post.text.isNotBlank()) {
+                Spacer(modifier = Modifier.size(12.dp))
+                Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
+            }
+            if (post.photoUrl != null) {
+                Spacer(modifier = Modifier.size(12.dp))
+                AsyncImage(
+                    model = post.photoUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1.2f)
+                        .clip(RoundedCornerShape(12.dp)),
+                )
+            }
             Spacer(modifier = Modifier.size(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
