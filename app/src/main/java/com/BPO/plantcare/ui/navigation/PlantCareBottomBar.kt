@@ -1,5 +1,8 @@
 package com.BPO.plantcare.ui.navigation
 
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -11,8 +14,12 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlantCareBottomBar(navController: NavHostController) {
+fun PlantCareBottomBar(
+    navController: NavHostController,
+    counts: BottomBarCounts,
+) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -20,6 +27,7 @@ fun PlantCareBottomBar(navController: NavHostController) {
         TopLevelDestination.entries.forEach { destination ->
             val selected = backStackEntry?.destination?.hierarchy
                 ?.any { it.route == destination.route } == true
+            val badgeCount = badgeFor(destination, counts)
             NavigationBarItem(
                 selected = selected,
                 onClick = {
@@ -33,9 +41,26 @@ fun PlantCareBottomBar(navController: NavHostController) {
                         }
                     }
                 },
-                icon = { Icon(destination.icon, contentDescription = destination.label) },
+                icon = {
+                    BadgedBox(
+                        badge = {
+                            if (badgeCount > 0) {
+                                Badge { Text(text = badgeCount.toString()) }
+                            }
+                        },
+                    ) {
+                        Icon(destination.icon, contentDescription = destination.label)
+                    }
+                },
                 label = { Text(destination.label) },
             )
         }
     }
 }
+
+private fun badgeFor(destination: TopLevelDestination, counts: BottomBarCounts): Int =
+    when (destination) {
+        TopLevelDestination.MyPlants -> counts.myPlants
+        TopLevelDestination.Calendar -> counts.calendarToday
+        else -> 0
+    }
