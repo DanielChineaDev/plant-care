@@ -6,6 +6,7 @@ import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.LightLevel
 import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.domain.repository.PlantCatalogRepository
+import com.BPO.plantcare.domain.repository.WikipediaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class LocationFilter { ALL, INDOOR, OUTDOOR }
@@ -31,6 +33,7 @@ data class SearchFilters(
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val catalog: PlantCatalogRepository,
+    private val wikipediaRepository: WikipediaRepository,
 ) : ViewModel() {
 
     private val _filters = MutableStateFlow(SearchFilters())
@@ -56,6 +59,23 @@ class SearchViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = catalog.all(),
     )
+
+    // Mapa observable de scientificName -> thumbnailUrl. La key sin entrada
+    // significa "no se ha intentado". null como valor significa "Wikipedia
+    // no tiene foto". Asi distinguimos pendiente vs sin-foto sin re-fetch.
+    private val _thumbnails = MutableStateFlow<Map<String, String?>>(emptyMap())
+    val thumbnails: StateFlow<Map<String, String?>> = _thumbnails.asStateFlow()
+
+    fun ensureThumbnail(scientificName: String) {
+        if (_thumbnails.value.containsKey(scientificName)) return
+        // Marcamos pendiente con una entrada placeholder para evitar duplicados.
+        // Solo guardamos el valor real al terminar.
+        viewModelScope.launch {
+            val url = runCatching { wikipediaRepository.getThumbnailUrl(scientificName) }
+                .getOrNull()
+            _thumbnails.update { it + (scientificName to url) }
+        }
+    }
 
     fun onQueryChange(query: String) {
         _filters.update { it.copy(query = query) }

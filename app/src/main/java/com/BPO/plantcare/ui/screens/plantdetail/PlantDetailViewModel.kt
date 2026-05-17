@@ -9,6 +9,7 @@ import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.AddWateringLogUseCase
+import com.BPO.plantcare.domain.usecase.UpdatePlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
@@ -55,6 +56,7 @@ class PlantDetailViewModel @Inject constructor(
     observePhotos: ObservePlantPhotosUseCase,
     private val addPhoto: AddPlantPhotoUseCase,
     private val deletePhoto: DeletePlantPhotoUseCase,
+    private val updatePlantPhoto: UpdatePlantPhotoUseCase,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -154,6 +156,11 @@ class PlantDetailViewModel @Inject constructor(
 
     fun onAddDiaryPhoto(file: File) {
         viewModelScope.launch { addPhoto(plantId, file) }
+    }
+
+    fun onChangeMainPhoto(file: File) {
+        val current = plant.value ?: return
+        viewModelScope.launch { updatePlantPhoto(current, file) }
     }
 
     fun onDeleteDiaryPhoto(photoId: Long) {

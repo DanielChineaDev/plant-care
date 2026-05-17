@@ -40,10 +40,23 @@ object NetworkModule {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC
             else HttpLoggingInterceptor.Level.NONE
         }
+        // Wikipedia REST API rechaza requests sin User-Agent identificable
+        // y devuelve 403. Lo aplicamos a todos los clientes; ninguna otra API
+        // se queja por tenerlo.
+        val userAgentInterceptor = okhttp3.Interceptor { chain ->
+            val req = chain.request().newBuilder()
+                .header(
+                    "User-Agent",
+                    "PlantCare-Android/1.0 (https://github.com/DanielChineaDev/PlantCare; contact@plantcare.app)",
+                )
+                .build()
+            chain.proceed(req)
+        }
         return OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(userAgentInterceptor)
             .addInterceptor(logging)
             .build()
     }

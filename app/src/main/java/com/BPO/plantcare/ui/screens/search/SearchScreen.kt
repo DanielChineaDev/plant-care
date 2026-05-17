@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,8 +41,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.LightLevel
 import com.BPO.plantcare.domain.model.PlantCareGuide
@@ -53,6 +56,7 @@ fun SearchScreen(
 ) {
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val results by viewModel.results.collectAsStateWithLifecycle()
+    val thumbnails by viewModel.thumbnails.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -77,7 +81,12 @@ fun SearchScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 items(results, key = { it.scientificName }) { guide ->
-                    CatalogCard(guide = guide, onClick = { onPlantClick(guide.scientificName) })
+                    CatalogCard(
+                        guide = guide,
+                        thumbnailUrl = thumbnails[guide.scientificName],
+                        onEnsureThumbnail = { viewModel.ensureThumbnail(guide.scientificName) },
+                        onClick = { onPlantClick(guide.scientificName) },
+                    )
                 }
             }
         }
@@ -176,7 +185,15 @@ private fun FiltersRow(
 }
 
 @Composable
-private fun CatalogCard(guide: PlantCareGuide, onClick: () -> Unit) {
+private fun CatalogCard(
+    guide: PlantCareGuide,
+    thumbnailUrl: String?,
+    onEnsureThumbnail: () -> Unit,
+    onClick: () -> Unit,
+) {
+    androidx.compose.runtime.LaunchedEffect(guide.scientificName) {
+        onEnsureThumbnail()
+    }
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -186,15 +203,24 @@ private fun CatalogCard(guide: PlantCareGuide, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .height(110.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.LocalFlorist,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp),
-                )
+                if (thumbnailUrl != null) {
+                    AsyncImage(
+                        model = thumbnailUrl,
+                        contentDescription = guide.scientificName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.LocalFlorist,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(48.dp),
+                    )
+                }
             }
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 Text(
