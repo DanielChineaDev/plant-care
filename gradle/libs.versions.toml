@@ -37,6 +37,9 @@ accompanistPermissions = "0.36.0"
 # Calendar
 kizitonwoseCalendar = "2.5.4"
 
+# Glance (widgets)
+glance = "1.1.1"
+
 # Testing
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -104,6 +107,10 @@ accompanist-permissions = { group = "com.google.accompanist", name = "accompanis
 
 # Calendar
 kizitonwose-calendar-compose = { group = "com.kizitonwose.calendar", name = "compose", version.ref = "kizitonwoseCalendar" }
+
+# Glance
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

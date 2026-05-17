@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Plant Care</string>
+    <string name="widget_description">Riegos pendientes de hoy</string>
 </resources>
