@@ -245,11 +245,12 @@ private fun Day(
     onClick: () -> Unit,
 ) {
     val inMonth = day.position == DayPosition.MonthDate
+    // Cada slot lo posiciona la lib internamente en una grid 7-col;
+    // aqui solo necesitamos altura fija. NUNCA usar fillMaxWidth aqui.
     Box(
         modifier = Modifier
             .padding(2.dp)
-            .height(44.dp)
-            .fillMaxWidth(1f / 7f),
+            .height(44.dp),
         contentAlignment = Alignment.Center,
     ) {
         Box(

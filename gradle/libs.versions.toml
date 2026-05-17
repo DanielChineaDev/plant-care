@@ -35,7 +35,7 @@ workManager = "2.10.0"
 accompanistPermissions = "0.36.0"
 
 # Calendar
-kizitonwoseCalendar = "2.5.4"
+kizitonwoseCalendar = "2.6.2"
 
 # Glance (widgets)
 glance = "1.1.1"
