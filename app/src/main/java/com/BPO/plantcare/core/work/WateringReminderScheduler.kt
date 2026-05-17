@@ -17,14 +17,18 @@ class WateringReminderScheduler @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
 
-    /** Programa una comprobacion diaria a las 10:00 con WorkManager. */
-    fun scheduleDaily() {
+    /**
+     * Programa una comprobacion diaria a la [hour] indicada con WorkManager.
+     * Usa REPLACE: si se vuelve a llamar con otra hora, reprograma.
+     */
+    fun scheduleDaily(hour: Int) {
+        val safeHour = hour.coerceIn(0, 23)
         val request = PeriodicWorkRequestBuilder<WateringReminderWorker>(24, TimeUnit.HOURS)
-            .setInitialDelay(initialDelayUntilHour(REMINDER_HOUR), TimeUnit.MILLISECONDS)
+            .setInitialDelay(initialDelayUntilHour(safeHour), TimeUnit.MILLISECONDS)
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             UNIQUE_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request,
         )
     }
@@ -59,6 +63,5 @@ class WateringReminderScheduler @Inject constructor(
 
     companion object {
         private const val UNIQUE_WORK_NAME = "watering_reminder_daily"
-        private const val REMINDER_HOUR = 10
     }
 }

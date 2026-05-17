@@ -1,5 +1,6 @@
 package com.BPO.plantcare.di
 
+import com.BPO.plantcare.data.preferences.PreferencesRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantCatalogRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantIdentificationRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantPhotoRepositoryImpl
@@ -10,6 +11,7 @@ import com.BPO.plantcare.domain.repository.PlantCatalogRepository
 import com.BPO.plantcare.domain.repository.PlantIdentificationRepository
 import com.BPO.plantcare.domain.repository.PlantPhotoRepository
 import com.BPO.plantcare.domain.repository.PlantRepository
+import com.BPO.plantcare.domain.repository.PreferencesRepository
 import com.BPO.plantcare.domain.repository.WateringLogRepository
 import com.BPO.plantcare.domain.repository.WikipediaRepository
 import dagger.Binds
@@ -57,4 +59,10 @@ abstract class RepositoryModule {
     abstract fun bindPlantPhotoRepository(
         impl: PlantPhotoRepositoryImpl
     ): PlantPhotoRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPreferencesRepository(
+        impl: PreferencesRepositoryImpl
+    ): PreferencesRepository
 }

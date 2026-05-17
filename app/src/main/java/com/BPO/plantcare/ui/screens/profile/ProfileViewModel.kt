@@ -1,16 +1,38 @@
 package com.BPO.plantcare.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
-import com.BPO.plantcare.core.work.WateringReminderScheduler
+import androidx.lifecycle.viewModelScope
+import com.BPO.plantcare.core.work.WateringReminderManager
+import com.BPO.plantcare.domain.model.UserSettings
+import com.BPO.plantcare.domain.repository.PreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val scheduler: WateringReminderScheduler,
+    preferences: PreferencesRepository,
+    private val reminderManager: WateringReminderManager,
 ) : ViewModel() {
 
+    val settings: StateFlow<UserSettings> = preferences.settings.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UserSettings(),
+    )
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch { reminderManager.setEnabled(enabled) }
+    }
+
+    fun setReminderHour(hour: Int) {
+        viewModelScope.launch { reminderManager.setHour(hour) }
+    }
+
     fun testWateringNotification() {
-        scheduler.runNow()
+        reminderManager.runNow()
     }
 }
