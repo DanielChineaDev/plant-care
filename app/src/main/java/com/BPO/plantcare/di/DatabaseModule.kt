@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.BPO.plantcare.data.local.PlantCareDatabase
 import com.BPO.plantcare.data.local.dao.PlantDao
+import com.BPO.plantcare.data.local.dao.PlantPhotoDao
 import com.BPO.plantcare.data.local.dao.WateringLogDao
 import dagger.Module
 import dagger.Provides
@@ -28,4 +29,7 @@ object DatabaseModule {
 
     @Provides
     fun provideWateringLogDao(db: PlantCareDatabase): WateringLogDao = db.wateringLogDao()
+
+    @Provides
+    fun providePlantPhotoDao(db: PlantCareDatabase): PlantPhotoDao = db.plantPhotoDao()
 }

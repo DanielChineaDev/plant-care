@@ -1,7 +1,12 @@
 package com.BPO.plantcare.ui.screens.plantdetail
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,13 +16,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.LocalFlorist
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -49,15 +59,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.status
@@ -79,6 +93,7 @@ fun PlantDetailScreen(
     val plant by viewModel.plant.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
     val careGuide by viewModel.careGuide.collectAsStateWithLifecycle()
+    val photos by viewModel.photos.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -138,6 +153,11 @@ fun PlantDetailScreen(
             careGuide?.let {
                 CareGuideCard(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
+            DiaryCard(
+                photos = photos,
+                onAddPhoto = viewModel::onAddDiaryPhoto,
+                onDeletePhoto = viewModel::onDeleteDiaryPhoto,
+            )
             HistoryCard(
                 history = history,
                 onDeleteLog = viewModel::onDeleteWateringLog,
@@ -310,6 +330,149 @@ private fun TaxonomyCard(plant: Plant) {
             plant.genus?.let { Text("Genero: $it", style = MaterialTheme.typography.bodyMedium) }
         }
     }
+}
+
+@Composable
+private fun DiaryCard(
+    photos: List<PlantPhoto>,
+    onAddPhoto: (File) -> Unit,
+    onDeletePhoto: (Long) -> Unit,
+) {
+    val context = LocalContext.current
+    val pickMedia = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) {
+            val file = copyUriToCache(context, uri)
+            onAddPhoto(file)
+        }
+    }
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Diario fotografico",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            if (photos.isEmpty()) {
+                Text(
+                    text = "Anade fotos cada cierto tiempo para ver el crecimiento de tu planta.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(end = 4.dp),
+            ) {
+                item {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .padding(0.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            ElevatedCard(
+                                onClick = {
+                                    pickMedia.launch(
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                        ),
+                                    )
+                                },
+                                modifier = Modifier.size(100.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.AddAPhoto,
+                                            contentDescription = "Anadir foto",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(28.dp),
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "Anadir",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                }
+                items(photos, key = { it.id }) { photo ->
+                    DiaryThumbnail(
+                        photo = photo,
+                        onDelete = { onDeletePhoto(photo.id) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DiaryThumbnail(
+    photo: PlantPhoto,
+    onDelete: () -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.size(100.dp)) {
+            AsyncImage(
+                model = File(photo.path),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+            )
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(28.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = "Eliminar foto",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clip(RoundedCornerShape(50))
+                        .padding(2.dp),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = formatShortDate(photo.timestamp),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun formatShortDate(timestamp: Long): String {
+    val df = DateFormat.getDateInstance(DateFormat.SHORT)
+    return df.format(Date(timestamp))
 }
 
 @Composable

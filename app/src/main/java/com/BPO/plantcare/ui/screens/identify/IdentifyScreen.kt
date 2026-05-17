@@ -56,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.core.storage.copyUriToCache
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -236,13 +237,6 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
     }
 }
 
-private fun copyUriToCache(context: Context, uri: Uri): File {
-    val file = File(context.cacheDir, "plantcare_${System.currentTimeMillis()}.jpg")
-    context.contentResolver.openInputStream(uri)?.use { input ->
-        file.outputStream().use { output -> input.copyTo(output) }
-    }
-    return file
-}
 
 @Composable
 private fun CapturedPreview(

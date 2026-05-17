@@ -5,17 +5,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantCareGuide
+import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.WateringLog
-import com.BPO.plantcare.ui.screens.common.WikipediaUiState
+import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
+import com.BPO.plantcare.domain.usecase.DeletePlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
 import com.BPO.plantcare.domain.usecase.GetPlantCareGuideUseCase
 import com.BPO.plantcare.domain.usecase.GetWikipediaSummaryUseCase
 import com.BPO.plantcare.domain.usecase.MarkPlantWateredUseCase
+import com.BPO.plantcare.domain.usecase.ObservePlantPhotosUseCase
 import com.BPO.plantcare.domain.usecase.ObservePlantUseCase
 import com.BPO.plantcare.domain.usecase.ObserveWateringHistoryUseCase
 import com.BPO.plantcare.domain.usecase.UpdatePlantUseCase
 import com.BPO.plantcare.ui.navigation.NavArgs
+import com.BPO.plantcare.ui.screens.common.WikipediaUiState
+import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +49,9 @@ class PlantDetailViewModel @Inject constructor(
     private val deleteWateringLog: DeleteWateringLogUseCase,
     private val getWikipediaSummary: GetWikipediaSummaryUseCase,
     private val getCareGuide: GetPlantCareGuideUseCase,
+    observePhotos: ObservePlantPhotosUseCase,
+    private val addPhoto: AddPlantPhotoUseCase,
+    private val deletePhoto: DeletePlantPhotoUseCase,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -67,6 +75,12 @@ class PlantDetailViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = null,
         )
+
+    val photos: StateFlow<List<PlantPhoto>> = observePhotos(plantId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
     val wikipedia: StateFlow<WikipediaUiState> = _wikipedia.asStateFlow()
@@ -126,6 +140,14 @@ class PlantDetailViewModel @Inject constructor(
 
     fun onDeleteWateringLog(logId: Long) {
         viewModelScope.launch { deleteWateringLog(logId) }
+    }
+
+    fun onAddDiaryPhoto(file: File) {
+        viewModelScope.launch { addPhoto(plantId, file) }
+    }
+
+    fun onDeleteDiaryPhoto(photoId: Long) {
+        viewModelScope.launch { deletePhoto(photoId) }
     }
 
     fun onDelete() {
