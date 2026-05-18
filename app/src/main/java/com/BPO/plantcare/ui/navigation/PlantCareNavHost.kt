@@ -133,6 +133,8 @@ fun PlantCareNavHost(
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onCommunitiesClick = { navController.navigate(TopLevelDestination.Communities.route) },
+                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+                onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
         composable(TopLevelDestination.MyPlants.route) {
@@ -146,6 +148,8 @@ fun PlantCareNavHost(
             CommunitiesListScreen(
                 onOpenDrawer = onOpenDrawer,
                 onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
+                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+                onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
         composable(TopLevelDestination.Search.route) {

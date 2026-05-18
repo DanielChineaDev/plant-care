@@ -253,10 +253,18 @@ Defensa en profundidad: el código de los repositorios ya valida muchas de estas
 
 ### ✅ Fase 3 — Social
 - Login con Google + perfil en Firebase
+- **Login y registro con email/contraseña** (gate obligatorio antes de entrar a la app)
 - Comunidades / foros temáticos con posts, likes y comentarios
 - Chat 1-a-1 entre usuarios (DM en tiempo real)
 - Perfiles públicos con colecciones compartibles
 - **Notificaciones push (FCM)** para mensajes nuevos vía Cloud Functions
+
+### ✅ Rediseño UI (drawer + nuevo bottom nav)
+- **Bottom nav** de 5 pestañas: Inicio · Mis plantas · Comunidades · Buscar · Mensajes
+- **Drawer lateral** con: Mi perfil, Calendario, Identificar planta, Herramientas, tus comunidades unidas y Configuración
+- **Inicio** = feed agregado de posts de las comunidades a las que estás suscrito, con filtro Últimas publicaciones / Destacadas
+- **Comunidades** rediseñada con carrusel de espacios populares, lista del resto y bloque de publicaciones destacadas globales
+- **Mensajes** como pestaña top-level del bottom nav
 
 ### 💰 Fase 4 — Monetización + iOS
 - Freemium con RevenueCat (Android + iOS unificado)

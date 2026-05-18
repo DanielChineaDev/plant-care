@@ -1,15 +1,19 @@
 package com.BPO.plantcare.ui.screens.communities
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -17,6 +21,8 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -42,11 +48,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.BPO.plantcare.domain.model.Community
+import com.BPO.plantcare.ui.components.FeedPostCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,8 +62,12 @@ fun CommunitiesListScreen(
     onOpenDrawer: () -> Unit,
     onCommunityClick: (String) -> Unit,
     viewModel: CommunitiesListViewModel = hiltViewModel(),
+    onPostClick: (communityId: String, postId: String) -> Unit = { _, _ -> },
+    onAuthorClick: (uid: String) -> Unit = {},
 ) {
-    val communities by viewModel.communities.collectAsStateWithLifecycle()
+    val popular by viewModel.popularCommunities.collectAsStateWithLifecycle()
+    val others by viewModel.otherCommunities.collectAsStateWithLifecycle()
+    val featured by viewModel.featuredPosts.collectAsStateWithLifecycle()
     val isSignedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showCreate by remember { mutableStateOf(false) }
@@ -90,23 +102,75 @@ fun CommunitiesListScreen(
             }
         },
     ) { padding ->
-        if (communities.isEmpty()) {
+        if (popular.isEmpty() && others.isEmpty()) {
             EmptyState(modifier = Modifier.fillMaxSize().padding(padding))
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                if (!isSignedIn) {
-                    item { SignInBanner() }
+            return@Scaffold
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (popular.isNotEmpty()) {
+                item {
+                    SectionTitle(
+                        text = "Espacios populares",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
                 }
-                items(communities, key = { it.id }) { community ->
-                    CommunityCard(
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                    ) {
+                        items(popular, key = { it.id }) { community ->
+                            PopularCommunityCard(
+                                community = community,
+                                canInteract = isSignedIn,
+                                onClick = { onCommunityClick(community.id) },
+                                onJoinToggle = { viewModel.toggleMembership(community) },
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (others.isNotEmpty()) {
+                item {
+                    SectionTitle(
+                        text = "Otras comunidades",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
+                items(others, key = { it.id }) { community ->
+                    CommunityRow(
                         community = community,
                         canInteract = isSignedIn,
                         onClick = { onCommunityClick(community.id) },
                         onJoinToggle = { viewModel.toggleMembership(community) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+            }
+
+            if (featured.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SectionTitle(
+                        text = "Publicaciones destacadas",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+                items(featured, key = { it.post.id }) { item ->
+                    FeedPostCard(
+                        post = item.post,
+                        communityName = item.community.name,
+                        communityEmoji = item.community.emoji,
+                        onClick = { onPostClick(item.community.id, item.post.id) },
+                        onAuthorClick = onAuthorClick,
+                        onLikeClick = { viewModel.toggleLike(item.community.id, item.post.id) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
             }
@@ -125,40 +189,101 @@ fun CommunitiesListScreen(
 }
 
 @Composable
-private fun CommunityCard(
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun PopularCommunityCard(
     community: Community,
     canInteract: Boolean,
     onClick: () -> Unit,
     onJoinToggle: () -> Unit,
 ) {
-    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.widthIn(min = 260.dp, max = 280.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = community.emoji, fontSize = 36.sp)
+                Spacer(modifier = Modifier.size(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = community.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "${community.memberCount} miembros",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (community.description.isNotBlank()) {
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = community.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (canInteract) {
+                Spacer(modifier = Modifier.size(12.dp))
+                if (community.isMember) {
+                    OutlinedButton(
+                        onClick = onJoinToggle,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Salir") }
+                } else {
+                    Button(
+                        onClick = onJoinToggle,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Unirme") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommunityRow(
+    community: Community,
+    canInteract: Boolean,
+    onClick: () -> Unit,
+    onJoinToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = community.emoji,
-                fontSize = 36.sp,
+                fontSize = 32.sp,
                 modifier = Modifier.padding(end = 12.dp),
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = community.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
-                if (community.description.isNotBlank()) {
-                    Text(
-                        text = community.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
                 Text(
                     text = "${community.memberCount} miembros",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             if (canInteract) {
@@ -168,26 +293,6 @@ private fun CommunityCard(
                     Button(onClick = onJoinToggle) { Text("Unirme") }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SignInBanner() {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Inicia sesion para unirte y publicar",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "Sin cuenta puedes leer comunidades, pero necesitas Google Sign-In para interactuar.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -211,7 +316,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(top = 12.dp),
         )
         Text(
-            text = "Crea la primera con el boton + si tienes sesion iniciada.",
+            text = "Crea la primera con el boton +.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -264,5 +369,5 @@ private fun CreateCommunityDialog(
             TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
     )
-    Spacer(modifier = Modifier.size(0.dp))
+    Box(modifier = Modifier.size(0.dp))
 }

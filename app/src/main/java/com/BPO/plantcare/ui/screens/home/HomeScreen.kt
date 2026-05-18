@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,10 +23,12 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.ui.components.FeedPostCard
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -59,6 +64,8 @@ fun HomeScreen(
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
+    onPostClick: (communityId: String, postId: String) -> Unit = { _, _ -> },
+    onAuthorClick: (uid: String) -> Unit = {},
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val notifPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
@@ -71,6 +78,10 @@ fun HomeScreen(
         }
     }
     val recents by viewModel.recentPlants.collectAsStateWithLifecycle()
+    val feed by viewModel.feed.collectAsStateWithLifecycle()
+    val sort by viewModel.sort.collectAsStateWithLifecycle()
+    val hasJoined by viewModel.hasJoinedCommunities.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -83,56 +94,141 @@ fun HomeScreen(
             )
         },
     ) { padding ->
-        HomeContent(
-            recents = recents,
-            onIdentifyClick = onIdentifyClick,
-            onPlantClick = onPlantClick,
-            onCommunitiesClick = onCommunitiesClick,
-            modifier = Modifier.padding(padding),
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item {
+                SortFilterRow(
+                    sort = sort,
+                    onSortChange = viewModel::setSort,
+                )
+            }
+
+            if (!hasJoined) {
+                item {
+                    JoinCommunitiesPromptCard(onCommunitiesClick = onCommunitiesClick)
+                }
+            } else if (feed.isEmpty()) {
+                item {
+                    EmptyFeedCard()
+                }
+            } else {
+                items(feed, key = { it.post.id }) { item ->
+                    FeedPostCard(
+                        post = item.post,
+                        communityName = item.community.name,
+                        communityEmoji = item.community.emoji,
+                        onClick = { onPostClick(item.community.id, item.post.id) },
+                        onAuthorClick = onAuthorClick,
+                        onLikeClick = { viewModel.toggleLike(item.community.id, item.post.id) },
+                    )
+                }
+            }
+
+            // Bloque "Identificar" + plantas recientes al final, como contexto
+            // personal del usuario por debajo del feed social.
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                IdentifyHeroCard(onClick = onIdentifyClick)
+            }
+            item {
+                Text(
+                    text = "Plantas recientes",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            item {
+                if (recents.isEmpty()) {
+                    EmptyRecentCard()
+                } else {
+                    RecentPlantsRow(plants = recents, onPlantClick = onPlantClick)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortFilterRow(
+    sort: FeedSort,
+    onSortChange: (FeedSort) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = sort == FeedSort.Recent,
+            onClick = { onSortChange(FeedSort.Recent) },
+            label = { Text("Ultimas publicaciones") },
+        )
+        FilterChip(
+            selected = sort == FeedSort.Top,
+            onClick = { onSortChange(FeedSort.Top) },
+            label = { Text("Destacadas") },
         )
     }
 }
 
 @Composable
-private fun HomeContent(
-    recents: List<Plant>,
-    onIdentifyClick: () -> Unit,
-    onPlantClick: (Long) -> Unit,
-    onCommunitiesClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+private fun JoinCommunitiesPromptCard(onCommunitiesClick: () -> Unit) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Groups,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp),
+                )
+                Spacer(modifier = Modifier.size(12.dp))
+                Column {
+                    Text(
+                        text = "Aun no sigues ninguna comunidad",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "Unete a una para empezar a ver publicaciones en tu inicio.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Button(onClick = onCommunitiesClick, modifier = Modifier.fillMaxWidth()) {
+                Text("Explorar comunidades")
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyFeedCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Hola 🌱",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = "Cuida tus plantas y descubre nuevas especies.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        IdentifyHeroCard(onClick = onIdentifyClick)
-
-        CommunitiesCard(onClick = onCommunitiesClick)
-
-        Text(
-            text = "Plantas recientes",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        if (recents.isEmpty()) {
-            EmptyRecentCard()
-        } else {
-            RecentPlantsRow(plants = recents, onPlantClick = onPlantClick)
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Groups,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(40.dp),
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Tus comunidades aun no tienen publicaciones",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -141,85 +237,35 @@ private fun HomeContent(
 private fun IdentifyHeroCard(onClick: () -> Unit) {
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
         shape = RoundedCornerShape(20.dp),
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.CameraAlt,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(40.dp),
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Identifica una planta",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Saca una foto y descubre su especie, cuidados y curiosidades.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
-    }
-}
-
-@Composable
-private fun CommunitiesCard(onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        ),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier.padding(16.dp),
+        Row(
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Groups,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(32.dp),
-                )
-            }
+            Icon(
+                imageVector = Icons.Outlined.CameraAlt,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp),
+            )
             Spacer(modifier = Modifier.size(12.dp))
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column {
                 Text(
-                    text = "Comunidades",
+                    text = "Identifica una planta",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = "Únete a foros temáticos y comparte experiencias.",
+                    text = "Saca una foto y descubre su especie y cuidados.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
@@ -312,7 +358,7 @@ private fun EmptyRecentCard() {
                 modifier = Modifier.size(40.dp),
             )
             Text(
-                text = "Aún no has añadido ninguna planta",
+                text = "Aun no has anadido ninguna planta",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
