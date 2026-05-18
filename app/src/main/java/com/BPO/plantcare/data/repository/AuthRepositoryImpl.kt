@@ -93,6 +93,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getProfile(uid: String): Result<UserProfile?> = runCatching {
+        val doc = firestore.collection(USERS).document(uid).get().await()
+        if (!doc.exists()) null
+        else UserProfile(
+            uid = uid,
+            displayName = doc.getString("displayName"),
+            email = doc.getString("email"),
+            photoUrl = doc.getString("photoUrl"),
+            createdAt = doc.getLong("createdAt") ?: 0L,
+        )
+    }
+
     private suspend fun loadOrCreateProfile(user: FirebaseUser): UserProfile {
         val doc = firestore.collection(USERS).document(user.uid).get().await()
         return if (doc.exists()) {

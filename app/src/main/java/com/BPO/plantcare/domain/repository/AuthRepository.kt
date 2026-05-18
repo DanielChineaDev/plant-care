@@ -27,4 +27,7 @@ interface AuthRepository {
     suspend fun signInWithGoogle(activityContext: Context): Result<UserProfile>
 
     suspend fun signOut()
+
+    /** Lee el perfil de otro usuario desde Firestore (one-shot). */
+    suspend fun getProfile(uid: String): Result<UserProfile?>
 }

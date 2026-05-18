@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -78,6 +79,7 @@ import com.BPO.plantcare.domain.model.CommunityPost
 fun CommunityFeedScreen(
     onBack: () -> Unit,
     onPostClick: (communityId: String, postId: String) -> Unit,
+    onAuthorClick: (uid: String) -> Unit,
     viewModel: CommunityFeedViewModel = hiltViewModel(),
 ) {
     val community by viewModel.community.collectAsStateWithLifecycle()
@@ -143,6 +145,7 @@ fun CommunityFeedScreen(
                         post = post,
                         canInteract = isSignedIn,
                         onClick = { onPostClick(current.id, post.id) },
+                        onAuthorClick = { onAuthorClick(post.authorUid) },
                         onLikeClick = { viewModel.toggleLike(post.id) },
                     )
                 }
@@ -215,6 +218,7 @@ private fun PostCard(
     post: CommunityPost,
     canInteract: Boolean,
     onClick: () -> Unit,
+    onAuthorClick: () -> Unit,
     onLikeClick: () -> Unit,
 ) {
     ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
@@ -224,14 +228,20 @@ private fun PostCard(
                     AsyncImage(
                         model = post.authorPhoto,
                         contentDescription = post.authorName,
-                        modifier = Modifier.size(36.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onAuthorClick),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(36.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onAuthorClick),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }

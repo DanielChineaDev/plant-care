@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import android.Manifest
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.HealthAndSafety
@@ -70,6 +71,7 @@ import java.util.Date
 fun ProfileScreen(
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
+    onOpenChats: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -132,6 +134,7 @@ fun ProfileScreen(
         ToolsCard(
             onOpenLightMeter = onOpenLightMeter,
             onOpenDiagnosis = onOpenDiagnosis,
+            onOpenChats = onOpenChats,
         )
     }
     }
@@ -227,6 +230,7 @@ private fun WeatherCard(
 private fun ToolsCard(
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
+    onOpenChats: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -238,6 +242,12 @@ private fun ToolsCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedButton(onClick = onOpenChats, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Mensajes")
+            }
             Spacer(modifier = Modifier.size(8.dp))
             OutlinedButton(onClick = onOpenLightMeter, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.LightMode, contentDescription = null)

@@ -1,5 +1,6 @@
 package com.BPO.plantcare.ui.screens.postdetail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,6 +65,7 @@ import com.BPO.plantcare.domain.model.CommunityPost
 @Composable
 fun PostDetailScreen(
     onBack: () -> Unit,
+    onAuthorClick: (uid: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val post by viewModel.post.collectAsStateWithLifecycle()
@@ -124,6 +126,7 @@ fun PostDetailScreen(
                 PostHeader(
                     post = current,
                     canInteract = isSignedIn,
+                    onAuthorClick = { onAuthorClick(current.authorUid) },
                     onLikeClick = viewModel::toggleLike,
                 )
             }
@@ -159,6 +162,7 @@ fun PostDetailScreen(
 private fun PostHeader(
     post: CommunityPost,
     canInteract: Boolean,
+    onAuthorClick: () -> Unit,
     onLikeClick: () -> Unit,
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -168,14 +172,20 @@ private fun PostHeader(
                     AsyncImage(
                         model = post.authorPhoto,
                         contentDescription = post.authorName,
-                        modifier = Modifier.size(40.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onAuthorClick),
                         contentScale = ContentScale.Crop,
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onAuthorClick),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }

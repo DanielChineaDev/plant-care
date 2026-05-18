@@ -123,5 +123,39 @@ service cloud.firestore {
         }
       }
     }
+
+    // ---------- /conversations ----------
+    // Chat 1-a-1. El id es deterministico: sorted(uidA, uidB).joinToString("_")
+    match /conversations/{conversationId} {
+      // Solo los participantes pueden leer y escribir la conversacion.
+      allow read: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+      // Crear: el usuario actual debe estar en participants y este array
+      // debe tener exactamente 2 elementos.
+      allow create: if isSignedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+      // Update: solo si sigues siendo participante; no se puede cambiar
+      // el array participants ni los nombres/fotos almacenados.
+      allow update: if isSignedIn()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.participants == resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Solo los participantes de la conversacion padre pueden ver y
+        // crear mensajes. Usamos get() en el doc padre para comprobarlo.
+        function isParticipant() {
+          return isSignedIn()
+            && request.auth.uid in get(
+              /databases/$(database)/documents/conversations/$(conversationId)
+            ).data.participants;
+        }
+        allow read: if isParticipant();
+        allow create: if isParticipant()
+          && request.resource.data.senderUid == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
   }
 }

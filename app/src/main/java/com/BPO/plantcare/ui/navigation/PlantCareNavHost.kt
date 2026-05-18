@@ -19,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.BPO.plantcare.ui.screens.calendar.CalendarScreen
 import com.BPO.plantcare.ui.screens.catalogdetail.CatalogPlantDetailScreen
+import com.BPO.plantcare.ui.screens.chat.ChatScreen
+import com.BPO.plantcare.ui.screens.chatslist.ChatsListScreen
 import com.BPO.plantcare.ui.screens.communities.CommunitiesListScreen
 import com.BPO.plantcare.ui.screens.communityfeed.CommunityFeedScreen
 import com.BPO.plantcare.ui.screens.postdetail.PostDetailScreen
@@ -52,6 +54,12 @@ object Routes {
     const val POST_DETAIL_PATTERN =
         "$POST_DETAIL/{${NavArgs.COMMUNITY_ID}}/{${NavArgs.POST_ID}}"
 
+    const val CHATS = "chats"
+
+    private const val CHAT = "chat"
+    fun chat(otherUid: String) = "$CHAT/$otherUid"
+    const val CHAT_PATTERN = "$CHAT/{${NavArgs.OTHER_UID}}"
+
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
     const val PLANT_DETAIL_PATTERN = "$PLANT_DETAIL/{${NavArgs.PLANT_ID}}"
@@ -75,6 +83,7 @@ object NavArgs {
     const val DIAGNOSIS_ID = "diagnosisId"
     const val COMMUNITY_ID = "communityId"
     const val POST_ID = "postId"
+    const val OTHER_UID = "otherUid"
 }
 
 private const val ANIM = 280
@@ -129,6 +138,7 @@ fun PlantCareNavHost(
             ProfileScreen(
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+                onOpenChats = { navController.navigate(Routes.CHATS) },
             )
         }
 
@@ -200,6 +210,7 @@ fun PlantCareNavHost(
             CommunityFeedScreen(
                 onBack = { navController.popBackStack() },
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+                onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
 
@@ -214,7 +225,34 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            PostDetailScreen(onBack = { navController.popBackStack() })
+            PostDetailScreen(
+                onBack = { navController.popBackStack() },
+                onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
+            )
+        }
+
+        composable(
+            Routes.CHATS,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            ChatsListScreen(
+                onBack = { navController.popBackStack() },
+                onChatClick = { uid -> navController.navigate(Routes.chat(uid)) },
+            )
+        }
+
+        composable(
+            route = Routes.CHAT_PATTERN,
+            arguments = listOf(navArgument(NavArgs.OTHER_UID) { type = NavType.StringType }),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            ChatScreen(onBack = { navController.popBackStack() })
         }
 
         composable(
