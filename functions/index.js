@@ -32,7 +32,8 @@ const messaging = admin.messaging();
 exports.onChatMessageCreated = onDocumentCreated(
   {
     document: "conversations/{conversationId}/messages/{messageId}",
-    region: "us-central1",
+    // Colocada con Firestore (eur3) para minimizar latencia.
+    region: "europe-west1",
   },
   async (event) => {
     const snap = event.data;
