@@ -14,16 +14,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -32,18 +37,18 @@ import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.ui.auth.AuthGateViewModel
 import com.BPO.plantcare.ui.navigation.BottomBarViewModel
 import com.BPO.plantcare.ui.navigation.PlantCareBottomBar
+import com.BPO.plantcare.ui.navigation.PlantCareDrawerContent
 import com.BPO.plantcare.ui.navigation.PlantCareNavHost
 import com.BPO.plantcare.ui.navigation.Routes
 import com.BPO.plantcare.ui.navigation.TopLevelDestination
 import com.BPO.plantcare.ui.screens.auth.AuthScreen
 import com.BPO.plantcare.ui.theme.PlantCareTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // Holder mutable de "pending deep link". Si llega un intent nuevo (via
-    // onNewIntent) actualizamos esto y el compose LaunchedEffect navega.
     private var pendingChatUid by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,13 +73,7 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Root composable. Gate sobre [AuthState]:
- *   - Loading -> splash centrado.
- *   - SignedOut -> AuthScreen (login/registro).
- *   - SignedIn  -> app real con NavHost.
- *
- * Asi sin sesion no hay forma de entrar a pantallas con datos remotos y nos
- * ahorramos comprobar el user en cada ViewModel de feature.
+ * Gate raiz sobre AuthState.
  */
 @Composable
 private fun PlantCareRoot(
@@ -84,8 +83,6 @@ private fun PlantCareRoot(
 ) {
     val authState by gateViewModel.authState.collectAsStateWithLifecycle()
 
-    // Animamos por clase para que solo hagamos crossfade cuando cambia el tipo
-    // de estado (no al recibir un nuevo perfil SignedIn -> SignedIn).
     AnimatedContent(
         targetState = authState::class,
         transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
@@ -122,18 +119,49 @@ private fun PlantCareApp(
     val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
     val counts by bottomBarViewModel.counts.collectAsStateWithLifecycle()
 
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     HandleDeepLink(navController, pendingChatUid, onDeepLinkConsumed)
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            if (showBottomBar) PlantCareBottomBar(navController, counts)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        // Solo permitimos abrir el drawer en pantallas top-level. Asi no
+        // colisiona con el back swipe en pantallas de detalle.
+        gesturesEnabled = showBottomBar && drawerState.isOpen || showBottomBar,
+        drawerContent = {
+            PlantCareDrawerContent(
+                onNavigate = { route ->
+                    scope.launch { drawerState.close() }
+                    // Para destinos top-level usamos el patron save/restore.
+                    val isTopLevel = TopLevelDestination.entries.any { it.route == route }
+                    if (isTopLevel) {
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    } else {
+                        navController.navigate(route) { launchSingleTop = true }
+                    }
+                },
+            )
         },
-    ) { innerPadding ->
-        PlantCareNavHost(
-            navController = navController,
-            modifier = Modifier.padding(innerPadding),
-        )
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                if (showBottomBar) PlantCareBottomBar(navController, counts)
+            },
+        ) { innerPadding ->
+            PlantCareNavHost(
+                navController = navController,
+                onOpenDrawer = { scope.launch { drawerState.open() } },
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
     }
 }
 

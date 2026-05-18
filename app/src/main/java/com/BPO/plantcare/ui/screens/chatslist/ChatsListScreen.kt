@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +42,7 @@ import com.BPO.plantcare.domain.model.Conversation
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatsListScreen(
-    onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onChatClick: (otherUid: String) -> Unit,
     viewModel: ChatsListViewModel = hiltViewModel(),
 ) {
@@ -54,8 +54,8 @@ fun ChatsListScreen(
             TopAppBar(
                 title = { Text("Mensajes") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
                 },
             )

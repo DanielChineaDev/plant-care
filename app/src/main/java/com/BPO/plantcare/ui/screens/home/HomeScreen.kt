@@ -19,13 +19,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFlorist
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,9 +51,10 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onOpenDrawer: () -> Unit,
     onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
@@ -65,12 +71,26 @@ fun HomeScreen(
         }
     }
     val recents by viewModel.recentPlants.collectAsStateWithLifecycle()
-    HomeContent(
-        recents = recents,
-        onIdentifyClick = onIdentifyClick,
-        onPlantClick = onPlantClick,
-        onCommunitiesClick = onCommunitiesClick,
-    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Inicio") },
+                navigationIcon = {
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        HomeContent(
+            recents = recents,
+            onIdentifyClick = onIdentifyClick,
+            onPlantClick = onPlantClick,
+            onCommunitiesClick = onCommunitiesClick,
+            modifier = Modifier.padding(padding),
+        )
+    }
 }
 
 @Composable
@@ -79,9 +99,10 @@ private fun HomeContent(
     onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),

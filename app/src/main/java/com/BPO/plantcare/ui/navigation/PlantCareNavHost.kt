@@ -30,17 +30,22 @@ import com.BPO.plantcare.ui.screens.home.HomeScreen
 import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
+import com.BPO.plantcare.ui.screens.myprofile.MyProfileScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
 import com.BPO.plantcare.ui.screens.profile.ProfileScreen
 import com.BPO.plantcare.ui.screens.publicprofile.PublicProfileScreen
 import com.BPO.plantcare.ui.screens.search.SearchScreen
+import com.BPO.plantcare.ui.screens.tools.ToolsScreen
 
 object Routes {
     const val IDENTIFY = "identify"
     const val LIGHT_METER = "light_meter"
     const val DIAGNOSIS_LIST = "diagnosis"
-    const val COMMUNITIES = "communities"
+    const val CALENDAR = "calendar"
+    const val SETTINGS = "settings"
+    const val MY_PROFILE = "my_profile"
+    const val TOOLS = "tools"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -54,8 +59,6 @@ object Routes {
     fun postDetail(communityId: String, postId: String) = "$POST_DETAIL/$communityId/$postId"
     const val POST_DETAIL_PATTERN =
         "$POST_DETAIL/{${NavArgs.COMMUNITY_ID}}/{${NavArgs.POST_ID}}"
-
-    const val CHATS = "chats"
 
     private const val CHAT = "chat"
     fun chat(otherUid: String) = "$CHAT/$otherUid"
@@ -110,6 +113,7 @@ private val slidePopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -
 @Composable
 fun PlantCareNavHost(
     navController: NavHostController,
+    onOpenDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -122,31 +126,91 @@ fun PlantCareNavHost(
         popEnterTransition = { fadeIn(tween(ANIM)) },
         popExitTransition = { fadeOut(tween(ANIM)) },
     ) {
+        // ===== Top-level (bottom nav) =====
         composable(TopLevelDestination.Home.route) {
             HomeScreen(
+                onOpenDrawer = onOpenDrawer,
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
-                onCommunitiesClick = { navController.navigate(Routes.COMMUNITIES) },
+                onCommunitiesClick = { navController.navigate(TopLevelDestination.Communities.route) },
             )
         }
         composable(TopLevelDestination.MyPlants.route) {
             MyPlantsScreen(
+                onOpenDrawer = onOpenDrawer,
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
             )
         }
-        composable(TopLevelDestination.Calendar.route) { CalendarScreen() }
-        composable(TopLevelDestination.Search.route) {
-            SearchScreen(onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) })
+        composable(TopLevelDestination.Communities.route) {
+            CommunitiesListScreen(
+                onOpenDrawer = onOpenDrawer,
+                onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
+            )
         }
-        composable(TopLevelDestination.Profile.route) {
-            ProfileScreen(
-                onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
-                onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
-                onOpenChats = { navController.navigate(Routes.CHATS) },
+        composable(TopLevelDestination.Search.route) {
+            SearchScreen(
+                onOpenDrawer = onOpenDrawer,
+                onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) },
+            )
+        }
+        composable(TopLevelDestination.Messages.route) {
+            ChatsListScreen(
+                onOpenDrawer = onOpenDrawer,
+                onChatClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
 
+        // ===== Accesibles desde drawer =====
+        composable(
+            Routes.CALENDAR,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            CalendarScreen()
+        }
+
+        composable(
+            Routes.SETTINGS,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
+                onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+            )
+        }
+
+        composable(
+            Routes.MY_PROFILE,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            MyProfileScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(
+            Routes.TOOLS,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            ToolsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
+                onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+            )
+        }
+
+        // ===== Detalles =====
         composable(
             Routes.IDENTIFY,
             enterTransition = slideEnter,
@@ -189,19 +253,6 @@ fun PlantCareNavHost(
             popExitTransition = slidePopExit,
         ) {
             DiagnosisDetailScreen(onBack = { navController.popBackStack() })
-        }
-
-        composable(
-            Routes.COMMUNITIES,
-            enterTransition = slideEnter,
-            exitTransition = slideExit,
-            popEnterTransition = slidePopEnter,
-            popExitTransition = slidePopExit,
-        ) {
-            CommunitiesListScreen(
-                onBack = { navController.popBackStack() },
-                onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
-            )
         }
 
         composable(
@@ -249,19 +300,6 @@ fun PlantCareNavHost(
             PublicProfileScreen(
                 onBack = { navController.popBackStack() },
                 onMessageClick = { uid -> navController.navigate(Routes.chat(uid)) },
-            )
-        }
-
-        composable(
-            Routes.CHATS,
-            enterTransition = slideEnter,
-            exitTransition = slideExit,
-            popEnterTransition = slidePopEnter,
-            popExitTransition = slidePopExit,
-        ) {
-            ChatsListScreen(
-                onBack = { navController.popBackStack() },
-                onChatClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
 

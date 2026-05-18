@@ -12,15 +12,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import android.Manifest
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.HealthAndSafety
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -39,6 +37,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,20 +49,12 @@ import androidx.compose.runtime.setValue
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.repository.AuthState
 import java.text.DateFormat
 import java.util.Date
@@ -70,16 +62,15 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(
+    onBack: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
-    onOpenChats: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
-    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -98,59 +89,85 @@ fun ProfileScreen(
         }
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Spacer(modifier = Modifier.size(8.dp))
-        AuthHeaderCard(
-            authState = authState,
-            onSignIn = { viewModel.signInWithGoogle(context) },
-            onSignOut = { viewModel.signOut() },
-        )
-
-        NotificationsCard(
-            settings = settings,
-            onToggle = viewModel::setNotificationsEnabled,
-            onHourChange = viewModel::setReminderHour,
-            onTest = viewModel::testWateringNotification,
-        )
-
-        TravelModeCard(
-            settings = settings,
-            onToggle = viewModel::setTravelEnabled,
-            onRangeChange = viewModel::setTravelRange,
-        )
-
-        WeatherCard(
-            settings = settings,
-            hasPermission = locationPermission.status is PermissionStatus.Granted,
-            onToggle = viewModel::setWeatherAware,
-            onRequestPermission = { locationPermission.launchPermissionRequest() },
-            onRefreshLocation = viewModel::refreshLocation,
-            onClearLocation = viewModel::clearLocation,
-        )
-
-        val signedInState = authState as? AuthState.SignedIn
-        if (signedInState != null) {
-            PublicCollectionCard(
-                isPublic = signedInState.profile.isCollectionPublic,
-                onToggle = viewModel::setCollectionPublic,
-                onResync = viewModel::resyncPublicCollection,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Configuracion") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                    }
+                },
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            NotificationsCard(
+                settings = settings,
+                onToggle = viewModel::setNotificationsEnabled,
+                onHourChange = viewModel::setReminderHour,
+                onTest = viewModel::testWateringNotification,
+            )
 
-        ToolsCard(
-            onOpenLightMeter = onOpenLightMeter,
-            onOpenDiagnosis = onOpenDiagnosis,
-            onOpenChats = onOpenChats,
-        )
+            TravelModeCard(
+                settings = settings,
+                onToggle = viewModel::setTravelEnabled,
+                onRangeChange = viewModel::setTravelRange,
+            )
+
+            WeatherCard(
+                settings = settings,
+                hasPermission = locationPermission.status is PermissionStatus.Granted,
+                onToggle = viewModel::setWeatherAware,
+                onRequestPermission = { locationPermission.launchPermissionRequest() },
+                onRefreshLocation = viewModel::refreshLocation,
+                onClearLocation = viewModel::clearLocation,
+            )
+
+            val signedInState = authState as? AuthState.SignedIn
+            if (signedInState != null) {
+                PublicCollectionCard(
+                    isPublic = signedInState.profile.isCollectionPublic,
+                    onToggle = viewModel::setCollectionPublic,
+                    onResync = viewModel::resyncPublicCollection,
+                )
+            }
+
+            SignOutCard(onSignOut = { viewModel.signOut() })
+
+            Spacer(modifier = Modifier.size(16.dp))
+        }
     }
+}
+
+@Composable
+private fun SignOutCard(onSignOut: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Cuenta",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Logout, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Cerrar sesion")
+            }
+        }
     }
 }
 
@@ -235,44 +252,6 @@ private fun WeatherCard(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ToolsCard(
-    onOpenLightMeter: () -> Unit,
-    onOpenDiagnosis: () -> Unit,
-    onOpenChats: () -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Herramientas",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            OutlinedButton(onClick = onOpenChats, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
-                Text("Mensajes")
-            }
-            Spacer(modifier = Modifier.size(8.dp))
-            OutlinedButton(onClick = onOpenLightMeter, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.LightMode, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
-                Text("Medir luz de un sitio")
-            }
-            Spacer(modifier = Modifier.size(8.dp))
-            OutlinedButton(onClick = onOpenDiagnosis, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.HealthAndSafety, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
-                Text("Diagnostico de plagas y enfermedades")
             }
         }
     }
@@ -525,91 +504,3 @@ private fun PublicCollectionCard(
     }
 }
 
-@Composable
-private fun AuthHeaderCard(
-    authState: AuthState,
-    onSignIn: () -> Unit,
-    onSignOut: () -> Unit,
-) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            when (authState) {
-                AuthState.Loading -> CircularProgressIndicator(modifier = Modifier.size(40.dp))
-
-                AuthState.SignedOut -> {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(72.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = "Inicia sesion",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                    Text(
-                        text = "Sincroniza tus plantas, unete a comunidades y comparte tu coleccion.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
-                    )
-                    Button(onClick = onSignIn) {
-                        Text("Iniciar sesion con Google")
-                    }
-                }
-
-                is AuthState.SignedIn -> {
-                    val photo = authState.profile.photoUrl
-                    if (photo != null) {
-                        AsyncImage(
-                            model = photo,
-                            contentDescription = authState.profile.displayName,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
-                    Text(
-                        text = authState.profile.displayName.orEmpty(),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                    authState.profile.email?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(8.dp))
-                    OutlinedButton(onClick = onSignOut) { Text("Cerrar sesion") }
-                }
-            }
-        }
-    }
-}

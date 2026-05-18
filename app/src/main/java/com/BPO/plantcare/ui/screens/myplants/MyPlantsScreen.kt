@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.LocalFlorist
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.AssistChip
@@ -24,10 +25,13 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,30 +56,48 @@ import com.BPO.plantcare.ui.theme.StatusWarning
 import java.io.File
 import kotlin.math.max
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyPlantsScreen(
+    onOpenDrawer: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onIdentifyClick: () -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel(),
 ) {
     val plants by viewModel.plants.collectAsStateWithLifecycle()
 
-    if (plants.isEmpty()) {
-        EmptyState(onIdentifyClick = onIdentifyClick)
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(plants, key = { it.id }) { plant ->
-                PlantCard(
-                    plant = plant,
-                    onClick = { onPlantClick(plant.id) },
-                    onWaterClick = { viewModel.onWatered(plant.id) },
-                )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mis plantas") },
+                navigationIcon = {
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        if (plants.isEmpty()) {
+            EmptyState(
+                onIdentifyClick = onIdentifyClick,
+                modifier = Modifier.padding(padding),
+            )
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(plants, key = { it.id }) { plant ->
+                    PlantCard(
+                        plant = plant,
+                        onClick = { onPlantClick(plant.id) },
+                        onWaterClick = { viewModel.onWatered(plant.id) },
+                    )
+                }
             }
         }
     }
@@ -193,9 +215,9 @@ private fun StatusBadge(status: PlantStatus, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun EmptyState(onIdentifyClick: () -> Unit) {
+private fun EmptyState(onIdentifyClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,

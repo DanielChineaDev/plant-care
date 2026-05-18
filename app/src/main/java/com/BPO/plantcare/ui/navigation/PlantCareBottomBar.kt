@@ -61,6 +61,5 @@ fun PlantCareBottomBar(
 private fun badgeFor(destination: TopLevelDestination, counts: BottomBarCounts): Int =
     when (destination) {
         TopLevelDestination.MyPlants -> counts.myPlants
-        TopLevelDestination.Calendar -> counts.calendarToday
         else -> 0
     }

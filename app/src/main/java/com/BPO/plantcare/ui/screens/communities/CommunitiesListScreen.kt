@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
@@ -51,7 +51,7 @@ import com.BPO.plantcare.domain.model.Community
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunitiesListScreen(
-    onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onCommunityClick: (String) -> Unit,
     viewModel: CommunitiesListViewModel = hiltViewModel(),
 ) {
@@ -75,8 +75,8 @@ fun CommunitiesListScreen(
             TopAppBar(
                 title = { Text("Comunidades") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
                 },
             )
