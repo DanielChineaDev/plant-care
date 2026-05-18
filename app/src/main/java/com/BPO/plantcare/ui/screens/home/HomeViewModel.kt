@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -65,6 +66,10 @@ class HomeViewModel @Inject constructor(
             )
 
     private val aggregatedPosts: StateFlow<List<FeedItem>> = joinedCommunities
+        // Solo reconstruimos los N listeners si cambia el SET de comunidades
+        // unidas. Si solo cambia memberCount/photoUrl de una comunidad ya
+        // unida, no tiene sentido tirar y recrear todos los listeners.
+        .distinctUntilChanged { old, new -> old.map { it.id }.toSet() == new.map { it.id }.toSet() }
         .flatMapLatest { communities ->
             if (communities.isEmpty()) {
                 flowOf(emptyList())

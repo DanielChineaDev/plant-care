@@ -19,16 +19,27 @@ class WateringReminderScheduler @Inject constructor(
 
     /**
      * Programa una comprobacion diaria a la [hour] indicada con WorkManager.
-     * Usa REPLACE: si se vuelve a llamar con otra hora, reprograma.
+     *
+     * [resetSchedule]:
+     *  - true  -> CANCEL_AND_REENQUEUE: respeta el nuevo initialDelay, asi
+     *    el cambio explicito de hora desde Perfil entra ya hoy.
+     *  - false -> UPDATE: mantiene el periodo en curso. Para
+     *    [applyOnStartup] donde no queremos cambiar la cadencia si ya
+     *    estaba programada.
      */
-    fun scheduleDaily(hour: Int) {
+    fun scheduleDaily(hour: Int, resetSchedule: Boolean = false) {
         val safeHour = hour.coerceIn(0, 23)
         val request = PeriodicWorkRequestBuilder<WateringReminderWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(initialDelayUntilHour(safeHour), TimeUnit.MILLISECONDS)
             .build()
+        val policy = if (resetSchedule) {
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE
+        } else {
+            ExistingPeriodicWorkPolicy.UPDATE
+        }
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             UNIQUE_WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
+            policy,
             request,
         )
     }

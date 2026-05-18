@@ -18,7 +18,8 @@ class WateringReminderManager @Inject constructor(
     suspend fun applyOnStartup() {
         val settings = preferences.settings.first()
         if (settings.notificationsEnabled) {
-            scheduler.scheduleDaily(settings.reminderHour)
+            // En arranque: no resetear, respetamos el periodo ya programado.
+            scheduler.scheduleDaily(settings.reminderHour, resetSchedule = false)
         } else {
             scheduler.cancel()
         }
@@ -28,7 +29,8 @@ class WateringReminderManager @Inject constructor(
         preferences.setNotificationsEnabled(enabled)
         if (enabled) {
             val hour = preferences.settings.first().reminderHour
-            scheduler.scheduleDaily(hour)
+            // Al reactivar las notif queremos empezar ya.
+            scheduler.scheduleDaily(hour, resetSchedule = true)
         } else {
             scheduler.cancel()
         }
@@ -38,7 +40,10 @@ class WateringReminderManager @Inject constructor(
         preferences.setReminderHour(hour)
         val settings = preferences.settings.first()
         if (settings.notificationsEnabled) {
-            scheduler.scheduleDaily(settings.reminderHour)
+            // Cambio explicito de hora: CANCEL_AND_REENQUEUE para que el
+            // nuevo initialDelay se aplique YA (de lo contrario con UPDATE
+            // el cambio no entraria hasta el siguiente ciclo de 24h).
+            scheduler.scheduleDaily(settings.reminderHour, resetSchedule = true)
         }
     }
 

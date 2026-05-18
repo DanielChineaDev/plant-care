@@ -46,9 +46,29 @@ class CommunitiesListViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
-    /** Top 5 por miembros para el carrusel "Espacios populares". */
-    val popularCommunities: StateFlow<List<Community>> = communities
-        .map { list -> list.sortedByDescending { it.memberCount }.take(POPULAR_LIMIT) }
+    /**
+     * Pair de (populares, resto) calculado una sola vez por emision de
+     * `communities`. Antes lo haciamos en dos `map`/`stateIn` independientes
+     * y se hacia el sort dos veces.
+     */
+    private val partitionedCommunities = communities
+        .map { list ->
+            val sorted = list.sortedByDescending { it.memberCount }
+            val popular = sorted.take(POPULAR_LIMIT)
+            val popularIds = popular.map { it.id }.toSet()
+            val others = list.filter { it.id !in popularIds }
+                .sortedBy { it.name.lowercase() }
+            popular to others
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList<Community>() to emptyList(),
+        )
+
+    /** Top 5 por miembros para el carrusel "Comunidades populares". */
+    val popularCommunities: StateFlow<List<Community>> = partitionedCommunities
+        .map { it.first }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -56,11 +76,8 @@ class CommunitiesListViewModel @Inject constructor(
         )
 
     /** Resto de comunidades (las que no estan en el carrusel popular). */
-    val otherCommunities: StateFlow<List<Community>> = communities
-        .map { list ->
-            val populars = list.sortedByDescending { it.memberCount }.take(POPULAR_LIMIT).map { it.id }
-            list.filter { it.id !in populars }.sortedBy { it.name.lowercase() }
-        }
+    val otherCommunities: StateFlow<List<Community>> = partitionedCommunities
+        .map { it.second }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

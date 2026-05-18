@@ -55,13 +55,15 @@ class PublicProfileRepositoryImpl @Inject constructor(
 
     override suspend fun setMyCollectionPublic(enabled: Boolean): Result<Unit> = runCatching {
         val uid = requireUid()
+        // ORDEN IMPORTANTE en el caso "hacer privada":
+        // primero borramos las plantas publicadas y SOLO si eso va bien
+        // marcamos el flag a false. Si lo hicieramos al reves y fallase
+        // el clearMirror, el flag quedaria en false pero las plantas
+        // seguirian leyendose por las reglas (read: if true sobre publicPlants).
+        if (!enabled) clearMirror(uid)
         firestore.collection(USERS).document(uid)
             .update("isCollectionPublic", enabled).await()
-        if (enabled) {
-            syncCurrentPlants(uid)
-        } else {
-            clearMirror(uid)
-        }
+        if (enabled) syncCurrentPlants(uid)
     }
 
     override suspend fun resyncMyPublicCollection(): Result<Unit> = runCatching {

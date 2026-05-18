@@ -37,8 +37,13 @@ class WikipediaRepositoryImpl @Inject constructor(
             if (thumbnailCache.containsKey(key)) return thumbnailCache[key]
         }
         // Fetch fuera del mutex para no serializar las peticiones de red.
-        val summary = getSummary(scientificName).getOrNull()
-        return summary?.thumbnailUrl
+        // Importante: si getSummary devuelve Result.failure (sin red, 5xx,
+        // etc.) tambien cacheamos null para no entrar en bucle reintentando
+        // por cada item de la lista del catalogo en cada scroll.
+        val result = getSummary(scientificName)
+        val url = result.getOrNull()?.thumbnailUrl
+        cacheThumbnail(scientificName, url)
+        return url
     }
 
     private suspend fun cacheThumbnail(scientificName: String, url: String?) {

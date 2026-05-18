@@ -11,10 +11,12 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import java.io.File
@@ -33,41 +35,47 @@ class CommunityRepositoryImpl @Inject constructor(
 
     // ---- Comunidades ----
 
-    override fun observeCommunities(): Flow<List<Community>> {
-        val communitiesFlow = communitiesSnapshotFlow()
-        val uid = currentUid()
-        val membershipFlow = if (uid == null) flowOf(emptySet()) else userMembershipFlow(uid)
-        return combine(communitiesFlow, membershipFlow) { list, joined ->
-            list.map { it.copy(isMember = it.id in joined) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeCommunities(): Flow<List<Community>> =
+        firebaseAuth.uidFlow().flatMapLatest { uid ->
+            val communitiesFlow = communitiesSnapshotFlow()
+            val membershipFlow =
+                if (uid == null) flowOf(emptySet()) else userMembershipFlow(uid)
+            combine(communitiesFlow, membershipFlow) { list, joined ->
+                list.map { it.copy(isMember = it.id in joined) }
+            }
         }
-    }
 
-    override fun observeCommunity(communityId: String): Flow<Community?> {
-        val uid = currentUid()
-        val docFlow: Flow<Community?> = callbackFlow {
-            val reg = firestore.collection(COMMUNITIES).document(communityId)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(null); return@addSnapshotListener
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeCommunity(communityId: String): Flow<Community?> =
+        firebaseAuth.uidFlow().flatMapLatest { uid ->
+            val docFlow: Flow<Community?> = callbackFlow {
+                val reg = firestore.collection(COMMUNITIES).document(communityId)
+                    .addSnapshotListener { snap, err ->
+                        if (err != null) {
+                            trySend(null); return@addSnapshotListener
+                        }
+                        trySend(snap?.toCommunity())
                     }
-                    trySend(snap?.toCommunity())
+                awaitClose { reg.remove() }
+            }
+            if (uid == null) {
+                docFlow
+            } else {
+                val memberFlow: Flow<Boolean> = callbackFlow {
+                    val reg = firestore.collection(COMMUNITIES).document(communityId)
+                        .collection(MEMBERS).document(uid)
+                        .addSnapshotListener { snap, err ->
+                            if (err != null) {
+                                trySend(false); return@addSnapshotListener
+                            }
+                            trySend(snap?.exists() == true)
+                        }
+                    awaitClose { reg.remove() }
                 }
-            awaitClose { reg.remove() }
+                combine(docFlow, memberFlow) { c, isMember -> c?.copy(isMember = isMember) }
+            }
         }
-        if (uid == null) return docFlow
-        val memberFlow: Flow<Boolean> = callbackFlow {
-            val reg = firestore.collection(COMMUNITIES).document(communityId)
-                .collection(MEMBERS).document(uid)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(false); return@addSnapshotListener
-                    }
-                    trySend(snap?.exists() == true)
-                }
-            awaitClose { reg.remove() }
-        }
-        return combine(docFlow, memberFlow) { c, isMember -> c?.copy(isMember = isMember) }
-    }
 
     private fun communitiesSnapshotFlow(): Flow<List<Community>> = callbackFlow {
         val reg = firestore.collection(COMMUNITIES)
@@ -101,11 +109,11 @@ class CommunityRepositoryImpl @Inject constructor(
     ): Result<String> = runCatching {
         val uid = requireUid()
         val doc = firestore.collection(COMMUNITIES).document()
-        // Si trae foto la subimos primero a Storage usando el id del doc
-        // como nombre, de forma estable. Igual que con posts.
-        val photoUrl: String? = if (photoFile != null) {
-            val storageRef = firebaseStorage.reference
-                .child("communities/${doc.id}/cover.jpg")
+        val storageRef = if (photoFile != null) {
+            firebaseStorage.reference.child("communities/${doc.id}/cover.jpg")
+        } else null
+
+        val photoUrl: String? = if (photoFile != null && storageRef != null) {
             storageRef.putFile(Uri.fromFile(photoFile)).await()
             storageRef.downloadUrl.await().toString()
         } else null
@@ -119,7 +127,14 @@ class CommunityRepositoryImpl @Inject constructor(
             "memberCount" to 0L,
             "photoUrl" to photoUrl,
         )
-        doc.set(data).await()
+        // Si la escritura del doc falla (p.ej. reglas rechazan porque el user
+        // no es admin), borramos el blob ya subido para no dejar huerfano.
+        try {
+            doc.set(data).await()
+        } catch (e: Exception) {
+            if (storageRef != null) runCatching { storageRef.delete().await() }
+            throw e
+        }
         joinCommunityInternal(uid, doc.id)
         doc.id
     }
@@ -178,50 +193,59 @@ class CommunityRepositoryImpl @Inject constructor(
             awaitClose { reg.remove() }
         }
 
-    override fun observeLikedPostsInCommunity(communityId: String): Flow<Set<String>> {
-        val uid = currentUid() ?: return flowOf(emptySet())
-        return callbackFlow {
-            val reg = firestore.collection(USERS).document(uid)
-                .collection(POST_LIKES)
-                .whereEqualTo("communityId", communityId)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(emptySet()); return@addSnapshotListener
-                    }
-                    trySend(snap?.documents?.map { it.id }?.toSet() ?: emptySet())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeLikedPostsInCommunity(communityId: String): Flow<Set<String>> =
+        firebaseAuth.uidFlow().flatMapLatest { uid ->
+            if (uid == null) {
+                flowOf(emptySet())
+            } else {
+                callbackFlow {
+                    val reg = firestore.collection(USERS).document(uid)
+                        .collection(POST_LIKES)
+                        .whereEqualTo("communityId", communityId)
+                        .addSnapshotListener { snap, err ->
+                            if (err != null) {
+                                trySend(emptySet()); return@addSnapshotListener
+                            }
+                            trySend(snap?.documents?.map { it.id }?.toSet() ?: emptySet())
+                        }
+                    awaitClose { reg.remove() }
                 }
-            awaitClose { reg.remove() }
+            }
         }
-    }
 
-    override fun observePost(communityId: String, postId: String): Flow<CommunityPost?> {
-        val uid = currentUid()
-        val docFlow: Flow<CommunityPost?> = callbackFlow {
-            val reg = firestore.collection(COMMUNITIES).document(communityId)
-                .collection(POSTS).document(postId)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(null); return@addSnapshotListener
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observePost(communityId: String, postId: String): Flow<CommunityPost?> =
+        firebaseAuth.uidFlow().flatMapLatest { uid ->
+            val docFlow: Flow<CommunityPost?> = callbackFlow {
+                val reg = firestore.collection(COMMUNITIES).document(communityId)
+                    .collection(POSTS).document(postId)
+                    .addSnapshotListener { snap, err ->
+                        if (err != null) {
+                            trySend(null); return@addSnapshotListener
+                        }
+                        trySend(snap?.toPost(communityId))
                     }
-                    trySend(snap?.toPost(communityId))
+                awaitClose { reg.remove() }
+            }
+            if (uid == null) {
+                docFlow
+            } else {
+                val likeFlow: Flow<Boolean> = callbackFlow {
+                    val reg = firestore.collection(COMMUNITIES).document(communityId)
+                        .collection(POSTS).document(postId)
+                        .collection(LIKES).document(uid)
+                        .addSnapshotListener { snap, err ->
+                            if (err != null) {
+                                trySend(false); return@addSnapshotListener
+                            }
+                            trySend(snap?.exists() == true)
+                        }
+                    awaitClose { reg.remove() }
                 }
-            awaitClose { reg.remove() }
+                combine(docFlow, likeFlow) { p, liked -> p?.copy(isLikedByMe = liked) }
+            }
         }
-        if (uid == null) return docFlow
-        val likeFlow: Flow<Boolean> = callbackFlow {
-            val reg = firestore.collection(COMMUNITIES).document(communityId)
-                .collection(POSTS).document(postId)
-                .collection(LIKES).document(uid)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(false); return@addSnapshotListener
-                    }
-                    trySend(snap?.exists() == true)
-                }
-            awaitClose { reg.remove() }
-        }
-        return combine(docFlow, likeFlow) { p, liked -> p?.copy(isLikedByMe = liked) }
-    }
 
     override suspend fun createPost(
         communityId: String,
@@ -232,12 +256,12 @@ class CommunityRepositoryImpl @Inject constructor(
         val doc = firestore.collection(COMMUNITIES).document(communityId)
             .collection(POSTS).document()
         // Si hay foto, la subimos PRIMERO a Storage en un path estable
-        // construido con el id del doc. Asi si falla la subida no queda un
-        // post sin imagen, y si falla el set del doc el archivo queda
-        // huerfano (asumible para MVP).
-        val photoUrl: String? = if (photoFile != null) {
-            val storageRef = firebaseStorage.reference
-                .child("community_posts/$communityId/${doc.id}.jpg")
+        // construido con el id del doc. Si despues falla doc.set (reglas,
+        // red, etc.) borramos el blob para no dejar huerfanos.
+        val storageRef = if (photoFile != null) {
+            firebaseStorage.reference.child("community_posts/$communityId/${doc.id}.jpg")
+        } else null
+        val photoUrl: String? = if (photoFile != null && storageRef != null) {
             storageRef.putFile(Uri.fromFile(photoFile)).await()
             storageRef.downloadUrl.await().toString()
         } else null
@@ -252,7 +276,12 @@ class CommunityRepositoryImpl @Inject constructor(
             "likeCount" to 0L,
             "commentCount" to 0L,
         )
-        doc.set(data).await()
+        try {
+            doc.set(data).await()
+        } catch (e: Exception) {
+            if (storageRef != null) runCatching { storageRef.delete().await() }
+            throw e
+        }
         doc.id
     }
 

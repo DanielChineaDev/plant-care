@@ -179,8 +179,12 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signOut() {
-        // Antes de cerrar sesion, intentamos borrar el token FCM actual para
-        // dejar de recibir notifs de este user en este dispositivo.
+        // Antes de cerrar sesion:
+        // 1) Borramos el doc del token en Firestore para que el backend no
+        //    siga mandando pushes a este device para este user.
+        // 2) Invalidamos el token a nivel FCM con deleteToken(). Si no lo
+        //    hacemos, Firebase reciclaria el mismo token al loguear otro
+        //    user en este device y se mezclarian destinatarios.
         val uid = firebaseAuth.currentUser?.uid
         if (uid != null) {
             runCatching {
@@ -188,6 +192,7 @@ class AuthRepositoryImpl @Inject constructor(
                 unregisterFcmTokenInternal(uid, token)
             }
         }
+        runCatching { FirebaseMessaging.getInstance().deleteToken().await() }
         firebaseAuth.signOut()
         runCatching {
             CredentialManager.create(appContext)

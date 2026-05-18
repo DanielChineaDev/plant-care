@@ -9,9 +9,11 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import java.util.Date
@@ -26,23 +28,26 @@ class ChatRepositoryImpl @Inject constructor(
 
     private fun currentUid(): String? = firebaseAuth.currentUser?.uid
 
-    override fun observeMyConversations(): Flow<List<Conversation>> {
-        val uid = currentUid() ?: return flowOf(emptyList())
-        return callbackFlow {
-            val reg = firestore.collection(CONVERSATIONS)
-                .whereArrayContains("participants", uid)
-                .orderBy("lastMessageAt", Query.Direction.DESCENDING)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        trySend(emptyList()); return@addSnapshotListener
-                    }
-                    val list = snap?.documents
-                        ?.mapNotNull { it.toConversation(uid) }
-                        .orEmpty()
-                    trySend(list)
-                }
-            awaitClose { reg.remove() }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeMyConversations(): Flow<List<Conversation>> =
+        firebaseAuth.uidFlow().flatMapLatest { uid ->
+            if (uid == null) flowOf(emptyList()) else conversationsFlow(uid)
         }
+
+    private fun conversationsFlow(uid: String): Flow<List<Conversation>> = callbackFlow {
+        val reg = firestore.collection(CONVERSATIONS)
+            .whereArrayContains("participants", uid)
+            .orderBy("lastMessageAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snap, err ->
+                if (err != null) {
+                    trySend(emptyList()); return@addSnapshotListener
+                }
+                val list = snap?.documents
+                    ?.mapNotNull { it.toConversation(uid) }
+                    .orEmpty()
+                trySend(list)
+            }
+        awaitClose { reg.remove() }
     }
 
     override fun observeMessages(conversationId: String, limit: Int): Flow<List<ChatMessage>> =
