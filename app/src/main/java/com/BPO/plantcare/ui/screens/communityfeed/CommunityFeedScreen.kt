@@ -80,6 +80,7 @@ fun CommunityFeedScreen(
     onBack: () -> Unit,
     onPostClick: (communityId: String, postId: String) -> Unit,
     onAuthorClick: (uid: String) -> Unit,
+    onAuthorNameClick: (uid: String) -> Unit,
     viewModel: CommunityFeedViewModel = hiltViewModel(),
 ) {
     val community by viewModel.community.collectAsStateWithLifecycle()
@@ -146,6 +147,7 @@ fun CommunityFeedScreen(
                         canInteract = isSignedIn,
                         onClick = { onPostClick(current.id, post.id) },
                         onAuthorClick = { onAuthorClick(post.authorUid) },
+                        onAuthorNameClick = { onAuthorNameClick(post.authorUid) },
                         onLikeClick = { viewModel.toggleLike(post.id) },
                     )
                 }
@@ -219,6 +221,7 @@ private fun PostCard(
     canInteract: Boolean,
     onClick: () -> Unit,
     onAuthorClick: () -> Unit,
+    onAuthorNameClick: () -> Unit,
     onLikeClick: () -> Unit,
 ) {
     ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
@@ -246,7 +249,11 @@ private fun PostCard(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(onClick = onAuthorNameClick),
+                ) {
                     Text(
                         text = post.authorName.ifBlank { "Anonimo" },
                         style = MaterialTheme.typography.bodyMedium,

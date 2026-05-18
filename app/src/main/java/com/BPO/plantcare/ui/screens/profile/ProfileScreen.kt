@@ -15,6 +15,7 @@ import android.Manifest
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.HealthAndSafety
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocationOn
@@ -88,6 +89,10 @@ fun ProfileScreen(
                     "No se pudo obtener la ubicacion. Abre Google Maps un momento o activa GPS y reintenta."
                 is ProfileEvent.SignInFailed -> "Error de login: ${event.message}"
                 ProfileEvent.SignedOut -> "Sesion cerrada"
+                is ProfileEvent.PublicToggled ->
+                    if (event.enabled) "Coleccion publicada" else "Coleccion privada"
+                ProfileEvent.Resynced -> "Coleccion publica resincronizada"
+                is ProfileEvent.PublicError -> "Error: ${event.message}"
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -130,6 +135,15 @@ fun ProfileScreen(
             onRefreshLocation = viewModel::refreshLocation,
             onClearLocation = viewModel::clearLocation,
         )
+
+        val signedInState = authState as? AuthState.SignedIn
+        if (signedInState != null) {
+            PublicCollectionCard(
+                isPublic = signedInState.profile.isCollectionPublic,
+                onToggle = viewModel::setCollectionPublic,
+                onResync = viewModel::resyncPublicCollection,
+            )
+        }
 
         ToolsCard(
             onOpenLightMeter = onOpenLightMeter,
@@ -460,6 +474,56 @@ private fun HourSelector(hour: Int, onHourChange: (Int) -> Unit) {
 }
 
 private fun formatHour(hour: Int): String = "%02d:00".format(hour)
+
+@Composable
+private fun PublicCollectionCard(
+    isPublic: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onResync: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Outlined.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Mi coleccion",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Hacer publica mi coleccion", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Otros usuarios podran ver tus plantas tocando tu nombre en cualquier post.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = isPublic, onCheckedChange = onToggle)
+            }
+            if (isPublic) {
+                Spacer(modifier = Modifier.size(8.dp))
+                OutlinedButton(onClick = onResync, modifier = Modifier.fillMaxWidth()) {
+                    Text("Resincronizar coleccion publica")
+                }
+                Text(
+                    text = "Tras anadir/borrar plantas, pulsa aqui para reflejar los cambios.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun AuthHeaderCard(

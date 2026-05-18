@@ -102,6 +102,7 @@ class AuthRepositoryImpl @Inject constructor(
             email = doc.getString("email"),
             photoUrl = doc.getString("photoUrl"),
             createdAt = doc.getLong("createdAt") ?: 0L,
+            isCollectionPublic = doc.getBoolean("isCollectionPublic") ?: false,
         )
     }
 
@@ -114,6 +115,7 @@ class AuthRepositoryImpl @Inject constructor(
                 email = doc.getString("email") ?: user.email,
                 photoUrl = doc.getString("photoUrl") ?: user.photoUrl?.toString(),
                 createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
+                isCollectionPublic = doc.getBoolean("isCollectionPublic") ?: false,
             )
         } else {
             val now = System.currentTimeMillis()
@@ -123,6 +125,7 @@ class AuthRepositoryImpl @Inject constructor(
                 "email" to user.email,
                 "photoUrl" to user.photoUrl?.toString(),
                 "createdAt" to now,
+                "isCollectionPublic" to false,
             )
             firestore.collection(USERS).document(user.uid).set(data).await()
             UserProfile(

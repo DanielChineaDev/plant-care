@@ -33,6 +33,7 @@ import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
 import com.BPO.plantcare.ui.screens.profile.ProfileScreen
+import com.BPO.plantcare.ui.screens.publicprofile.PublicProfileScreen
 import com.BPO.plantcare.ui.screens.search.SearchScreen
 
 object Routes {
@@ -59,6 +60,10 @@ object Routes {
     private const val CHAT = "chat"
     fun chat(otherUid: String) = "$CHAT/$otherUid"
     const val CHAT_PATTERN = "$CHAT/{${NavArgs.OTHER_UID}}"
+
+    private const val PUBLIC_PROFILE = "public_profile"
+    fun publicProfile(uid: String) = "$PUBLIC_PROFILE/$uid"
+    const val PUBLIC_PROFILE_PATTERN = "$PUBLIC_PROFILE/{${NavArgs.OTHER_UID}}"
 
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
@@ -211,6 +216,7 @@ fun PlantCareNavHost(
                 onBack = { navController.popBackStack() },
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
+                onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
 
@@ -228,6 +234,21 @@ fun PlantCareNavHost(
             PostDetailScreen(
                 onBack = { navController.popBackStack() },
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
+                onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
+            )
+        }
+
+        composable(
+            route = Routes.PUBLIC_PROFILE_PATTERN,
+            arguments = listOf(navArgument(NavArgs.OTHER_UID) { type = NavType.StringType }),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            PublicProfileScreen(
+                onBack = { navController.popBackStack() },
+                onMessageClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
 

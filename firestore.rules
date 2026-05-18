@@ -51,6 +51,12 @@ service cloud.firestore {
       match /postLikes/{postId} {
         allow read, write: if isMe(userId);
       }
+      // Plantas publicas: cualquiera puede leer (solo aparecen aqui si el
+      // user activo isCollectionPublic). Solo el dueno escribe.
+      match /publicPlants/{plantId} {
+        allow read: if true;
+        allow write: if isMe(userId);
+      }
     }
 
     // ---------- /communities ----------

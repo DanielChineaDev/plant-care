@@ -9,6 +9,7 @@ import com.BPO.plantcare.domain.model.UserSettings
 import com.BPO.plantcare.domain.repository.AuthRepository
 import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.PreferencesRepository
+import com.BPO.plantcare.domain.repository.PublicProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,9 @@ sealed interface ProfileEvent {
     data object LocationUnavailable : ProfileEvent
     data class SignInFailed(val message: String) : ProfileEvent
     data object SignedOut : ProfileEvent
+    data class PublicToggled(val enabled: Boolean) : ProfileEvent
+    data object Resynced : ProfileEvent
+    data class PublicError(val message: String) : ProfileEvent
 }
 
 @HiltViewModel
@@ -31,6 +35,7 @@ class ProfileViewModel @Inject constructor(
     private val reminderManager: WateringReminderManager,
     private val locationProvider: LocationProvider,
     private val authRepository: AuthRepository,
+    private val publicProfileRepository: PublicProfileRepository,
 ) : ViewModel() {
 
     val settings: StateFlow<UserSettings> = preferences.settings.stateIn(
@@ -104,6 +109,24 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.signOut()
             _events.send(ProfileEvent.SignedOut)
+        }
+    }
+
+    fun setCollectionPublic(enabled: Boolean) {
+        viewModelScope.launch {
+            publicProfileRepository.setMyCollectionPublic(enabled).fold(
+                onSuccess = { _events.send(ProfileEvent.PublicToggled(enabled)) },
+                onFailure = { _events.send(ProfileEvent.PublicError(it.localizedMessage.orEmpty())) },
+            )
+        }
+    }
+
+    fun resyncPublicCollection() {
+        viewModelScope.launch {
+            publicProfileRepository.resyncMyPublicCollection().fold(
+                onSuccess = { _events.send(ProfileEvent.Resynced) },
+                onFailure = { _events.send(ProfileEvent.PublicError(it.localizedMessage.orEmpty())) },
+            )
         }
     }
 }

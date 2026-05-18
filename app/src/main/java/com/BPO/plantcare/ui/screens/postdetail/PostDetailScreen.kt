@@ -66,6 +66,7 @@ import com.BPO.plantcare.domain.model.CommunityPost
 fun PostDetailScreen(
     onBack: () -> Unit,
     onAuthorClick: (uid: String) -> Unit,
+    onAuthorNameClick: (uid: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val post by viewModel.post.collectAsStateWithLifecycle()
@@ -127,6 +128,7 @@ fun PostDetailScreen(
                     post = current,
                     canInteract = isSignedIn,
                     onAuthorClick = { onAuthorClick(current.authorUid) },
+                    onAuthorNameClick = { onAuthorNameClick(current.authorUid) },
                     onLikeClick = viewModel::toggleLike,
                 )
             }
@@ -163,6 +165,7 @@ private fun PostHeader(
     post: CommunityPost,
     canInteract: Boolean,
     onAuthorClick: () -> Unit,
+    onAuthorNameClick: () -> Unit,
     onLikeClick: () -> Unit,
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -190,7 +193,11 @@ private fun PostHeader(
                     )
                 }
                 Spacer(modifier = Modifier.size(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(onClick = onAuthorNameClick),
+                ) {
                     Text(
                         text = post.authorName.ifBlank { "Anonimo" },
                         style = MaterialTheme.typography.titleSmall,
