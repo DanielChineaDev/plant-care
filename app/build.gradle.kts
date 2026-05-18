@@ -128,6 +128,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
 
     // Credentials Manager: API moderna oficial para login con Google
     implementation(libs.androidx.credentials)

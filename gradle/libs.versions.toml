@@ -123,6 +123,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 
 # Credentials Manager (login moderno con Google sin Play Services UI legacy)
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentialsManager" }

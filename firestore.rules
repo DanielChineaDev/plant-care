@@ -57,6 +57,13 @@ service cloud.firestore {
         allow read: if true;
         allow write: if isMe(userId);
       }
+      // Tokens FCM del usuario. Solo el dueno los escribe/borra. NADIE
+      // los lee desde el cliente (solo el backend con Admin SDK los lee
+      // para enviar pushes).
+      match /fcmTokens/{token} {
+        allow read: if false;
+        allow write: if isMe(userId);
+      }
     }
 
     // ---------- /communities ----------

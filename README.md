@@ -175,6 +175,41 @@ firebase init   # marcar Firestore + Storage, usar los .rules existentes
 firebase deploy --only firestore:rules,storage
 ```
 
+---
+
+## ☁️ Cloud Functions (FCM push para mensajes nuevos)
+
+La carpeta `functions/` contiene una Cloud Function en Node.js que:
+
+- Se dispara cada vez que se crea un documento en `conversations/{cid}/messages/{mid}`.
+- Lee los participantes de la conversación, busca los tokens FCM del destinatario (`users/{uid}/fcmTokens/*`) y le envía un push.
+- Limpia automáticamente los tokens inválidos (dispositivos desinstalados).
+
+### Requisitos
+
+- El proyecto Firebase tiene que estar en **plan Blaze (pago por uso)**. Las Cloud Functions ya no funcionan en Spark/gratis. El tier gratuito de Blaze cubre ~125 K invocaciones/mes — más que suficiente para un proyecto pequeño.
+- Node.js 20 instalado localmente.
+
+### Despliegue
+
+```bash
+cd functions
+npm install
+cd ..
+firebase deploy --only functions
+```
+
+La primera vez Firebase pedirá habilitar las APIs necesarias (Cloud Build, Artifact Registry, etc.). Acepta y vuelve a lanzar el deploy si hace falta.
+
+### Cómo verificar que funciona
+
+1. Inicia sesión con dos cuentas distintas en dos dispositivos.
+2. Cierra la app en el dispositivo destinatario.
+3. Envía un mensaje desde el otro dispositivo.
+4. Debería aparecer una notificación con el nombre y el texto. Al tocarla, abre directamente el chat con ese usuario.
+
+Los logs de la función están en `firebase functions:log` o en la consola de Firebase → **Functions → Logs**.
+
 ### Qué garantizan las reglas
 
 | Recurso | Lectura | Escritura |
@@ -187,6 +222,10 @@ firebase deploy --only firestore:rules,storage
 | `communities/{c}/posts/{p}/likes/{uid}` | Público | Solo el propio usuario |
 | `communities/{c}/posts/{p}/comments/{id}` | Público | Crear con `authorUid = caller`. Borrar: solo autor. Editar: nadie |
 | `community_posts/{c}/*.jpg` en Storage | Público | Logueado, máx 5MB, content-type imagen |
+| `conversations/{id}` | Solo los 2 participantes | Solo los 2 participantes |
+| `conversations/{id}/messages/{mid}` | Solo participantes (vía `get()` del doc padre) | Crear con `senderUid = caller`. Editar/borrar: nadie |
+| `users/{uid}/publicPlants/{plantId}` | Público | Solo el dueño |
+| `users/{uid}/fcmTokens/{token}` | **Nadie** (solo Admin SDK del backend) | Solo el dueño |
 | Cualquier otro path | Denegado | Denegado |
 
 Defensa en profundidad: el código de los repositorios ya valida muchas de estas mismas reglas (p. ej. `deleteComment` lanza error si el caller no es el autor), pero las **reglas son la barrera final** que protege contra clientes maliciosos o bugs.
@@ -212,11 +251,12 @@ Defensa en profundidad: el código de los repositorios ya valida muchas de estas
 - Sensor de luz para verificar si un sitio es bueno para una planta
 - Modo "estoy de viaje" para pausar/compartir recordatorios
 
-### 🔮 Fase 3 — Social
+### ✅ Fase 3 — Social
 - Login con Google + perfil en Firebase
-- Comunidades / foros temáticos
-- Chat entre usuarios
+- Comunidades / foros temáticos con posts, likes y comentarios
+- Chat 1-a-1 entre usuarios (DM en tiempo real)
 - Perfiles públicos con colecciones compartibles
+- **Notificaciones push (FCM)** para mensajes nuevos vía Cloud Functions
 
 ### 💰 Fase 4 — Monetización + iOS
 - Freemium con RevenueCat (Android + iOS unificado)

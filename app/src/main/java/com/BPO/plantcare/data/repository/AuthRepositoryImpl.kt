@@ -13,7 +13,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -80,17 +82,59 @@ class AuthRepositoryImpl @Inject constructor(
             val authCredential = GoogleAuthProvider.getCredential(idToken, null)
             val authResult = firebaseAuth.signInWithCredential(authCredential).await()
             val user = authResult.user ?: error("Firebase no devolvio usuario tras login")
-            loadOrCreateProfile(user)
+            val profile = loadOrCreateProfile(user)
+            // Registramos el token FCM tan pronto haya sesion. Si falla
+            // ignoramos: el login no debe romperse por culpa de FCM.
+            runCatching {
+                val token = FirebaseMessaging.getInstance().token.await()
+                registerFcmTokenInternal(user.uid, token)
+            }
+            profile
         }
 
     override suspend fun signOut() {
+        // Antes de cerrar sesion, intentamos borrar el token FCM actual para
+        // dejar de recibir notifs de este user en este dispositivo.
+        val uid = firebaseAuth.currentUser?.uid
+        if (uid != null) {
+            runCatching {
+                val token = FirebaseMessaging.getInstance().token.await()
+                unregisterFcmTokenInternal(uid, token)
+            }
+        }
         firebaseAuth.signOut()
-        // Tambien limpiamos las credenciales cacheadas para que el siguiente
-        // login muestre el selector de cuentas.
         runCatching {
             CredentialManager.create(appContext)
                 .clearCredentialState(androidx.credentials.ClearCredentialStateRequest())
         }
+    }
+
+    override suspend fun registerFcmToken(token: String): Result<Unit> = runCatching {
+        val uid = firebaseAuth.currentUser?.uid ?: return@runCatching
+        registerFcmTokenInternal(uid, token)
+    }
+
+    override suspend fun unregisterFcmToken(token: String): Result<Unit> = runCatching {
+        val uid = firebaseAuth.currentUser?.uid ?: return@runCatching
+        unregisterFcmTokenInternal(uid, token)
+    }
+
+    private suspend fun registerFcmTokenInternal(uid: String, token: String) {
+        firestore.collection(USERS).document(uid)
+            .collection(FCM_TOKENS).document(token)
+            .set(
+                mapOf(
+                    "token" to token,
+                    "platform" to "android",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+    }
+
+    private suspend fun unregisterFcmTokenInternal(uid: String, token: String) {
+        firestore.collection(USERS).document(uid)
+            .collection(FCM_TOKENS).document(token)
+            .delete().await()
     }
 
     override suspend fun getProfile(uid: String): Result<UserProfile?> = runCatching {
@@ -140,5 +184,6 @@ class AuthRepositoryImpl @Inject constructor(
 
     companion object {
         private const val USERS = "users"
+        private const val FCM_TOKENS = "fcmTokens"
     }
 }

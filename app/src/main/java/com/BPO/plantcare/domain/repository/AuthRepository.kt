@@ -30,4 +30,10 @@ interface AuthRepository {
 
     /** Lee el perfil de otro usuario desde Firestore (one-shot). */
     suspend fun getProfile(uid: String): Result<UserProfile?>
+
+    /** Registra un token FCM en users/{currentUid}/fcmTokens/{token}. */
+    suspend fun registerFcmToken(token: String): Result<Unit>
+
+    /** Borra un token FCM previamente registrado. */
+    suspend fun unregisterFcmToken(token: String): Result<Unit>
 }
