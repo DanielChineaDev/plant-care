@@ -28,6 +28,22 @@ interface AuthRepository {
 
     suspend fun signOut()
 
+    /** Login con email + contrasena. */
+    suspend fun signInWithEmail(email: String, password: String): Result<UserProfile>
+
+    /**
+     * Crea una cuenta nueva con email + contrasena. [displayName] se guarda
+     * tanto en el perfil de Firebase Auth como en Firestore.
+     */
+    suspend fun registerWithEmail(
+        email: String,
+        password: String,
+        displayName: String,
+    ): Result<UserProfile>
+
+    /** Envia un email de recuperacion de contrasena. */
+    suspend fun sendPasswordReset(email: String): Result<Unit>
+
     /** Lee el perfil de otro usuario desde Firestore (one-shot). */
     suspend fun getProfile(uid: String): Result<UserProfile?>
 

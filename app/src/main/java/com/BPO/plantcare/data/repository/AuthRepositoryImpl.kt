@@ -13,6 +13,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
@@ -91,6 +92,51 @@ class AuthRepositoryImpl @Inject constructor(
             }
             profile
         }
+
+    override suspend fun signInWithEmail(
+        email: String,
+        password: String,
+    ): Result<UserProfile> = runCatching {
+        val result = firebaseAuth.signInWithEmailAndPassword(email.trim(), password).await()
+        val user = result.user ?: error("Firebase no devolvio usuario tras login")
+        val profile = loadOrCreateProfile(user)
+        runCatching {
+            val token = FirebaseMessaging.getInstance().token.await()
+            registerFcmTokenInternal(user.uid, token)
+        }
+        profile
+    }
+
+    override suspend fun registerWithEmail(
+        email: String,
+        password: String,
+        displayName: String,
+    ): Result<UserProfile> = runCatching {
+        val result = firebaseAuth
+            .createUserWithEmailAndPassword(email.trim(), password)
+            .await()
+        val user = result.user ?: error("Firebase no devolvio usuario tras crear cuenta")
+        val cleanName = displayName.trim()
+        if (cleanName.isNotEmpty()) {
+            user.updateProfile(
+                UserProfileChangeRequest.Builder()
+                    .setDisplayName(cleanName)
+                    .build(),
+            ).await()
+            // refresh local
+            user.reload().await()
+        }
+        val profile = loadOrCreateProfile(firebaseAuth.currentUser ?: user)
+        runCatching {
+            val token = FirebaseMessaging.getInstance().token.await()
+            registerFcmTokenInternal(user.uid, token)
+        }
+        profile
+    }
+
+    override suspend fun sendPasswordReset(email: String): Result<Unit> = runCatching {
+        firebaseAuth.sendPasswordResetEmail(email.trim()).await()
+    }
 
     override suspend fun signOut() {
         // Antes de cerrar sesion, intentamos borrar el token FCM actual para

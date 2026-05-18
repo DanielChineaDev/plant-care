@@ -5,15 +5,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,11 +28,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.BPO.plantcare.core.notification.FcmService
+import com.BPO.plantcare.domain.repository.AuthState
+import com.BPO.plantcare.ui.auth.AuthGateViewModel
 import com.BPO.plantcare.ui.navigation.BottomBarViewModel
 import com.BPO.plantcare.ui.navigation.PlantCareBottomBar
 import com.BPO.plantcare.ui.navigation.PlantCareNavHost
 import com.BPO.plantcare.ui.navigation.Routes
 import com.BPO.plantcare.ui.navigation.TopLevelDestination
+import com.BPO.plantcare.ui.screens.auth.AuthScreen
 import com.BPO.plantcare.ui.theme.PlantCareTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -42,7 +52,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PlantCareTheme {
-                PlantCareApp(
+                PlantCareRoot(
                     pendingChatUid = pendingChatUid,
                     onDeepLinkConsumed = { pendingChatUid = null },
                 )
@@ -54,6 +64,48 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         intent.getStringExtra(FcmService.EXTRA_CHAT_UID)?.let { pendingChatUid = it }
+    }
+}
+
+/**
+ * Root composable. Gate sobre [AuthState]:
+ *   - Loading -> splash centrado.
+ *   - SignedOut -> AuthScreen (login/registro).
+ *   - SignedIn  -> app real con NavHost.
+ *
+ * Asi sin sesion no hay forma de entrar a pantallas con datos remotos y nos
+ * ahorramos comprobar el user en cada ViewModel de feature.
+ */
+@Composable
+private fun PlantCareRoot(
+    pendingChatUid: String?,
+    onDeepLinkConsumed: () -> Unit,
+    gateViewModel: AuthGateViewModel = hiltViewModel(),
+) {
+    val authState by gateViewModel.authState.collectAsStateWithLifecycle()
+
+    // Animamos por clase para que solo hagamos crossfade cuando cambia el tipo
+    // de estado (no al recibir un nuevo perfil SignedIn -> SignedIn).
+    AnimatedContent(
+        targetState = authState::class,
+        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
+        label = "auth-gate",
+    ) { stateClass ->
+        when (stateClass) {
+            AuthState.Loading::class -> SplashScreen()
+            AuthState.SignedOut::class -> AuthScreen()
+            else -> PlantCareApp(
+                pendingChatUid = pendingChatUid,
+                onDeepLinkConsumed = onDeepLinkConsumed,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SplashScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
     }
 }
 
