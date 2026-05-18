@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para PlantCare.
+//
+// Despliegue manual:
+//   1. Firebase Console -> Firestore Database -> pestania Rules
+//   2. Reemplaza el contenido con este fichero
+//   3. Publicar
+//
+// O via Firebase CLI:
+//   firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isMe(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+    function onlyChanged(keys) {
+      return changedKeys().hasOnly(keys);
+    }
+    function memberCountDelta() {
+      return request.resource.data.memberCount - resource.data.memberCount;
+    }
+    function likeCountDelta() {
+      return request.resource.data.likeCount - resource.data.likeCount;
+    }
+    function commentCountDelta() {
+      return request.resource.data.commentCount - resource.data.commentCount;
+    }
+
+    // ---------- /users ----------
+    match /users/{userId} {
+      // Cualquier user logueado puede leer perfiles (para mostrar avatar/nombre
+      // en posts y comentarios). Solo el dueno escribe el suyo.
+      allow read: if isSignedIn();
+      allow create: if isMe(userId)
+        && request.resource.data.uid == userId;
+      allow update, delete: if isMe(userId);
+
+      // Subcolecciones del propio user: solo el dueno.
+      match /joinedCommunities/{communityId} {
+        allow read, write: if isMe(userId);
+      }
+      match /postLikes/{postId} {
+        allow read, write: if isMe(userId);
+      }
+    }
+
+    // ---------- /communities ----------
+    match /communities/{communityId} {
+      // Catalogo publico: cualquiera lee, incluso sin login.
+      allow read: if true;
+
+      // Crear comunidad: logueado, createdBy = uid, memberCount = 0.
+      allow create: if isSignedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.memberCount == 0;
+
+      // Update solo para incrementar/decrementar memberCount en
+      // transacciones de join/leave. No se pueden cambiar nombre/desc/etc.
+      allow update: if isSignedIn()
+        && onlyChanged(['memberCount'])
+        && (memberCountDelta() == 1 || memberCountDelta() == -1);
+
+      // Por ahora no permitimos borrar comunidades.
+      allow delete: if false;
+
+      // ---------- /communities/{c}/members ----------
+      match /members/{userId} {
+        allow read: if isSignedIn();
+        // Solo el usuario puede crear/borrar su propia membership.
+        allow create, delete: if isMe(userId);
+      }
+
+      // ---------- /communities/{c}/posts ----------
+      match /posts/{postId} {
+        // Feeds publicos: cualquiera lee.
+        allow read: if true;
+
+        // Crear post: logueado, authorUid = uid, contadores inicializados a 0.
+        // photoUrl puede ser null o string.
+        allow create: if isSignedIn()
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.likeCount == 0
+          && request.resource.data.commentCount == 0;
+
+        // Update solo para tocar contadores (+/- 1) por transacciones de
+        // like, comentario, etc. No se pueden editar texto/foto/autor.
+        allow update: if isSignedIn()
+          && onlyChanged(['likeCount', 'commentCount'])
+          && (likeCountDelta() == 0 || likeCountDelta() == 1 || likeCountDelta() == -1)
+          && (commentCountDelta() == 0 || commentCountDelta() == 1 || commentCountDelta() == -1);
+
+        // Solo el autor puede borrar su post.
+        allow delete: if isSignedIn()
+          && resource.data.authorUid == request.auth.uid;
+
+        // ---------- /communities/{c}/posts/{p}/likes ----------
+        match /likes/{userId} {
+          allow read: if true;
+          // Solo el propio usuario crea/borra su like.
+          allow create, delete: if isMe(userId);
+        }
+
+        // ---------- /communities/{c}/posts/{p}/comments ----------
+        match /comments/{commentId} {
+          allow read: if true;
+          // Crear: logueado, authorUid = uid.
+          allow create: if isSignedIn()
+            && request.resource.data.authorUid == request.auth.uid;
+          // Solo el autor borra su comentario.
+          allow delete: if isSignedIn()
+            && resource.data.authorUid == request.auth.uid;
+          // Por ahora no permitimos editar comentarios.
+          allow update: if false;
+        }
+      }
+    }
+  }
+}

@@ -140,7 +140,56 @@ com.BPO.plantcare/
    PLANTNET_API_KEY=tu_api_key_aqui
    ```
    Consigue una key gratuita (500 IDs/día) en [my.plantnet.org](https://my.plantnet.org).
-4. **Sync** y **Run** sobre un dispositivo Android 8.0+ (API 26+).
+4. **Firebase** (necesario para Fase 3 — social):
+   - Crea un proyecto en [Firebase Console](https://console.firebase.google.com)
+   - Añade una app Android con package `com.BPO.plantcare`
+   - Habilita **Authentication → Google** y **Firestore Database** (eur3 si España)
+   - Descarga `google-services.json` y colócalo en `app/`
+   - Habilita **Storage** (modo test inicialmente)
+5. **Sync** y **Run** sobre un dispositivo Android 8.0+ (API 26+).
+
+---
+
+## 🔒 Reglas de seguridad de Firebase
+
+Los archivos `firestore.rules` y `storage.rules` en la raíz del repo contienen las reglas reales para producción. **No se despliegan automáticamente** desde el código de la app — hay que aplicarlas en la consola de Firebase.
+
+### Despliegue manual (recomendado)
+
+**Firestore:**
+1. Firebase Console → **Firestore Database** → pestaña **Rules**
+2. Reemplaza el contenido por el de `firestore.rules` del repo
+3. Publicar
+
+**Storage:**
+1. Firebase Console → **Storage** → pestaña **Rules**
+2. Reemplaza el contenido por el de `storage.rules` del repo
+3. Publicar
+
+### Despliegue automático con Firebase CLI (opcional)
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init   # marcar Firestore + Storage, usar los .rules existentes
+firebase deploy --only firestore:rules,storage
+```
+
+### Qué garantizan las reglas
+
+| Recurso | Lectura | Escritura |
+|---|---|---|
+| `users/{uid}` | Cualquier logueado (para mostrar avatares/nombres en posts) | Solo el dueño |
+| `users/{uid}/joinedCommunities`, `postLikes` | Solo el dueño | Solo el dueño |
+| `communities/{id}` | Público | Crear: cualquier logueado. Update: solo contador `memberCount` ±1. Borrar: nadie |
+| `communities/{c}/members/{uid}` | Cualquier logueado | Solo el propio usuario |
+| `communities/{c}/posts/{id}` | Público | Crear con `authorUid = caller`. Update: solo contadores ±1. Borrar: solo autor |
+| `communities/{c}/posts/{p}/likes/{uid}` | Público | Solo el propio usuario |
+| `communities/{c}/posts/{p}/comments/{id}` | Público | Crear con `authorUid = caller`. Borrar: solo autor. Editar: nadie |
+| `community_posts/{c}/*.jpg` en Storage | Público | Logueado, máx 5MB, content-type imagen |
+| Cualquier otro path | Denegado | Denegado |
+
+Defensa en profundidad: el código de los repositorios ya valida muchas de estas mismas reglas (p. ej. `deleteComment` lanza error si el caller no es el autor), pero las **reglas son la barrera final** que protege contra clientes maliciosos o bugs.
 
 ---
 
