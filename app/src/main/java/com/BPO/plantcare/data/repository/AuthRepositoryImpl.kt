@@ -17,6 +17,7 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,7 @@ class AuthRepositoryImpl @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage,
 ) : AuthRepository {
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -136,6 +138,44 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun sendPasswordReset(email: String): Result<Unit> = runCatching {
         firebaseAuth.sendPasswordResetEmail(email.trim()).await()
+    }
+
+    override suspend fun updateDisplayName(displayName: String): Result<Unit> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Sin sesion activa")
+        val clean = displayName.trim()
+        require(clean.isNotEmpty()) { "El nombre no puede estar vacio" }
+        user.updateProfile(
+            UserProfileChangeRequest.Builder()
+                .setDisplayName(clean)
+                .build(),
+        ).await()
+        firestore.collection(USERS).document(user.uid)
+            .update("displayName", clean).await()
+    }
+
+    override suspend fun updateAvatar(file: java.io.File): Result<String> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Sin sesion activa")
+        // Path: avatars/{uid}/avatar_{timestamp}.jpg. Cambiamos el nombre cada
+        // vez para que el CDN no sirva la antigua cacheada.
+        val ref = storage.reference
+            .child("avatars/${user.uid}/avatar_${System.currentTimeMillis()}.jpg")
+        ref.putFile(android.net.Uri.fromFile(file)).await()
+        val url = ref.downloadUrl.await().toString()
+        // Actualizamos FirebaseAuth + Firestore en paralelo.
+        user.updateProfile(
+            UserProfileChangeRequest.Builder()
+                .setPhotoUri(android.net.Uri.parse(url))
+                .build(),
+        ).await()
+        firestore.collection(USERS).document(user.uid)
+            .update("photoUrl", url).await()
+        url
+    }
+
+    override suspend fun updatePassword(newPassword: String): Result<Unit> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Sin sesion activa")
+        require(newPassword.length >= 6) { "La contrasena debe tener al menos 6 caracteres" }
+        user.updatePassword(newPassword).await()
     }
 
     override suspend fun signOut() {

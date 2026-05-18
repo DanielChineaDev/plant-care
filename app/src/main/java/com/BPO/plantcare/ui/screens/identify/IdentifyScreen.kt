@@ -57,7 +57,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.core.storage.copyUriToCache
-import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -67,7 +66,6 @@ import java.io.File
 @Composable
 fun IdentifyScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
     viewModel: IdentifyViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -99,7 +97,6 @@ fun IdentifyScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

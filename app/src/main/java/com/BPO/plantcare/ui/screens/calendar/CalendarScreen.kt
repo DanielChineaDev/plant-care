@@ -33,7 +33,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import com.BPO.plantcare.ui.components.DrawerActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,7 +70,6 @@ import java.util.Locale
 @Composable
 fun CalendarScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
     viewModel: CalendarViewModel = hiltViewModel(),
 ) {
     val events by viewModel.events.collectAsStateWithLifecycle()
@@ -87,7 +85,6 @@ fun CalendarScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->

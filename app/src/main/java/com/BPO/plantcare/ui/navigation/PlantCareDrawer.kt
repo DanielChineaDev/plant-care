@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
@@ -65,6 +66,7 @@ fun PlantCareDrawerContent(
         profile = state.profile,
         joinedCommunities = state.joinedCommunities,
         onNavigate = onNavigate,
+        onSignOut = viewModel::signOut,
     )
 }
 
@@ -73,6 +75,7 @@ private fun PlantCareDrawerContent(
     profile: UserProfile?,
     joinedCommunities: List<Community>,
     onNavigate: (String) -> Unit,
+    onSignOut: () -> Unit,
 ) {
     ModalDrawerSheet(
         modifier = Modifier.widthIn(max = 320.dp),
@@ -141,6 +144,11 @@ private fun PlantCareDrawerContent(
                 icon = Icons.Outlined.Settings,
                 label = "Configuracion",
                 onClick = { onNavigate(Routes.SETTINGS) },
+            )
+            DrawerItem(
+                icon = Icons.Outlined.Logout,
+                label = "Cerrar sesion",
+                onClick = onSignOut,
             )
 
             Spacer(modifier = Modifier.height(16.dp))

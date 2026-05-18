@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class DrawerState(
@@ -21,7 +22,7 @@ data class DrawerState(
 
 @HiltViewModel
 class DrawerViewModel @Inject constructor(
-    authRepository: AuthRepository,
+    private val authRepository: AuthRepository,
     communityRepository: CommunityRepository,
 ) : ViewModel() {
 
@@ -39,4 +40,9 @@ class DrawerViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = DrawerState(),
     )
+
+    fun signOut() {
+        // El gate raiz detecta el cambio a SignedOut y nos lleva al AuthScreen.
+        viewModelScope.launch { authRepository.signOut() }
+    }
 }

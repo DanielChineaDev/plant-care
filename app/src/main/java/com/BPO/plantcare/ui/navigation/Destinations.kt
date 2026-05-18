@@ -20,8 +20,8 @@ enum class TopLevelDestination(
     val icon: ImageVector,
 ) {
     Home(route = "home", label = "Inicio", icon = Icons.Outlined.Home),
-    MyPlants(route = "my_plants", label = "Mis plantas", icon = Icons.Outlined.Spa),
-    Communities(route = "communities", label = "Comunidades", icon = Icons.Outlined.Groups),
+    MyPlants(route = "my_plants", label = "Plantas", icon = Icons.Outlined.Spa),
+    Communities(route = "communities", label = "Comunidad", icon = Icons.Outlined.Groups),
     Search(route = "search", label = "Buscar", icon = Icons.Outlined.Search),
     Messages(route = "messages", label = "Mensajes", icon = Icons.Outlined.ChatBubbleOutline),
 }

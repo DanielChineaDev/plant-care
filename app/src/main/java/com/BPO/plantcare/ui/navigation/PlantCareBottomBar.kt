@@ -27,7 +27,7 @@ fun PlantCareBottomBar(
         TopLevelDestination.entries.forEach { destination ->
             val selected = backStackEntry?.destination?.hierarchy
                 ?.any { it.route == destination.route } == true
-            val badgeCount = badgeFor(destination, counts)
+            val showDot = badgeFor(destination, counts)
             NavigationBarItem(
                 selected = selected,
                 onClick = {
@@ -44,9 +44,9 @@ fun PlantCareBottomBar(
                 icon = {
                     BadgedBox(
                         badge = {
-                            if (badgeCount > 0) {
-                                Badge { Text(text = badgeCount.toString()) }
-                            }
+                            // Badge sin numero: solo un punto rojo cuando hay
+                            // algo que requiere atencion.
+                            if (showDot) Badge()
                         },
                     ) {
                         Icon(destination.icon, contentDescription = destination.label)
@@ -58,8 +58,8 @@ fun PlantCareBottomBar(
     }
 }
 
-private fun badgeFor(destination: TopLevelDestination, counts: BottomBarCounts): Int =
+private fun badgeFor(destination: TopLevelDestination, counts: BottomBarCounts): Boolean =
     when (destination) {
-        TopLevelDestination.MyPlants -> counts.myPlants
-        else -> 0
+        TopLevelDestination.MyPlants -> counts.plantsNeedAttention
+        else -> false
     }

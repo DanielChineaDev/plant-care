@@ -45,6 +45,7 @@ object Routes {
     const val CALENDAR = "calendar"
     const val SETTINGS = "settings"
     const val MY_PROFILE = "my_profile"
+    const val EDIT_PROFILE = "edit_profile"
     const val TOOLS = "tools"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
@@ -173,10 +174,7 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            CalendarScreen(
-                onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
-            )
+            CalendarScreen(onBack = { navController.popBackStack() })
         }
 
         composable(
@@ -188,7 +186,6 @@ fun PlantCareNavHost(
         ) {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
             )
@@ -203,7 +200,19 @@ fun PlantCareNavHost(
         ) {
             MyProfileScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
+                onEditProfile = { navController.navigate(Routes.EDIT_PROFILE) },
+            )
+        }
+
+        composable(
+            Routes.EDIT_PROFILE,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            com.BPO.plantcare.ui.screens.editprofile.EditProfileScreen(
+                onBack = { navController.popBackStack() },
             )
         }
 
@@ -216,7 +225,6 @@ fun PlantCareNavHost(
         ) {
             ToolsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
             )
@@ -230,10 +238,7 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            IdentifyScreen(
-                onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
-            )
+            IdentifyScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

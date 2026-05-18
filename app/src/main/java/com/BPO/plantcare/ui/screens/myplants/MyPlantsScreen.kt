@@ -14,10 +14,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.AssistChip
@@ -26,9 +31,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -65,11 +72,12 @@ fun MyPlantsScreen(
     viewModel: MyPlantsViewModel = hiltViewModel(),
 ) {
     val plants by viewModel.plants.collectAsStateWithLifecycle()
+    val filters by viewModel.filters.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis plantas") },
+                title = { Text("Plantas") },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
@@ -78,28 +86,127 @@ fun MyPlantsScreen(
             )
         },
     ) { padding ->
-        if (plants.isEmpty()) {
-            EmptyState(
-                onIdentifyClick = onIdentifyClick,
-                modifier = Modifier.padding(padding),
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            PlantsSearchBar(
+                query = filters.query,
+                onQueryChange = viewModel::onQueryChange,
             )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(plants, key = { it.id }) { plant ->
-                    PlantCard(
-                        plant = plant,
-                        onClick = { onPlantClick(plant.id) },
-                        onWaterClick = { viewModel.onWatered(plant.id) },
+            PlantsFilterRow(
+                selected = filters.filter,
+                onSelect = viewModel::setFilter,
+            )
+            if (plants.isEmpty()) {
+                if (filters.query.isBlank() && filters.filter == PlantsFilter.All) {
+                    EmptyState(
+                        onIdentifyClick = onIdentifyClick,
+                        modifier = Modifier,
                     )
+                } else {
+                    NoResultsState(modifier = Modifier)
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(plants, key = { it.id }) { plant ->
+                        PlantCard(
+                            plant = plant,
+                            onClick = { onPlantClick(plant.id) },
+                            onWaterClick = { viewModel.onWatered(plant.id) },
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PlantsSearchBar(query: String, onQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        placeholder = { Text("Busca en tu coleccion") },
+        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                }
+            }
+        },
+        singleLine = true,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlantsFilterRow(selected: PlantsFilter, onSelect: (PlantsFilter) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterChip(
+            selected = selected == PlantsFilter.All,
+            onClick = { onSelect(PlantsFilter.All) },
+            label = { Text("Todas") },
+        )
+        FilterChip(
+            selected = selected == PlantsFilter.NeedsAttention,
+            onClick = { onSelect(PlantsFilter.NeedsAttention) },
+            label = { Text("Necesitan atencion") },
+        )
+        FilterChip(
+            selected = selected == PlantsFilter.Healthy,
+            onClick = { onSelect(PlantsFilter.Healthy) },
+            label = { Text("Sanas") },
+        )
+        FilterChip(
+            selected = selected == PlantsFilter.NotWatered,
+            onClick = { onSelect(PlantsFilter.NotWatered) },
+            label = { Text("Sin regar aun") },
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+    }
+}
+
+@Composable
+private fun NoResultsState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Search,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "Sin resultados",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+        Text(
+            text = "Prueba con otro nombre o cambia el filtro.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp),
+        )
     }
 }
 

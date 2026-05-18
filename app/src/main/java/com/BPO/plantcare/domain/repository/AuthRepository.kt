@@ -44,6 +44,21 @@ interface AuthRepository {
     /** Envia un email de recuperacion de contrasena. */
     suspend fun sendPasswordReset(email: String): Result<Unit>
 
+    /** Actualiza el nombre publico en FirebaseAuth + Firestore. */
+    suspend fun updateDisplayName(displayName: String): Result<Unit>
+
+    /**
+     * Sube una imagen como avatar del usuario actual a Storage y guarda la
+     * URL publica en users/{uid}/photoUrl + en FirebaseAuth.
+     */
+    suspend fun updateAvatar(file: java.io.File): Result<String>
+
+    /**
+     * Cambia la contrasena del usuario actual. Requiere haberse logueado
+     * recientemente (de lo contrario Firebase devuelve REQUIRES_RECENT_LOGIN).
+     */
+    suspend fun updatePassword(newPassword: String): Result<Unit>
+
     /** Lee el perfil de otro usuario desde Firestore (one-shot). */
     suspend fun getProfile(uid: String): Result<UserProfile?>
 

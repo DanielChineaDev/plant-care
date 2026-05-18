@@ -22,6 +22,19 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Avatares de usuario. Path: avatars/{uid}/{fileName}.jpg
+    match /avatars/{uid}/{fileName} {
+      // Cualquiera puede ver los avatares (aparecen en posts, comentarios,
+      // chats, etc. que son publicos / visibles entre logueados).
+      allow read: if true;
+      // Solo el dueno sube/borra el suyo. Max 2 MB, content-type imagen.
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (request.resource == null ||
+            (request.resource.size < 2 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*')));
+    }
+
     // Por defecto: nada accesible. Se ira abriendo a medida que metamos
     // mas features (avatares custom, fotos privadas de plantas, etc.).
     match /{allPaths=**} {

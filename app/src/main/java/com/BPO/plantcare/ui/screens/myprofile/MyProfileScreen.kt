@@ -18,8 +18,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +47,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.PublicPlant
 import com.BPO.plantcare.domain.model.UserProfile
-import com.BPO.plantcare.ui.components.DrawerActionButton
 
 /**
  * Pantalla "Mi perfil" (drawer). Muestra el perfil publico del usuario
@@ -59,7 +60,7 @@ import com.BPO.plantcare.ui.components.DrawerActionButton
 @Composable
 fun MyProfileScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
+    onEditProfile: () -> Unit,
     viewModel: MyProfileViewModel = hiltViewModel(),
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
@@ -74,7 +75,6 @@ fun MyProfileScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->
@@ -98,7 +98,7 @@ fun MyProfileScreen(
         ) {
             item(span = { GridItemSpan(2) }) {
                 Column {
-                    ProfileHeader(profile = current)
+                    ProfileHeader(profile = current, onEditClick = onEditProfile)
                     if (!current.isCollectionPublic) {
                         Spacer(modifier = Modifier.size(12.dp))
                         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -141,7 +141,7 @@ fun MyProfileScreen(
 }
 
 @Composable
-private fun ProfileHeader(profile: UserProfile) {
+private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -174,6 +174,15 @@ private fun ProfileHeader(profile: UserProfile) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Button(
+                onClick = onEditClick,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Editar perfil")
             }
         }
     }
