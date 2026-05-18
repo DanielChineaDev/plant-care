@@ -1,23 +1,31 @@
 package com.BPO.plantcare.ui.screens.communities
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -46,6 +54,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,8 +64,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.ui.components.FeedPostCard
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +83,7 @@ fun CommunitiesListScreen(
     val others by viewModel.otherCommunities.collectAsStateWithLifecycle()
     val featured by viewModel.featuredPosts.collectAsStateWithLifecycle()
     val isSignedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
+    val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showCreate by remember { mutableStateOf(false) }
 
@@ -95,7 +110,8 @@ fun CommunitiesListScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (isSignedIn) {
+            // Solo admins ven el boton de crear comunidad.
+            if (isSignedIn && isAdmin) {
                 FloatingActionButton(onClick = { showCreate = true }) {
                     Icon(Icons.Outlined.Add, contentDescription = "Crear comunidad")
                 }
@@ -115,7 +131,7 @@ fun CommunitiesListScreen(
             if (popular.isNotEmpty()) {
                 item {
                     SectionTitle(
-                        text = "Espacios populares",
+                        text = "Comunidades populares",
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
@@ -179,8 +195,8 @@ fun CommunitiesListScreen(
 
     if (showCreate) {
         CreateCommunityDialog(
-            onConfirm = { name, desc, emoji ->
-                viewModel.createCommunity(name, desc, emoji)
+            onConfirm = { name, desc, emoji, photoFile ->
+                viewModel.createCommunity(name, desc, emoji, photoFile)
                 showCreate = false
             },
             onDismiss = { showCreate = false },
@@ -205,51 +221,83 @@ private fun PopularCommunityCard(
     onClick: () -> Unit,
     onJoinToggle: () -> Unit,
 ) {
+    // Ancho y alto FIJOS para que todas las tarjetas del carrusel midan
+    // exactamente lo mismo. Dentro repartimos zonas: foto (16:9), header
+    // (titulo + miembros), descripcion (2 lineas) y boton al fondo.
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier.widthIn(min = 260.dp, max = 280.dp),
+        modifier = Modifier
+            .width(280.dp)
+            .height(320.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = community.emoji, fontSize = 36.sp)
-                Spacer(modifier = Modifier.size(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = community.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Zona foto / placeholder con emoji.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (community.photoUrl != null) {
+                    AsyncImage(
+                        model = community.photoUrl,
+                        contentDescription = community.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
                     )
-                    Text(
-                        text = "${community.memberCount} miembros",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = community.emoji, fontSize = 48.sp)
+                    }
                 }
             }
-            if (community.description.isNotBlank()) {
-                Spacer(modifier = Modifier.size(8.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
-                    text = community.description,
+                    text = community.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "${community.memberCount} miembros",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = community.description.ifBlank { " " },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                 )
-            }
-            if (canInteract) {
-                Spacer(modifier = Modifier.size(12.dp))
-                if (community.isMember) {
-                    OutlinedButton(
-                        onClick = onJoinToggle,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Salir") }
-                } else {
-                    Button(
-                        onClick = onJoinToggle,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Unirme") }
+                if (canInteract) {
+                    if (community.isMember) {
+                        OutlinedButton(
+                            onClick = onJoinToggle,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("Salir") }
+                    } else {
+                        Button(
+                            onClick = onJoinToggle,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("Unirme") }
+                    }
                 }
             }
         }
@@ -266,14 +314,29 @@ private fun CommunityRow(
 ) {
     Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = community.emoji,
-                fontSize = 32.sp,
-                modifier = Modifier.padding(end = 12.dp),
-            )
+            // Avatar circular: foto si la hay, si no emoji con fondo.
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (community.photoUrl != null) {
+                    AsyncImage(
+                        model = community.photoUrl,
+                        contentDescription = community.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Text(text = community.emoji, fontSize = 28.sp)
+                }
+            }
+            Spacer(modifier = Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = community.name,
@@ -327,17 +390,67 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun CreateCommunityDialog(
-    onConfirm: (name: String, description: String, emoji: String) -> Unit,
+    onConfirm: (name: String, description: String, emoji: String, photoFile: File?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var emoji by rememberSaveable { mutableStateOf("🌱") }
+    var photoFile by remember { mutableStateOf<File?>(null) }
+    val context = LocalContext.current
+
+    val pickPhoto = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) photoFile = copyUriToCache(context, uri)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Nueva comunidad") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Tile clickable para elegir foto: muestra preview o
+                // placeholder.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable {
+                            pickPhoto.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                ),
+                            )
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val current = photoFile
+                    if (current != null) {
+                        AsyncImage(
+                            model = current,
+                            contentDescription = "Portada",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Outlined.Image,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = "Tocar para anadir portada",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
                     value = emoji,
                     onValueChange = { if (it.length <= 2) emoji = it },
@@ -362,12 +475,18 @@ private fun CreateCommunityDialog(
         confirmButton = {
             Button(
                 enabled = name.isNotBlank(),
-                onClick = { onConfirm(name.trim(), description.trim(), emoji.trim().ifBlank { "🌱" }) },
+                onClick = {
+                    onConfirm(
+                        name.trim(),
+                        description.trim(),
+                        emoji.trim().ifBlank { "🌱" },
+                        photoFile,
+                    )
+                },
             ) { Text("Crear") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
     )
-    Box(modifier = Modifier.size(0.dp))
 }

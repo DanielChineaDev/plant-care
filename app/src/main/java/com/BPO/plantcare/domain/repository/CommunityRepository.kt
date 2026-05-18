@@ -9,7 +9,13 @@ import java.io.File
 interface CommunityRepository {
     fun observeCommunities(): Flow<List<Community>>
     fun observeCommunity(communityId: String): Flow<Community?>
-    suspend fun createCommunity(name: String, description: String, emoji: String): Result<String>
+    /** [photoFile] opcional: si != null se sube a Storage y se guarda la URL. */
+    suspend fun createCommunity(
+        name: String,
+        description: String,
+        emoji: String,
+        photoFile: File? = null,
+    ): Result<String>
     suspend fun joinCommunity(communityId: String): Result<Unit>
     suspend fun leaveCommunity(communityId: String): Result<Unit>
 

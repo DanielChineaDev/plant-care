@@ -8,6 +8,7 @@ import com.BPO.plantcare.domain.repository.AuthRepository
 import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.CommunityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,6 +104,15 @@ class CommunitiesListViewModel @Inject constructor(
             initialValue = false,
         )
 
+    /** Solo los admins pueden crear comunidades. */
+    val isAdmin: StateFlow<Boolean> = authRepository.authState
+        .map { (it as? AuthState.SignedIn)?.profile?.isAdmin ?: false }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
+        )
+
     private val _events = Channel<CommunitiesEvent>(capacity = Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
@@ -121,9 +131,14 @@ class CommunitiesListViewModel @Inject constructor(
         viewModelScope.launch { communityRepository.toggleLike(communityId, postId) }
     }
 
-    fun createCommunity(name: String, description: String, emoji: String) {
+    fun createCommunity(
+        name: String,
+        description: String,
+        emoji: String,
+        photoFile: File? = null,
+    ) {
         viewModelScope.launch {
-            communityRepository.createCommunity(name, description, emoji).fold(
+            communityRepository.createCommunity(name, description, emoji, photoFile).fold(
                 onSuccess = { _events.send(CommunitiesEvent.CommunityCreated(it)) },
                 onFailure = { _events.send(CommunitiesEvent.Error(it.localizedMessage.orEmpty())) },
             )

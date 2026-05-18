@@ -22,6 +22,17 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Portada de comunidades. Path: communities/{communityId}/cover.jpg
+    // Lo sube solo quien acaba de crear la comunidad (Firestore valida que
+    // sea admin). Aqui ya no tenemos contexto del Firestore asi que basta
+    // con "logueado, max 5MB, imagen".
+    match /communities/{communityId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Avatares de usuario. Path: avatars/{uid}/{fileName}.jpg
     match /avatars/{uid}/{fileName} {
       // Cualquiera puede ver los avatares (aparecen en posts, comentarios,

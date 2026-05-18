@@ -9,6 +9,8 @@ data class Community(
     val createdAt: Long,
     val memberCount: Long,
     val isMember: Boolean = false,
+    /** Foto de portada opcional almacenada en Storage. */
+    val photoUrl: String? = null,
 )
 
 data class CommunityPost(

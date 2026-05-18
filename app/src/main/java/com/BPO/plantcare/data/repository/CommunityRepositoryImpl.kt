@@ -97,9 +97,19 @@ class CommunityRepositoryImpl @Inject constructor(
         name: String,
         description: String,
         emoji: String,
+        photoFile: File?,
     ): Result<String> = runCatching {
         val uid = requireUid()
         val doc = firestore.collection(COMMUNITIES).document()
+        // Si trae foto la subimos primero a Storage usando el id del doc
+        // como nombre, de forma estable. Igual que con posts.
+        val photoUrl: String? = if (photoFile != null) {
+            val storageRef = firebaseStorage.reference
+                .child("communities/${doc.id}/cover.jpg")
+            storageRef.putFile(Uri.fromFile(photoFile)).await()
+            storageRef.downloadUrl.await().toString()
+        } else null
+
         val data = mapOf(
             "name" to name,
             "description" to description,
@@ -107,6 +117,7 @@ class CommunityRepositoryImpl @Inject constructor(
             "createdBy" to uid,
             "createdAt" to FieldValue.serverTimestamp(),
             "memberCount" to 0L,
+            "photoUrl" to photoUrl,
         )
         doc.set(data).await()
         joinCommunityInternal(uid, doc.id)
@@ -353,6 +364,7 @@ class CommunityRepositoryImpl @Inject constructor(
             createdBy = getString("createdBy").orEmpty(),
             createdAt = getDate("createdAt")?.time ?: 0L,
             memberCount = getLong("memberCount") ?: 0L,
+            photoUrl = getString("photoUrl"),
         )
     }
 

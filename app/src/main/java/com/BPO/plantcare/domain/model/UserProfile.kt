@@ -10,4 +10,10 @@ data class UserProfile(
     val photoUrl: String?,
     val createdAt: Long,
     val isCollectionPublic: Boolean = false,
+    /**
+     * Solo los admins pueden crear comunidades. Por defecto false; se cambia
+     * manualmente desde Firebase Console -> Firestore -> users/{uid} ->
+     * isAdmin = true.
+     */
+    val isAdmin: Boolean = false,
 )

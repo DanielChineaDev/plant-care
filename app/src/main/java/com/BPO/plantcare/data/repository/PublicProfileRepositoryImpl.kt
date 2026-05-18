@@ -112,6 +112,7 @@ class PublicProfileRepositoryImpl @Inject constructor(
             photoUrl = getString("photoUrl"),
             createdAt = getLong("createdAt") ?: 0L,
             isCollectionPublic = getBoolean("isCollectionPublic") ?: false,
+            isAdmin = getBoolean("isAdmin") ?: false,
         )
     }
 

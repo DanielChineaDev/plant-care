@@ -34,15 +34,28 @@ service cloud.firestore {
     function commentCountDelta() {
       return request.resource.data.commentCount - resource.data.commentCount;
     }
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
 
     // ---------- /users ----------
     match /users/{userId} {
       // Cualquier user logueado puede leer perfiles (para mostrar avatar/nombre
       // en posts y comentarios). Solo el dueno escribe el suyo.
       allow read: if isSignedIn();
+      // Al crear, isAdmin siempre arranca en false. Esto se hace solo desde
+      // el primer login. Que el user no pueda autopromocionarse a admin.
       allow create: if isMe(userId)
-        && request.resource.data.uid == userId;
-      allow update, delete: if isMe(userId);
+        && request.resource.data.uid == userId
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false);
+      // Update: el dueno escribe lo suyo pero NO puede cambiar isAdmin (solo
+      // se cambia manualmente desde Firebase Console).
+      allow update: if isMe(userId)
+        && (!('isAdmin' in request.resource.data) ||
+            request.resource.data.isAdmin == resource.data.get('isAdmin', false));
+      allow delete: if isMe(userId);
 
       // Subcolecciones del propio user: solo el dueno.
       match /joinedCommunities/{communityId} {
@@ -71,8 +84,8 @@ service cloud.firestore {
       // Catalogo publico: cualquiera lee, incluso sin login.
       allow read: if true;
 
-      // Crear comunidad: logueado, createdBy = uid, memberCount = 0.
-      allow create: if isSignedIn()
+      // Crear comunidad: solo admins. createdBy = uid, memberCount = 0.
+      allow create: if isAdmin()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.memberCount == 0;
 
