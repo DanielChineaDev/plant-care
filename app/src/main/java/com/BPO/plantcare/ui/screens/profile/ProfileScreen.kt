@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.BPO.plantcare.domain.repository.AuthState
+import com.BPO.plantcare.ui.components.DrawerActionButton
 import java.text.DateFormat
 import java.util.Date
 
@@ -63,6 +64,7 @@ import java.util.Date
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -98,6 +100,7 @@ fun ProfileScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

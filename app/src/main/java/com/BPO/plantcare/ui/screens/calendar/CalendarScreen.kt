@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.LocalFlorist
@@ -24,11 +25,15 @@ import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import com.BPO.plantcare.ui.components.DrawerActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,38 +67,57 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
+fun CalendarScreen(
+    onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
+    viewModel: CalendarViewModel = hiltViewModel(),
+) {
     val events by viewModel.events.collectAsStateWithLifecycle()
     val today = remember { LocalDate.now() }
     var selectedDate by remember { mutableStateOf(today) }
 
-    // Importante: HorizontalCalendar de Kizitonwose NO se puede meter dentro
-    // de un Column.verticalScroll (constraints de altura infinita -> crash).
-    // Usamos LazyColumn como contenedor scrollable seguro.
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
-            TodayTasksCard(
-                tasks = events[today].orEmpty().filter { it.type == CalendarEventType.WateringDue },
-                onWatered = viewModel::onWatered,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Calendario") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
+        },
+    ) { padding ->
+        // Importante: HorizontalCalendar de Kizitonwose NO se puede meter dentro
+        // de un Column.verticalScroll (constraints de altura infinita -> crash).
+        // Usamos LazyColumn como contenedor scrollable seguro.
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
+            item {
+                TodayTasksCard(
+                    tasks = events[today].orEmpty().filter { it.type == CalendarEventType.WateringDue },
+                    onWatered = viewModel::onWatered,
+                )
+            }
+            item {
+                MonthCalendar(
+                    events = events,
+                    selectedDate = selectedDate,
+                    today = today,
+                    onDateSelected = { selectedDate = it },
+                )
+            }
+            item {
+                DayEventsCard(
+                    date = selectedDate,
+                    events = events[selectedDate].orEmpty(),
+                    onWatered = viewModel::onWatered,
+                )
+            }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
-        item {
-            MonthCalendar(
-                events = events,
-                selectedDate = selectedDate,
-                today = today,
-                onDateSelected = { selectedDate = it },
-            )
-        }
-        item {
-            DayEventsCard(
-                date = selectedDate,
-                events = events[selectedDate].orEmpty(),
-                onWatered = viewModel::onWatered,
-            )
-        }
-        item { Spacer(modifier = Modifier.height(24.dp)) }
     }
 }
 

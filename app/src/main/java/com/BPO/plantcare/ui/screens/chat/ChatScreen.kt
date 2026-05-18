@@ -51,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.ChatMessage
+import com.BPO.plantcare.ui.components.DrawerActionButton
 import java.text.DateFormat
 import java.util.Date
 
@@ -58,6 +59,7 @@ import java.util.Date
 @Composable
 fun ChatScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val messages by viewModel.messages.collectAsStateWithLifecycle()
@@ -114,6 +116,7 @@ fun ChatScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

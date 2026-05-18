@@ -60,11 +60,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostDetailScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onAuthorClick: (uid: String) -> Unit,
     onAuthorNameClick: (uid: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
@@ -98,6 +100,7 @@ fun PostDetailScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

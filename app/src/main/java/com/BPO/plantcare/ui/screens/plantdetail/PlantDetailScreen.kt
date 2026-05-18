@@ -86,6 +86,7 @@ import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.components.CareGuideCard
+import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
@@ -98,6 +99,7 @@ import java.util.Date
 @Composable
 fun PlantDetailScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onPhotoClick: (plantId: Long, photoId: Long) -> Unit,
     viewModel: PlantDetailViewModel = hiltViewModel(),
 ) {
@@ -164,6 +166,7 @@ fun PlantDetailScreen(
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Outlined.Delete, contentDescription = "Eliminar planta")
                     }
+                    DrawerActionButton(onOpenDrawer)
                 },
             )
         },

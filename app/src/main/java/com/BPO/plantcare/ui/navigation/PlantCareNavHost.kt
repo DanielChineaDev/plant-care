@@ -173,7 +173,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            CalendarScreen()
+            CalendarScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -185,6 +188,7 @@ fun PlantCareNavHost(
         ) {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
             )
@@ -197,7 +201,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            MyProfileScreen(onBack = { navController.popBackStack() })
+            MyProfileScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -209,6 +216,7 @@ fun PlantCareNavHost(
         ) {
             ToolsScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
             )
@@ -222,7 +230,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            IdentifyScreen(onBack = { navController.popBackStack() })
+            IdentifyScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -232,7 +243,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            LightMeterScreen(onBack = { navController.popBackStack() })
+            LightMeterScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -244,6 +258,7 @@ fun PlantCareNavHost(
         ) {
             DiagnosisListScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onDiagnosisClick = { id -> navController.navigate(Routes.diagnosisDetail(id)) },
             )
         }
@@ -256,7 +271,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            DiagnosisDetailScreen(onBack = { navController.popBackStack() })
+            DiagnosisDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -269,6 +287,7 @@ fun PlantCareNavHost(
         ) {
             CommunityFeedScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
                 onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
@@ -288,6 +307,7 @@ fun PlantCareNavHost(
         ) {
             PostDetailScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
                 onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
@@ -303,6 +323,7 @@ fun PlantCareNavHost(
         ) {
             PublicProfileScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onMessageClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
@@ -315,7 +336,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            ChatScreen(onBack = { navController.popBackStack() })
+            ChatScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(
@@ -328,6 +352,7 @@ fun PlantCareNavHost(
         ) {
             PlantDetailScreen(
                 onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
                 onPhotoClick = { plantId, photoId ->
                     navController.navigate(Routes.photoViewer(plantId, photoId))
                 },
@@ -342,7 +367,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            CatalogPlantDetailScreen(onBack = { navController.popBackStack() })
+            CatalogPlantDetailScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDrawer = onOpenDrawer,
+            )
         }
 
         composable(

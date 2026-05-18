@@ -73,11 +73,13 @@ import com.BPO.plantcare.core.storage.copyUriToCache
 import java.io.File
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityFeedScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onPostClick: (communityId: String, postId: String) -> Unit,
     onAuthorClick: (uid: String) -> Unit,
     onAuthorNameClick: (uid: String) -> Unit,
@@ -108,6 +110,7 @@ fun CommunityFeedScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

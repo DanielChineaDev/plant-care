@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 /**
  * Pantalla "Herramientas" del drawer: agrupa atajos a utilidades secundarias
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ToolsScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
 ) {
@@ -48,6 +50,7 @@ fun ToolsScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->

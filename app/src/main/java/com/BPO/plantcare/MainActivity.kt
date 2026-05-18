@@ -115,8 +115,10 @@ private fun PlantCareApp(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+    // PhotoViewer es la unica pantalla "inmersiva" donde no queremos nav
+    // visible (visor fullscreen de fotos).
+    val hideNavChrome = currentRoute?.startsWith("photoviewer") == true
 
-    val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
     val counts by bottomBarViewModel.counts.collectAsStateWithLifecycle()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -126,9 +128,10 @@ private fun PlantCareApp(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        // Solo permitimos abrir el drawer en pantallas top-level. Asi no
-        // colisiona con el back swipe en pantallas de detalle.
-        gesturesEnabled = showBottomBar && drawerState.isOpen || showBottomBar,
+        // Gesto del drawer disponible en toda la app (excepto visor fullscreen)
+        // para que se pueda abrir desde cualquier pantalla deslizando desde
+        // el borde izquierdo.
+        gesturesEnabled = !hideNavChrome,
         drawerContent = {
             PlantCareDrawerContent(
                 onNavigate = { route ->
@@ -153,7 +156,7 @@ private fun PlantCareApp(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
-                if (showBottomBar) PlantCareBottomBar(navController, counts)
+                if (!hideNavChrome) PlantCareBottomBar(navController, counts)
             },
         ) { innerPadding ->
             PlantCareNavHost(

@@ -48,11 +48,13 @@ import com.BPO.plantcare.domain.model.PlantDiagnosis
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
 import com.BPO.plantcare.ui.theme.StatusWarning
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiagnosisDetailScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: DiagnosisDetailViewModel = hiltViewModel(),
 ) {
     val diagnosis = viewModel.diagnosis
@@ -66,6 +68,7 @@ fun DiagnosisDetailScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->

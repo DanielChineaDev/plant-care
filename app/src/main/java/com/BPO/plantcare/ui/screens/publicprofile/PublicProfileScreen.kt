@@ -48,11 +48,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.PublicPlant
 import com.BPO.plantcare.domain.model.UserProfile
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PublicProfileScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     onMessageClick: (uid: String) -> Unit,
     viewModel: PublicProfileViewModel = hiltViewModel(),
 ) {
@@ -68,6 +70,7 @@ fun PublicProfileScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->

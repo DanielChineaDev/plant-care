@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.PublicPlant
 import com.BPO.plantcare.domain.model.UserProfile
+import com.BPO.plantcare.ui.components.DrawerActionButton
 
 /**
  * Pantalla "Mi perfil" (drawer). Muestra el perfil publico del usuario
@@ -58,6 +59,7 @@ import com.BPO.plantcare.domain.model.UserProfile
 @Composable
 fun MyProfileScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: MyProfileViewModel = hiltViewModel(),
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
@@ -72,6 +74,7 @@ fun MyProfileScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->
