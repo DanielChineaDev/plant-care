@@ -3,6 +3,8 @@ package com.BPO.plantcare.ui.screens.profile
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.net.Uri
+import com.BPO.plantcare.core.backup.PlantsBackupExporter
 import com.BPO.plantcare.core.location.LocationProvider
 import com.BPO.plantcare.core.work.WateringReminderManager
 import com.BPO.plantcare.domain.model.UserSettings
@@ -27,6 +29,8 @@ sealed interface ProfileEvent {
     data class PublicToggled(val enabled: Boolean) : ProfileEvent
     data object Resynced : ProfileEvent
     data class PublicError(val message: String) : ProfileEvent
+    data class BackupExported(val plantCount: Int) : ProfileEvent
+    data class BackupFailed(val message: String) : ProfileEvent
 }
 
 @HiltViewModel
@@ -36,6 +40,8 @@ class ProfileViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     private val authRepository: AuthRepository,
     private val publicProfileRepository: PublicProfileRepository,
+    private val backupExporter: PlantsBackupExporter,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context,
 ) : ViewModel() {
 
     val settings: StateFlow<UserSettings> = preferences.settings.stateIn(
@@ -121,6 +127,15 @@ class ProfileViewModel @Inject constructor(
             publicProfileRepository.setMyCollectionPublic(enabled).fold(
                 onSuccess = { _events.send(ProfileEvent.PublicToggled(enabled)) },
                 onFailure = { _events.send(ProfileEvent.PublicError(it.localizedMessage.orEmpty())) },
+            )
+        }
+    }
+
+    fun exportBackup(uri: Uri) {
+        viewModelScope.launch {
+            backupExporter.exportToUri(appContext, uri).fold(
+                onSuccess = { count -> _events.send(ProfileEvent.BackupExported(count)) },
+                onFailure = { _events.send(ProfileEvent.BackupFailed(it.localizedMessage.orEmpty())) },
             )
         }
     }

@@ -85,6 +85,9 @@ fun ProfileScreen(
                     if (event.enabled) "Coleccion publicada" else "Coleccion privada"
                 ProfileEvent.Resynced -> "Coleccion publica resincronizada"
                 is ProfileEvent.PublicError -> "Error: ${event.message}"
+                is ProfileEvent.BackupExported ->
+                    "Backup creado con ${event.plantCount} plantas"
+                is ProfileEvent.BackupFailed -> "Error en backup: ${event.message}"
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -147,9 +150,47 @@ fun ProfileScreen(
                 )
             }
 
+            BackupCard(onExport = viewModel::exportBackup)
+
             SignOutCard(onSignOut = { viewModel.signOut() })
 
             Spacer(modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun BackupCard(onExport: (android.net.Uri) -> Unit) {
+    // SAF: CreateDocument("application/json") deja al user elegir donde
+    // guardar el archivo. Suggested filename con la fecha actual.
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri != null) onExport(uri)
+    }
+    val suggested = "plantcare_backup_${java.time.LocalDate.now()}.json"
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Backup",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Exporta tu coleccion (plantas + historial de riegos) como archivo JSON. Util para cambiar de movil o no perder datos.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedButton(
+                onClick = { launcher.launch(suggested) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Exportar mis plantas a JSON")
+            }
         }
     }
 }

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.LocalFlorist
@@ -168,6 +169,17 @@ fun PlantDetailScreen(
                     }
                 },
                 actions = {
+                    plant?.let { p ->
+                        IconButton(
+                            onClick = {
+                                com.BPO.plantcare.core.share.ShareImageGenerator.shareAsImage(
+                                    context, p,
+                                )
+                            },
+                        ) {
+                            Icon(Icons.Outlined.Share, contentDescription = "Compartir")
+                        }
+                    }
                     IconButton(onClick = { showEditDialog = true }) {
                         Icon(Icons.Outlined.Edit, contentDescription = "Editar alias")
                     }
