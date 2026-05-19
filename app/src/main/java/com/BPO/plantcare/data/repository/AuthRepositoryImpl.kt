@@ -46,9 +46,28 @@ class AuthRepositoryImpl @Inject constructor(
             if (user == null) {
                 emit(AuthState.SignedOut)
             } else {
-                emit(AuthState.Loading)
-                val profile = loadOrCreateProfile(user)
-                emit(AuthState.SignedIn(profile))
+                // IMPORTANTE: emitimos SignedIn inmediato con los datos
+                // que ya tenemos del FirebaseUser local. Antes hacia
+                // emit(Loading) y luego loadOrCreateProfile (red), lo
+                // que dejaba el splash colgado durante segundos si la
+                // red era lenta o estaba caida.
+                emit(
+                    AuthState.SignedIn(
+                        UserProfile(
+                            uid = user.uid,
+                            displayName = user.displayName,
+                            email = user.email,
+                            photoUrl = user.photoUrl?.toString(),
+                            createdAt = 0L,
+                        ),
+                    ),
+                )
+                // En background completamos con el doc de Firestore
+                // (puede traer karma, isAdmin, isCollectionPublic...).
+                runCatching {
+                    val full = loadOrCreateProfile(user)
+                    emit(AuthState.SignedIn(full))
+                }
             }
         }
         .flowOn(Dispatchers.IO)

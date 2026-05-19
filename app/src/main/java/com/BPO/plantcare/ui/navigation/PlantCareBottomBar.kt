@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
@@ -39,9 +41,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 /**
  * Bottom nav custom de 5 slots:
  *  - 4 destinos navegables (Home, MyPlants, Search, Messages).
- *  - 1 FAB grande central para "Identificar planta", la funcion principal
- *    de la app. NO es un destino: solo lanza la pantalla Identify como
- *    detalle, asi que no marca selected.
+ *  - 1 FAB grande central para "Identificar planta".
+ *
+ * Aplica windowInsetsPadding(navigationBars) para no quedar tapado por
+ * la barra de gestos / botones del sistema. El FAB queda DENTRO de los
+ * limites del Surface (sin offset negativo) para que no se recorte y
+ * destaca por color + tamano.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,20 +59,23 @@ fun PlantCareBottomBar(
     val currentRoute = backStackEntry?.destination?.route
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                // Respetamos la barra de navegacion del sistema (gestos
+                // o botones de Android) para que el contenido no quede
+                // tapado por el handler de gestos.
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(80.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
             val destinations = TopLevelDestination.entries
             // 5 slots: 0,1 normales | 2 = FAB Identify | 3,4 normales
-            // (asumiendo destinations.size == 4)
             destinations.take(2).forEach { dest ->
                 NavSlot(
                     destination = dest,
@@ -131,36 +139,31 @@ private fun NavSlot(
 }
 
 /**
- * FAB central de "Identificar planta". Sobresale 12dp por encima del bottom
- * bar para llamar la atencion; usa color primary y shape circular.
+ * FAB central de "Identificar planta". Destaca por tamano (60dp) y color
+ * primary, sin necesitar offset negativo que se recortaria con el clip
+ * del Surface padre.
  */
 @Composable
 private fun IdentifyFab(onClick: () -> Unit) {
-    Box(
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        shadowElevation = 6.dp,
         modifier = Modifier
-            .size(64.dp)
-            .offset(y = (-12).dp)
+            .size(60.dp)
             .clip(CircleShape),
-        contentAlignment = Alignment.Center,
     ) {
-        Surface(
-            onClick = onClick,
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shadowElevation = 10.dp,
-            modifier = Modifier.size(64.dp),
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.CameraAlt,
-                    contentDescription = "Identificar planta",
-                    modifier = Modifier.size(34.dp),
-                )
-            }
+            Icon(
+                imageVector = Icons.Outlined.CameraAlt,
+                contentDescription = "Identificar planta",
+                modifier = Modifier.size(30.dp),
+            )
         }
     }
 }

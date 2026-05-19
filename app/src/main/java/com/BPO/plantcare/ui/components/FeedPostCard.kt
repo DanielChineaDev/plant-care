@@ -97,10 +97,11 @@ fun FeedPostCard(
 
             if (post.photoUrl != null) {
                 Spacer(modifier = Modifier.size(8.dp))
-                AsyncImage(
+                ShimmerAsyncImage(
                     model = post.photoUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(16f / 10f)

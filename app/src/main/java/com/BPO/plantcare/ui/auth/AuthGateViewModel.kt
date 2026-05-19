@@ -22,7 +22,11 @@ class AuthGateViewModel @Inject constructor(
     val authState: StateFlow<AuthState> = authRepository.authState
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            // Eagerly: el listener de FirebaseAuth debe estar activo desde
+            // el arranque para que el primer SignedIn/SignedOut llegue
+            // YA y la app no se quede en el splash esperando un
+            // subscriber.
+            started = SharingStarted.Eagerly,
             initialValue = AuthState.Loading,
         )
 }

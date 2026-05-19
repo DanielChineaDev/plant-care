@@ -109,6 +109,19 @@ class HomeViewModel @Inject constructor(
             initialValue = false,
         )
 
+    /**
+     * True hasta que llega la primera emision REAL del feed agregado.
+     * Sirve para mostrar skeleton/shimmer en lugar de pantalla vacia
+     * mientras Firestore responde por primera vez.
+     */
+    val feedLoading: StateFlow<Boolean> = aggregatedPosts
+        .map { false }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = true,
+        )
+
     fun setSort(sort: FeedSort) {
         _sort.value = sort
     }

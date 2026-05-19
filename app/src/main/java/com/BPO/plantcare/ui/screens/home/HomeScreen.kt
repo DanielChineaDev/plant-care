@@ -84,6 +84,7 @@ fun HomeScreen(
     val feed by viewModel.feed.collectAsStateWithLifecycle()
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val hasJoined by viewModel.hasJoinedCommunities.collectAsStateWithLifecycle()
+    val feedLoading by viewModel.feedLoading.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -122,6 +123,13 @@ fun HomeScreen(
             if (!hasJoined) {
                 item {
                     JoinCommunitiesPromptCard(onCommunitiesClick = onCommunitiesClick)
+                }
+            } else if (feedLoading && feed.isEmpty()) {
+                // Shimmer placeholders mientras llega la primera emision
+                // de Firestore. Evita pantalla vacia y da feedback de
+                // "estamos cargando algo".
+                items(3) {
+                    com.BPO.plantcare.ui.components.PostCardSkeleton()
                 }
             } else if (feed.isEmpty()) {
                 item {

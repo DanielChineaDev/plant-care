@@ -228,6 +228,72 @@ exports.onCommunityMemberJoined = onDocumentCreated(
 // ============================================================================
 
 // ============================================================================
+// Seed inicial de 10 comunidades tematicas. Solo crea las que NO existan
+// (key = nombre normalizado). Idempotente. Las comunidades arrancan con
+// memberCount = 0 y un createdBy "system" (el doc se crea con Admin SDK
+// que salta las reglas; no representa un user real).
+// ============================================================================
+exports.seedCommunities = onRequest(
+  {region: REGION, timeoutSeconds: 120},
+  async (req, res) => {
+    try {
+      const seeds = [
+        {name: "Suculentas y cactus", emoji: "🌵",
+          description: "Todo sobre suculentas, cactus y sus cuidados."},
+        {name: "Orquidiarios", emoji: "🌸",
+          description: "Aficionados a las orquideas: flores, sustratos y trasplantes."},
+        {name: "Bonsais", emoji: "🌳",
+          description: "Tecnicas de cultivo, poda y alambrado de bonsais."},
+        {name: "Huerto urbano", emoji: "🥬",
+          description: "Cultivar verduras y hierbas en balcones y terrazas."},
+        {name: "Plantas de interior", emoji: "🪴",
+          description: "Pothos, monsteras, ficus y todo lo que vive bajo techo."},
+        {name: "Aromaticas y medicinales", emoji: "🌿",
+          description: "Albahaca, menta, lavanda, romero: usos y cuidados."},
+        {name: "Plagas y enfermedades", emoji: "🪲",
+          description: "Identifica y trata cochinilla, oidio, arana roja, etc."},
+        {name: "Acuaponia e hidroponia", emoji: "💧",
+          description: "Cultivo sin tierra: nutrientes, pH y sistemas DWC/NFT."},
+        {name: "Jardin exterior", emoji: "🌻",
+          description: "Plantas de jardin, parterres y flores de temporada."},
+        {name: "Propagacion y esquejes", emoji: "🌱",
+          description: "Trucos para multiplicar tus plantas: esquejes, acodos, semillas."},
+      ];
+
+      let created = 0;
+      let skipped = 0;
+      for (const seed of seeds) {
+        const nameLower = seed.name.toLowerCase();
+        const existing = await db.collection("communities")
+          .where("nameLower", "==", nameLower)
+          .limit(1)
+          .get();
+        if (!existing.empty) {
+          skipped++;
+          continue;
+        }
+        await db.collection("communities").add({
+          name: seed.name,
+          nameLower,
+          description: seed.description,
+          emoji: seed.emoji,
+          createdBy: "system",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          memberCount: 0,
+          photoUrl: null,
+        });
+        created++;
+      }
+
+      res.status(200).json({ok: true, created, skipped, total: seeds.length});
+    } catch (err) {
+      logger.error("seedCommunities fallo", err);
+      res.status(500).json({ok: false, error: String(err)});
+    }
+  },
+);
+
+// ============================================================================
 // Backfill manual de campos lowercase para busqueda case-insensitive.
 //
 // Cuando se anaden campos nameLower / displayNameLower a comunidades y

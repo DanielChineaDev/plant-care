@@ -94,11 +94,9 @@ fun AuthScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.LocalFlorist,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(72.dp),
+                com.BPO.plantcare.ui.components.PlantCareLogo(
+                    size = 120.dp,
+                    showText = false,
                 )
                 Text(
                     text = "PlantCare",

@@ -297,6 +297,13 @@ private fun PopularCommunityCard(
                         OutlinedButton(
                             onClick = onJoinToggle,
                             modifier = Modifier.fillMaxWidth(),
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = androidx.compose.ui.graphics.Color(0xFFE53935),
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                width = 1.dp,
+                                color = androidx.compose.ui.graphics.Color(0xFFE53935),
+                            ),
                         ) { Text("Salir") }
                     } else {
                         Button(
@@ -357,7 +364,16 @@ private fun CommunityRow(
             }
             if (canInteract) {
                 if (community.isMember) {
-                    OutlinedButton(onClick = onJoinToggle) { Text("Salir") }
+                    OutlinedButton(
+                        onClick = onJoinToggle,
+                        colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                            contentColor = androidx.compose.ui.graphics.Color(0xFFE53935),
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.dp,
+                            color = androidx.compose.ui.graphics.Color(0xFFE53935),
+                        ),
+                    ) { Text("Salir") }
                 } else {
                     Button(onClick = onJoinToggle) { Text("Unirme") }
                 }

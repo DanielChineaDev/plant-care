@@ -166,6 +166,25 @@ private fun DrawerHeader(profile: UserProfile?) {
             .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(20.dp),
     ) {
+        // Marca arriba (logo + nombre).
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(
+                    id = com.BPO.plantcare.R.drawable.ic_plantcare_logo,
+                ),
+                contentDescription = "PlantCare",
+                modifier = Modifier.size(40.dp),
+            )
+            Spacer(modifier = Modifier.size(10.dp))
+            Text(
+                text = "PlantCare",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        // Bloque del usuario.
         Row(verticalAlignment = Alignment.CenterVertically) {
             val photo = profile?.photoUrl
             if (photo != null) {
