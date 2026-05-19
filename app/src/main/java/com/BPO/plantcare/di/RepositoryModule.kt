@@ -2,6 +2,7 @@ package com.BPO.plantcare.di
 
 import com.BPO.plantcare.data.preferences.PreferencesRepositoryImpl
 import com.BPO.plantcare.data.repository.AuthRepositoryImpl
+import com.BPO.plantcare.data.repository.CareWikiRepositoryImpl
 import com.BPO.plantcare.data.repository.ChatRepositoryImpl
 import com.BPO.plantcare.data.repository.CommunityRepositoryImpl
 import com.BPO.plantcare.data.repository.DiagnosisRepositoryImpl
@@ -16,6 +17,7 @@ import com.BPO.plantcare.data.repository.WateringLogRepositoryImpl
 import com.BPO.plantcare.data.repository.WeatherRepositoryImpl
 import com.BPO.plantcare.data.repository.WikipediaRepositoryImpl
 import com.BPO.plantcare.domain.repository.AuthRepository
+import com.BPO.plantcare.domain.repository.CareWikiRepository
 import com.BPO.plantcare.domain.repository.ChatRepository
 import com.BPO.plantcare.domain.repository.CommunityRepository
 import com.BPO.plantcare.domain.repository.DiagnosisRepository
@@ -87,6 +89,12 @@ abstract class RepositoryModule {
     abstract fun bindNotificationRepository(
         impl: NotificationRepositoryImpl
     ): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCareWikiRepository(
+        impl: CareWikiRepositoryImpl
+    ): CareWikiRepository
 
     @Binds
     @Singleton

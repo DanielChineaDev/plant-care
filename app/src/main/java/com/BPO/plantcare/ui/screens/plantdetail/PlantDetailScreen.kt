@@ -85,7 +85,9 @@ import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.status
+import com.BPO.plantcare.ui.components.AddCareWikiContributionDialog
 import com.BPO.plantcare.ui.components.CareGuideCard
+import com.BPO.plantcare.ui.components.CareWikiCard
 import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.PlantTasksCard
 import com.BPO.plantcare.ui.components.WateringHistoryChart
@@ -109,6 +111,9 @@ fun PlantDetailScreen(
     val history by viewModel.history.collectAsStateWithLifecycle()
     val careGuide by viewModel.careGuide.collectAsStateWithLifecycle()
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val wikiContributions by viewModel.wikiContributions.collectAsStateWithLifecycle()
+    val wikiAggregate by viewModel.wikiAggregate.collectAsStateWithLifecycle()
+    var showWikiDialog by remember { mutableStateOf(false) }
     val photos by viewModel.photos.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -233,6 +238,13 @@ fun PlantDetailScreen(
                 onDeleteLog = { log -> viewModel.onDeleteWateringLog(log) },
             )
             TaxonomyCard(current)
+            CareWikiCard(
+                aggregate = wikiAggregate,
+                contributions = wikiContributions,
+                canContribute = true,
+                onAddClick = { showWikiDialog = true },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
             WikipediaCard(wikipedia, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -246,6 +258,16 @@ fun PlantDetailScreen(
                 showEditDialog = false
             },
             onDismiss = { showEditDialog = false },
+        )
+    }
+
+    if (showWikiDialog) {
+        AddCareWikiContributionDialog(
+            onConfirm = { water, fert, light, notes ->
+                viewModel.addWikiContribution(water, fert, light, notes)
+                showWikiDialog = false
+            },
+            onDismiss = { showWikiDialog = false },
         )
     }
 

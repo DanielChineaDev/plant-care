@@ -3,12 +3,16 @@ package com.BPO.plantcare.ui.screens.plantdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.BPO.plantcare.domain.model.CareWikiAggregate
+import com.BPO.plantcare.domain.model.CareWikiContribution
 import com.BPO.plantcare.domain.model.GuideMatch
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.PlantTask
 import com.BPO.plantcare.domain.model.PlantTaskType
 import com.BPO.plantcare.domain.model.WateringLog
+import com.BPO.plantcare.domain.model.aggregate
+import com.BPO.plantcare.domain.repository.CareWikiRepository
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.AddWateringLogUseCase
 import com.BPO.plantcare.domain.usecase.DisableTaskUseCase
@@ -35,7 +39,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -69,6 +76,7 @@ class PlantDetailViewModel @Inject constructor(
     private val disableTask: DisableTaskUseCase,
     private val markTaskDone: MarkTaskDoneUseCase,
     private val updateTaskInterval: UpdateTaskIntervalUseCase,
+    private val careWikiRepository: CareWikiRepository,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -105,6 +113,28 @@ class PlantDetailViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList(),
     )
+
+    /** Contribuciones de la wiki para la especie de esta planta. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val wikiContributions: StateFlow<List<CareWikiContribution>> = plant
+        .flatMapLatest { p ->
+            val name = p?.scientificName
+            if (name.isNullOrBlank()) flowOf(emptyList())
+            else careWikiRepository.observeContributions(name)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
+
+    val wikiAggregate: StateFlow<CareWikiAggregate> = wikiContributions
+        .map { it.aggregate(plant.value?.scientificName.orEmpty()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = CareWikiAggregate("", 0, null, null, null),
+        )
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
     val wikipedia: StateFlow<WikipediaUiState> = _wikipedia.asStateFlow()
@@ -211,5 +241,23 @@ class PlantDetailViewModel @Inject constructor(
 
     fun onUpdateTaskInterval(taskId: Long, days: Int) {
         viewModelScope.launch { updateTaskInterval(taskId, days) }
+    }
+
+    fun addWikiContribution(
+        wateringDays: Int?,
+        fertilizeDays: Int?,
+        lightLevel: String?,
+        notes: String?,
+    ) {
+        val name = plant.value?.scientificName ?: return
+        viewModelScope.launch {
+            careWikiRepository.addContribution(
+                scientificName = name,
+                wateringDays = wateringDays,
+                fertilizeDays = fertilizeDays,
+                lightLevel = lightLevel,
+                notes = notes,
+            )
+        }
     }
 }

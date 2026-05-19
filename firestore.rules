@@ -150,6 +150,21 @@ service cloud.firestore {
       }
     }
 
+    // ---------- /careWiki ----------
+    // Wiki colaborativa de cuidados por especie. La key del doc padre es
+    // el nombre cientifico normalizado (lowercase, underscores). Cada
+    // contribucion la firma su autor. Cualquiera puede leer; cualquier
+    // logueado puede crear (con su uid de autor); solo el autor puede
+    // borrar; nadie puede editar.
+    match /careWiki/{scientificKey}/contributions/{contributionId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.authorUid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn()
+        && resource.data.authorUid == request.auth.uid;
+    }
+
     // ---------- /notifications ----------
     // Centro de notificaciones in-app. Las crea SOLO el Admin SDK desde
     // Cloud Functions (post_like, post_comment, community_join). El cliente
