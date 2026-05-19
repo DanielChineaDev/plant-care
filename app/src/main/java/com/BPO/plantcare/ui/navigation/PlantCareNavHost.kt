@@ -31,6 +31,7 @@ import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.myprofile.MyProfileScreen
+import com.BPO.plantcare.ui.screens.globalsearch.GlobalSearchScreen
 import com.BPO.plantcare.ui.screens.notifications.NotificationsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
@@ -49,6 +50,7 @@ object Routes {
     const val EDIT_PROFILE = "edit_profile"
     const val TOOLS = "tools"
     const val NOTIFICATIONS = "notifications"
+    const val GLOBAL_SEARCH = "global_search"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -134,6 +136,7 @@ fun PlantCareNavHost(
             HomeScreen(
                 onOpenDrawer = onOpenDrawer,
                 onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                onGlobalSearchClick = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onCommunitiesClick = { navController.navigate(TopLevelDestination.Communities.route) },
@@ -220,6 +223,21 @@ fun PlantCareNavHost(
         ) {
             com.BPO.plantcare.ui.screens.editprofile.EditProfileScreen(
                 onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            Routes.GLOBAL_SEARCH,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            GlobalSearchScreen(
+                onBack = { navController.popBackStack() },
+                onSpeciesClick = { name -> navController.navigate(Routes.catalogDetail(name)) },
+                onCommunityClick = { cid -> navController.navigate(Routes.communityFeed(cid)) },
+                onUserClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
 

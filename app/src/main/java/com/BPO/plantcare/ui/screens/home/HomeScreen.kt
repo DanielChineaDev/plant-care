@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,6 +65,7 @@ fun HomeScreen(
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
     onNotificationsClick: () -> Unit,
+    onGlobalSearchClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     onPostClick: (communityId: String, postId: String) -> Unit = { _, _ -> },
     onAuthorClick: (uid: String) -> Unit = {},
@@ -93,6 +95,9 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onGlobalSearchClick) {
+                        Icon(Icons.Outlined.Search, contentDescription = "Buscar")
+                    }
                     com.BPO.plantcare.ui.components.NotificationsActionButton(
                         onClick = onNotificationsClick,
                     )
