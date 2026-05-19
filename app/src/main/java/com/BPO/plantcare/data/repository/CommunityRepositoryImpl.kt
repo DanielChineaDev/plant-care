@@ -120,6 +120,9 @@ class CommunityRepositoryImpl @Inject constructor(
 
         val data = mapOf(
             "name" to name,
+            // Para busqueda global case-insensitive: guardamos el nombre en
+            // minusculas en un campo aparte que indexa Firestore por defecto.
+            "nameLower" to name.lowercase(),
             "description" to description,
             "emoji" to emoji,
             "createdBy" to uid,
@@ -243,7 +246,21 @@ class CommunityRepositoryImpl @Inject constructor(
                         }
                     awaitClose { reg.remove() }
                 }
-                combine(docFlow, likeFlow) { p, liked -> p?.copy(isLikedByMe = liked) }
+                val pollVoteFlow: Flow<String?> = callbackFlow {
+                    val reg = firestore.collection(COMMUNITIES).document(communityId)
+                        .collection(POSTS).document(postId)
+                        .collection(POLL_VOTES).document(uid)
+                        .addSnapshotListener { snap, err ->
+                            if (err != null) {
+                                trySend(null); return@addSnapshotListener
+                            }
+                            trySend(snap?.getString("optionId"))
+                        }
+                    awaitClose { reg.remove() }
+                }
+                combine(docFlow, likeFlow, pollVoteFlow) { p, liked, vote ->
+                    p?.copy(isLikedByMe = liked, myPollVote = vote)
+                }
             }
         }
 
@@ -251,22 +268,23 @@ class CommunityRepositoryImpl @Inject constructor(
         communityId: String,
         text: String,
         photoFile: File?,
+        pollOptions: List<com.BPO.plantcare.domain.model.PollOption>?,
     ): Result<String> = runCatching {
         val user = firebaseAuth.currentUser ?: error("Inicia sesion para publicar")
         val doc = firestore.collection(COMMUNITIES).document(communityId)
             .collection(POSTS).document()
-        // Si hay foto, la subimos PRIMERO a Storage en un path estable
-        // construido con el id del doc. Si despues falla doc.set (reglas,
-        // red, etc.) borramos el blob para no dejar huerfanos.
-        val storageRef = if (photoFile != null) {
+
+        // Si es encuesta, la foto se ignora (la UI tampoco la pide).
+        val isPoll = pollOptions != null && pollOptions.size >= 2
+        val storageRef = if (!isPoll && photoFile != null) {
             firebaseStorage.reference.child("community_posts/$communityId/${doc.id}.jpg")
         } else null
-        val photoUrl: String? = if (photoFile != null && storageRef != null) {
+        val photoUrl: String? = if (!isPoll && photoFile != null && storageRef != null) {
             storageRef.putFile(Uri.fromFile(photoFile)).await()
             storageRef.downloadUrl.await().toString()
         } else null
 
-        val data = mapOf(
+        val baseData = mutableMapOf<String, Any?>(
             "authorUid" to user.uid,
             "authorName" to (user.displayName ?: ""),
             "authorPhoto" to user.photoUrl?.toString(),
@@ -276,13 +294,74 @@ class CommunityRepositoryImpl @Inject constructor(
             "likeCount" to 0L,
             "commentCount" to 0L,
         )
+        if (isPoll) {
+            baseData["pollOptions"] = pollOptions!!.map {
+                mapOf("id" to it.id, "text" to it.text)
+            }
+            // Contadores arrancan a 0 para cada opcion.
+            baseData["pollVotesCount"] = pollOptions.associate { it.id to 0L }
+        }
         try {
-            doc.set(data).await()
+            doc.set(baseData).await()
         } catch (e: Exception) {
             if (storageRef != null) runCatching { storageRef.delete().await() }
             throw e
         }
         doc.id
+    }
+
+    override suspend fun voteOnPoll(
+        communityId: String,
+        postId: String,
+        optionId: String,
+    ): Result<Unit> = runCatching {
+        val uid = requireUid()
+        val postRef = firestore.collection(COMMUNITIES).document(communityId)
+            .collection(POSTS).document(postId)
+        val voteRef = postRef.collection(POLL_VOTES).document(uid)
+
+        firestore.runTransaction { tx ->
+            val voteSnap = tx.get(voteRef)
+            val postSnap = tx.get(postRef)
+            @Suppress("UNCHECKED_CAST")
+            val counts = (postSnap.get("pollVotesCount") as? Map<String, Number>)
+                ?: error("Post no es encuesta")
+            // Validamos que la opcion exista para no inflar contadores fantasma.
+            if (!counts.containsKey(optionId)) error("Opcion invalida")
+
+            val previousOption = voteSnap.getString("optionId")
+            when {
+                previousOption == null -> {
+                    // Voto nuevo.
+                    tx.set(
+                        voteRef,
+                        mapOf(
+                            "optionId" to optionId,
+                            "votedAt" to FieldValue.serverTimestamp(),
+                        ),
+                    )
+                    tx.update(postRef, "pollVotesCount.$optionId", FieldValue.increment(1))
+                }
+                previousOption == optionId -> {
+                    // Volver a tocar la misma opcion = retirar voto.
+                    tx.delete(voteRef)
+                    tx.update(postRef, "pollVotesCount.$optionId", FieldValue.increment(-1))
+                }
+                else -> {
+                    // Cambio de voto.
+                    tx.update(voteRef, "optionId", optionId)
+                    tx.update(voteRef, "votedAt", FieldValue.serverTimestamp())
+                    tx.update(
+                        postRef,
+                        mapOf(
+                            "pollVotesCount.$previousOption" to FieldValue.increment(-1),
+                            "pollVotesCount.$optionId" to FieldValue.increment(1),
+                        ),
+                    )
+                }
+            }
+            null
+        }.await()
     }
 
     override suspend fun toggleLike(communityId: String, postId: String): Result<Unit> =
@@ -410,7 +489,24 @@ class CommunityRepositoryImpl @Inject constructor(
             createdAt = (getDate("createdAt") ?: Date(0)).time,
             likeCount = getLong("likeCount") ?: 0L,
             commentCount = getLong("commentCount") ?: 0L,
+            poll = parsePoll(),
         )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun DocumentSnapshot.parsePoll(): com.BPO.plantcare.domain.model.Poll? {
+        val rawOptions = get("pollOptions") as? List<Map<String, Any?>> ?: return null
+        if (rawOptions.size < 2) return null
+        val options = rawOptions.mapNotNull { o ->
+            val id = (o["id"] as? String) ?: return@mapNotNull null
+            val text = (o["text"] as? String) ?: return@mapNotNull null
+            com.BPO.plantcare.domain.model.PollOption(id, text)
+        }
+        val rawCounts = (get("pollVotesCount") as? Map<String, Any?>).orEmpty()
+        val votes = rawCounts.mapValues { (_, v) ->
+            (v as? Number)?.toLong() ?: 0L
+        }
+        return com.BPO.plantcare.domain.model.Poll(options, votes)
     }
 
     private fun DocumentSnapshot.toComment(postId: String): Comment? {
@@ -435,5 +531,6 @@ class CommunityRepositoryImpl @Inject constructor(
         private const val USERS = "users"
         private const val JOINED_COMMUNITIES = "joinedCommunities"
         private const val POST_LIKES = "postLikes"
+        private const val POLL_VOTES = "pollVotes"
     }
 }

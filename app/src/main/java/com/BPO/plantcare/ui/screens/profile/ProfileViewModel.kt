@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
 import com.BPO.plantcare.core.backup.PlantsBackupExporter
+import com.BPO.plantcare.core.backup.PlantsBackupImporter
 import com.BPO.plantcare.core.location.LocationProvider
 import com.BPO.plantcare.core.work.WateringReminderManager
 import com.BPO.plantcare.domain.model.UserSettings
@@ -31,6 +32,7 @@ sealed interface ProfileEvent {
     data class PublicError(val message: String) : ProfileEvent
     data class BackupExported(val plantCount: Int) : ProfileEvent
     data class BackupFailed(val message: String) : ProfileEvent
+    data class BackupImported(val plantCount: Int) : ProfileEvent
 }
 
 @HiltViewModel
@@ -41,6 +43,7 @@ class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val publicProfileRepository: PublicProfileRepository,
     private val backupExporter: PlantsBackupExporter,
+    private val backupImporter: PlantsBackupImporter,
     @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context,
 ) : ViewModel() {
 
@@ -135,6 +138,15 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             backupExporter.exportToUri(appContext, uri).fold(
                 onSuccess = { count -> _events.send(ProfileEvent.BackupExported(count)) },
+                onFailure = { _events.send(ProfileEvent.BackupFailed(it.localizedMessage.orEmpty())) },
+            )
+        }
+    }
+
+    fun importBackup(uri: Uri) {
+        viewModelScope.launch {
+            backupImporter.importFromUri(appContext, uri).fold(
+                onSuccess = { count -> _events.send(ProfileEvent.BackupImported(count)) },
                 onFailure = { _events.send(ProfileEvent.BackupFailed(it.localizedMessage.orEmpty())) },
             )
         }

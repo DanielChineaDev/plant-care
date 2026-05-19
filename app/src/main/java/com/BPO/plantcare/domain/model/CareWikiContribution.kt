@@ -16,6 +16,11 @@ data class CareWikiContribution(
     val lightLevel: String?, // "low" | "medium" | "high"
     val notes: String?,
     val createdAt: Long,
+    /**
+     * Marcada como verificada por un admin. La UI las destaca y la
+     * agregacion les da prioridad cuando hay al menos una.
+     */
+    val approved: Boolean = false,
 )
 
 /**
@@ -41,9 +46,14 @@ fun List<CareWikiContribution>.aggregate(scientificName: String): CareWikiAggreg
             majorityLightLevel = null,
         )
     }
-    val waterings = mapNotNull { it.wateringDays }
-    val fertilizes = mapNotNull { it.fertilizeDays }
-    val lights = mapNotNull { it.lightLevel?.lowercase() }
+    // Si hay al menos una contribucion aprobada por admin, calculamos la
+    // mediana usando SOLO las aprobadas (mas confiables). Si no, usamos
+    // todas. Asi un admin que aprueba una entrada "promueve" su valor.
+    val approved = filter { it.approved }
+    val source = if (approved.isNotEmpty()) approved else this
+    val waterings = source.mapNotNull { it.wateringDays }
+    val fertilizes = source.mapNotNull { it.fertilizeDays }
+    val lights = source.mapNotNull { it.lightLevel?.lowercase() }
     val light = lights.groupingBy { it }.eachCount()
         .maxByOrNull { it.value }?.key
     return CareWikiAggregate(

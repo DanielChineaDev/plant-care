@@ -12,6 +12,8 @@ import com.BPO.plantcare.domain.model.PlantTask
 import com.BPO.plantcare.domain.model.PlantTaskType
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.aggregate
+import com.BPO.plantcare.domain.repository.AuthRepository
+import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.CareWikiRepository
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.AddWateringLogUseCase
@@ -77,6 +79,7 @@ class PlantDetailViewModel @Inject constructor(
     private val markTaskDone: MarkTaskDoneUseCase,
     private val updateTaskInterval: UpdateTaskIntervalUseCase,
     private val careWikiRepository: CareWikiRepository,
+    authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -134,6 +137,14 @@ class PlantDetailViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = CareWikiAggregate("", 0, null, null, null),
+        )
+
+    val isAdmin: StateFlow<Boolean> = authRepository.authState
+        .map { (it as? AuthState.SignedIn)?.profile?.isAdmin ?: false }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
         )
 
     private val _wikipedia = MutableStateFlow<WikipediaUiState>(WikipediaUiState.Loading)
@@ -257,6 +268,16 @@ class PlantDetailViewModel @Inject constructor(
                 fertilizeDays = fertilizeDays,
                 lightLevel = lightLevel,
                 notes = notes,
+            )
+        }
+    }
+
+    fun toggleWikiApproval(contribution: com.BPO.plantcare.domain.model.CareWikiContribution) {
+        viewModelScope.launch {
+            careWikiRepository.setApproved(
+                scientificName = contribution.scientificName,
+                contributionId = contribution.id,
+                approved = !contribution.approved,
             )
         }
     }

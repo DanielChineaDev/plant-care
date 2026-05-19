@@ -160,8 +160,8 @@ fun CommunityFeedScreen(
 
     if (showCreatePost) {
         CreatePostDialog(
-            onConfirm = { text, photo ->
-                viewModel.createPost(text, photo)
+            onConfirm = { text, photo, pollOptions ->
+                viewModel.createPost(text, photo, pollOptions)
                 showCreatePost = false
             },
             onDismiss = { showCreatePost = false },
@@ -351,13 +351,25 @@ private fun EmptyFeed(isSignedIn: Boolean, isMember: Boolean) {
 
 @Composable
 private fun CreatePostDialog(
-    onConfirm: (text: String, photoFile: File?) -> Unit,
+    onConfirm: (
+        text: String,
+        photoFile: File?,
+        pollOptions: List<com.BPO.plantcare.domain.model.PollOption>?,
+    ) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
     var text by rememberSaveable { mutableStateOf("") }
     var photoFile by remember { mutableStateOf<File?>(null) }
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+    var pollMode by rememberSaveable { mutableStateOf(false) }
+    // Estado de las opciones de poll: lista mutable de strings.
+    val pollOptionsState = rememberSaveable(
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableList() },
+        ),
+    ) { mutableListOf("", "") }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture(),
@@ -377,14 +389,60 @@ private fun CreatePostDialog(
         title = { Text("Nuevo post") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Convertir en encuesta",
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    androidx.compose.material3.Switch(
+                        checked = pollMode,
+                        onCheckedChange = { pollMode = it },
+                    )
+                }
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Que quieres contar?") },
-                    minLines = 3,
+                    label = { Text(if (pollMode) "Pregunta" else "Que quieres contar?") },
+                    minLines = if (pollMode) 1 else 3,
                     maxLines = 6,
                 )
-                if (photoFile != null) {
+                if (pollMode) {
+                    Text(
+                        text = "Opciones",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    pollOptionsState.forEachIndexed { index, opt ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            OutlinedTextField(
+                                value = opt,
+                                onValueChange = {
+                                    pollOptionsState[index] = it.take(80)
+                                },
+                                label = { Text("Opcion ${index + 1}") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (pollOptionsState.size > 2) {
+                                IconButton(onClick = { pollOptionsState.removeAt(index) }) {
+                                    Icon(
+                                        Icons.Outlined.Close,
+                                        contentDescription = "Quitar opcion",
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (pollOptionsState.size < 4) {
+                        TextButton(onClick = { pollOptionsState.add("") }) {
+                            Text("+ Anadir opcion")
+                        }
+                    }
+                }
+                if (!pollMode && photoFile != null) {
                     Box {
                         AsyncImage(
                             model = photoFile,
@@ -410,48 +468,63 @@ private fun CreatePostDialog(
                         }
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            val file = File(
-                                context.cacheDir,
-                                "post_${System.currentTimeMillis()}.jpg",
-                            ).apply { createNewFile() }
-                            pendingCameraFile = file
-                            val uri: Uri = FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.fileprovider",
-                                file,
-                            )
-                            cameraLauncher.launch(uri)
-                        },
-                    ) {
-                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
-                        Spacer(modifier = Modifier.size(6.dp))
-                        Text("Camara")
-                    }
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            galleryLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
-                                ),
-                            )
-                        },
-                    ) {
-                        Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
-                        Spacer(modifier = Modifier.size(6.dp))
-                        Text("Galeria")
+                if (!pollMode) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                val file = File(
+                                    context.cacheDir,
+                                    "post_${System.currentTimeMillis()}.jpg",
+                                ).apply { createNewFile() }
+                                pendingCameraFile = file
+                                val uri: Uri = FileProvider.getUriForFile(
+                                    context,
+                                    "${context.packageName}.fileprovider",
+                                    file,
+                                )
+                                cameraLauncher.launch(uri)
+                            },
+                        ) {
+                            Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
+                            Spacer(modifier = Modifier.size(6.dp))
+                            Text("Camara")
+                        }
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                galleryLauncher.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                    ),
+                                )
+                            },
+                        ) {
+                            Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
+                            Spacer(modifier = Modifier.size(6.dp))
+                            Text("Galeria")
+                        }
                     }
                 }
             }
         },
         confirmButton = {
+            val validOptions = pollOptionsState.map { it.trim() }.filter { it.isNotEmpty() }
+            val pollValid = pollMode && validOptions.size >= 2 && text.isNotBlank()
+            val normalValid = !pollMode && (text.isNotBlank() || photoFile != null)
             Button(
-                enabled = text.isNotBlank() || photoFile != null,
-                onClick = { onConfirm(text, photoFile) },
+                enabled = pollValid || normalValid,
+                onClick = {
+                    val options = if (pollMode) {
+                        validOptions.mapIndexed { idx, t ->
+                            com.BPO.plantcare.domain.model.PollOption(
+                                id = "opt_$idx",
+                                text = t,
+                            )
+                        }
+                    } else null
+                    onConfirm(text, if (pollMode) null else photoFile, options)
+                },
             ) { Text("Publicar") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },

@@ -80,6 +80,17 @@ class CareWikiRepositoryImpl @Inject constructor(
             .delete().await()
     }
 
+    override suspend fun setApproved(
+        scientificName: String,
+        contributionId: String,
+        approved: Boolean,
+    ): Result<Unit> = runCatching {
+        val key = scientificName.normalizeKey()
+        firestore.collection(CARE_WIKI).document(key)
+            .collection(CONTRIBUTIONS).document(contributionId)
+            .update("approved", approved).await()
+    }
+
     private fun DocumentSnapshot.toContribution(originalName: String): CareWikiContribution? {
         if (!exists()) return null
         return CareWikiContribution(
@@ -93,6 +104,7 @@ class CareWikiRepositoryImpl @Inject constructor(
             lightLevel = getString("lightLevel"),
             notes = getString("notes"),
             createdAt = (getDate("createdAt") ?: Date(0)).time,
+            approved = getBoolean("approved") ?: false,
         )
     }
 

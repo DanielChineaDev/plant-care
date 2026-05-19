@@ -88,6 +88,8 @@ fun ProfileScreen(
                 is ProfileEvent.BackupExported ->
                     "Backup creado con ${event.plantCount} plantas"
                 is ProfileEvent.BackupFailed -> "Error en backup: ${event.message}"
+                is ProfileEvent.BackupImported ->
+                    "Importadas ${event.plantCount} plantas desde el backup"
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -150,7 +152,10 @@ fun ProfileScreen(
                 )
             }
 
-            BackupCard(onExport = viewModel::exportBackup)
+            BackupCard(
+                onExport = viewModel::exportBackup,
+                onImport = viewModel::importBackup,
+            )
 
             SignOutCard(onSignOut = { viewModel.signOut() })
 
@@ -160,14 +165,19 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun BackupCard(onExport: (android.net.Uri) -> Unit) {
-    // SAF: CreateDocument("application/json") deja al user elegir donde
-    // guardar el archivo. Suggested filename con la fecha actual.
-    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+private fun BackupCard(
+    onExport: (android.net.Uri) -> Unit,
+    onImport: (android.net.Uri) -> Unit,
+) {
+    // SAF: CreateDocument("application/json") para exportar; OpenDocument
+    // para importar.
+    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri ->
-        if (uri != null) onExport(uri)
-    }
+    ) { uri -> if (uri != null) onExport(uri) }
+    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri -> if (uri != null) onImport(uri) }
+
     val suggested = "plantcare_backup_${java.time.LocalDate.now()}.json"
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -180,17 +190,30 @@ private fun BackupCard(onExport: (android.net.Uri) -> Unit) {
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Exporta tu coleccion (plantas + historial de riegos) como archivo JSON. Util para cambiar de movil o no perder datos.",
+                text = "Exporta tu coleccion (plantas + historial de riegos) como archivo JSON, o importa uno previo. Util para cambiar de movil. Las fotos no se exportan.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.size(8.dp))
             OutlinedButton(
-                onClick = { launcher.launch(suggested) },
+                onClick = { exportLauncher.launch(suggested) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("Exportar mis plantas a JSON")
             }
+            Spacer(modifier = Modifier.size(6.dp))
+            OutlinedButton(
+                onClick = { importLauncher.launch(arrayOf("application/json")) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Importar desde JSON")
+            }
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(
+                text = "Ojo: el import anade plantas como NUEVAS, no reemplaza. Si importas dos veces el mismo archivo, se duplicaran.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

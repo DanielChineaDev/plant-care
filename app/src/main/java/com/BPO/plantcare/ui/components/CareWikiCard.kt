@@ -48,6 +48,8 @@ fun CareWikiCard(
     canContribute: Boolean,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isAdmin: Boolean = false,
+    onApproveToggle: (CareWikiContribution) -> Unit = {},
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -86,7 +88,11 @@ fun CareWikiCard(
                 }
                 Spacer(modifier = Modifier.size(12.dp))
                 contributions.take(3).forEach { c ->
-                    ContributionRow(c)
+                    ContributionRow(
+                        contribution = c,
+                        isAdmin = isAdmin,
+                        onApproveToggle = { onApproveToggle(c) },
+                    )
                 }
             } else {
                 Text(
@@ -135,13 +141,28 @@ private fun StatChip(label: String, value: String) {
 }
 
 @Composable
-private fun ContributionRow(contribution: CareWikiContribution) {
+private fun ContributionRow(
+    contribution: CareWikiContribution,
+    isAdmin: Boolean,
+    onApproveToggle: () -> Unit,
+) {
     Column(modifier = Modifier.padding(vertical = 6.dp)) {
-        Text(
-            text = contribution.authorName?.takeIf { it.isNotBlank() } ?: "Usuario",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = contribution.authorName?.takeIf { it.isNotBlank() } ?: "Usuario",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+            )
+            if (contribution.approved) {
+                Text(
+                    text = "✓ Verificada",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
         val bits = mutableListOf<String>()
         contribution.wateringDays?.let { bits += "Riega cada $it d" }
         contribution.fertilizeDays?.let { bits += "Abono cada $it d" }
@@ -156,6 +177,17 @@ private fun ContributionRow(contribution: CareWikiContribution) {
                 text = "\"$it\"",
                 style = MaterialTheme.typography.bodySmall,
             )
+        }
+        if (isAdmin) {
+            androidx.compose.material3.TextButton(
+                onClick = onApproveToggle,
+                modifier = Modifier.padding(top = 2.dp),
+            ) {
+                Text(
+                    if (contribution.approved) "Quitar verificacion"
+                    else "Marcar como verificada",
+                )
+            }
         }
     }
 }

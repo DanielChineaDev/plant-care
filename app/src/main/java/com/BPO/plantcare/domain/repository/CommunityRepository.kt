@@ -3,6 +3,7 @@ package com.BPO.plantcare.domain.repository
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityPost
+import com.BPO.plantcare.domain.model.PollOption
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 
@@ -22,9 +23,29 @@ interface CommunityRepository {
     fun observePosts(communityId: String, limit: Int = 50): Flow<List<CommunityPost>>
     /** Set de IDs de posts likeados por el usuario actual en la comunidad. */
     fun observeLikedPostsInCommunity(communityId: String): Flow<Set<String>>
-    /** [photoFile] opcional: si != null se sube a Firebase Storage y se guarda la URL. */
-    suspend fun createPost(communityId: String, text: String, photoFile: File? = null): Result<String>
+    /**
+     * Crea un post. Si [pollOptions] no es null, el post sera una encuesta
+     * (en ese caso [photoFile] se ignora). Si [photoFile] no es null, se
+     * sube a Storage y se guarda la URL.
+     */
+    suspend fun createPost(
+        communityId: String,
+        text: String,
+        photoFile: File? = null,
+        pollOptions: List<PollOption>? = null,
+    ): Result<String>
     suspend fun toggleLike(communityId: String, postId: String): Result<Unit>
+
+    /**
+     * Vota una opcion de una encuesta. Si el user ya habia votado otra
+     * opcion, transacciona el cambio de voto (-1 a la antigua, +1 a la
+     * nueva). Si vuelve a tocar la misma opcion, retira el voto.
+     */
+    suspend fun voteOnPoll(
+        communityId: String,
+        postId: String,
+        optionId: String,
+    ): Result<Unit>
 
     fun observePost(communityId: String, postId: String): Flow<CommunityPost?>
     fun observeComments(communityId: String, postId: String): Flow<List<Comment>>

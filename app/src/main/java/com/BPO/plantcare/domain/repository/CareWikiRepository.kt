@@ -20,4 +20,14 @@ interface CareWikiRepository {
     ): Result<String>
 
     suspend fun deleteContribution(scientificName: String, contributionId: String): Result<Unit>
+
+    /**
+     * Marca/desmarca una contribucion como aprobada. Solo los admins
+     * deberian llamar esto; las reglas Firestore lo enforzan.
+     */
+    suspend fun setApproved(
+        scientificName: String,
+        contributionId: String,
+        approved: Boolean,
+    ): Result<Unit>
 }

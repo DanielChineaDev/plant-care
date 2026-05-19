@@ -114,6 +114,7 @@ fun PlantDetailScreen(
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
     val wikiContributions by viewModel.wikiContributions.collectAsStateWithLifecycle()
     val wikiAggregate by viewModel.wikiAggregate.collectAsStateWithLifecycle()
+    val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
     var showWikiDialog by remember { mutableStateOf(false) }
     val photos by viewModel.photos.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
@@ -256,6 +257,8 @@ fun PlantDetailScreen(
                 canContribute = true,
                 onAddClick = { showWikiDialog = true },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                isAdmin = isAdmin,
+                onApproveToggle = viewModel::toggleWikiApproval,
             )
             WikipediaCard(wikipedia, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             Spacer(modifier = Modifier.height(24.dp))

@@ -106,6 +106,14 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
+    fun voteOnPoll(optionId: String) {
+        viewModelScope.launch {
+            communityRepository.voteOnPoll(communityId, postId, optionId).onFailure {
+                _events.send(PostDetailEvent.Error(it.localizedMessage.orEmpty()))
+            }
+        }
+    }
+
     fun reportPost(reason: ReportReason, notes: String?) {
         viewModelScope.launch {
             reportRepository.submitReport(

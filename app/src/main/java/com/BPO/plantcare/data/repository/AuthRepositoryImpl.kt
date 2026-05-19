@@ -150,7 +150,14 @@ class AuthRepositoryImpl @Inject constructor(
                 .build(),
         ).await()
         firestore.collection(USERS).document(user.uid)
-            .update("displayName", clean).await()
+            .update(
+                mapOf(
+                    "displayName" to clean,
+                    // Lowercase para que la busqueda global encuentre el user
+                    // sin importar mayusculas/minusculas.
+                    "displayNameLower" to clean.lowercase(),
+                ),
+            ).await()
     }
 
     override suspend fun updateAvatar(file: java.io.File): Result<String> = runCatching {
@@ -260,6 +267,7 @@ class AuthRepositoryImpl @Inject constructor(
             val data = mapOf(
                 "uid" to user.uid,
                 "displayName" to user.displayName,
+                "displayNameLower" to (user.displayName ?: "").lowercase(),
                 "email" to user.email,
                 "photoUrl" to user.photoUrl?.toString(),
                 "createdAt" to now,

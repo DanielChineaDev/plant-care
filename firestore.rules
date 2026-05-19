@@ -45,16 +45,20 @@ service cloud.firestore {
       // Cualquier user logueado puede leer perfiles (para mostrar avatar/nombre
       // en posts y comentarios). Solo el dueno escribe el suyo.
       allow read: if isSignedIn();
-      // Al crear, isAdmin siempre arranca en false. Esto se hace solo desde
-      // el primer login. Que el user no pueda autopromocionarse a admin.
+      // Al crear, isAdmin siempre arranca en false y karma a 0 (lo gestiona
+      // el backend). Esto se hace solo desde el primer login. Que el user
+      // no pueda autopromocionarse a admin ni inflar karma.
       allow create: if isMe(userId)
         && request.resource.data.uid == userId
-        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false);
-      // Update: el dueno escribe lo suyo pero NO puede cambiar isAdmin (solo
-      // se cambia manualmente desde Firebase Console).
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        && (!('karma' in request.resource.data) || request.resource.data.karma == 0);
+      // Update: el dueno escribe lo suyo pero NO puede cambiar isAdmin ni
+      // karma (los gestiona el backend / admin).
       allow update: if isMe(userId)
         && (!('isAdmin' in request.resource.data) ||
-            request.resource.data.isAdmin == resource.data.get('isAdmin', false));
+            request.resource.data.isAdmin == resource.data.get('isAdmin', false))
+        && (!('karma' in request.resource.data) ||
+            request.resource.data.karma == resource.data.get('karma', 0));
       allow delete: if isMe(userId);
 
       // Subcolecciones del propio user: solo el dueno.
@@ -117,12 +121,13 @@ service cloud.firestore {
           && request.resource.data.likeCount == 0
           && request.resource.data.commentCount == 0;
 
-        // Update solo para tocar contadores (+/- 1) por transacciones de
-        // like, comentario, etc. No se pueden editar texto/foto/autor.
+        // Update permitido para cambiar contadores (likeCount, commentCount
+        // +/- 1) o el mapa pollVotesCount. Para encuestas no validamos
+        // delta exacto del map (Firestore no lo permite facilmente);
+        // confiamos en la transaccion del cliente. Reglas no dejan tocar
+        // texto/foto/autor/pollOptions una vez creado.
         allow update: if isSignedIn()
-          && onlyChanged(['likeCount', 'commentCount'])
-          && (likeCountDelta() == 0 || likeCountDelta() == 1 || likeCountDelta() == -1)
-          && (commentCountDelta() == 0 || commentCountDelta() == 1 || commentCountDelta() == -1);
+          && changedKeys().hasOnly(['likeCount', 'commentCount', 'pollVotesCount']);
 
         // Solo el autor puede borrar su post.
         allow delete: if isSignedIn()
@@ -133,6 +138,13 @@ service cloud.firestore {
           allow read: if true;
           // Solo el propio usuario crea/borra su like.
           allow create, delete: if isMe(userId);
+        }
+
+        // ---------- /communities/{c}/posts/{p}/pollVotes ----------
+        // Cada user vota solo su propio doc; uno por persona.
+        match /pollVotes/{userId} {
+          allow read: if true;
+          allow create, update, delete: if isMe(userId);
         }
 
         // ---------- /communities/{c}/posts/{p}/comments ----------
@@ -159,10 +171,16 @@ service cloud.firestore {
     match /careWiki/{scientificKey}/contributions/{contributionId} {
       allow read: if true;
       allow create: if isSignedIn()
-        && request.resource.data.authorUid == request.auth.uid;
-      allow update: if false;
+        && request.resource.data.authorUid == request.auth.uid
+        && (!('approved' in request.resource.data) ||
+            request.resource.data.approved == false);
+      // Solo admins pueden cambiar el flag approved (cualquier otro
+      // cambio bloqueado).
+      allow update: if isAdmin()
+        && changedKeys().hasOnly(['approved']);
+      // El autor borra la suya; tambien admin puede borrar moderacion.
       allow delete: if isSignedIn()
-        && resource.data.authorUid == request.auth.uid;
+        && (resource.data.authorUid == request.auth.uid || isAdmin());
     }
 
     // ---------- /reports ----------

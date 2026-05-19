@@ -21,6 +21,7 @@
  */
 
 const {onDocumentCreated, onDocumentDeleted} = require("firebase-functions/v2/firestore");
+const {onRequest} = require("firebase-functions/v2/https");
 const {logger} = require("firebase-functions");
 const admin = require("firebase-admin");
 
@@ -225,6 +226,66 @@ exports.onCommunityMemberJoined = onDocumentCreated(
 // ============================================================================
 // Helpers
 // ============================================================================
+
+// ============================================================================
+// Backfill manual de campos lowercase para busqueda case-insensitive.
+//
+// Cuando se anaden campos nameLower / displayNameLower a comunidades y
+// usuarios, los documentos viejos no los tienen y la query global no los
+// encuentra. Esta funcion HTTP recorre TODA la coleccion y rellena el
+// campo derivado. Idempotente: si ya existe nameLower y coincide, no
+// escribe (ahorra writes).
+//
+// Solo invocable manualmente desde gcloud / Firebase Console / curl
+// usando un token de un user admin. Por simplicidad MVP la dejamos
+// abierta pero requiere conocer la URL; en produccion conviene
+// proteger con Bearer auth + check de isAdmin.
+// ============================================================================
+exports.backfillLowercaseFields = onRequest(
+  {region: REGION, timeoutSeconds: 540},
+  async (req, res) => {
+    try {
+      const communitiesSnap = await db.collection("communities").get();
+      let communitiesUpdated = 0;
+      const cBatch = db.batch();
+      communitiesSnap.docs.forEach((doc) => {
+        const data = doc.data();
+        const name = data.name;
+        if (!name) return;
+        const lower = String(name).toLowerCase();
+        if (data.nameLower !== lower) {
+          cBatch.update(doc.ref, {nameLower: lower});
+          communitiesUpdated++;
+        }
+      });
+      if (communitiesUpdated > 0) await cBatch.commit();
+
+      const usersSnap = await db.collection("users").get();
+      let usersUpdated = 0;
+      const uBatch = db.batch();
+      usersSnap.docs.forEach((doc) => {
+        const data = doc.data();
+        const dn = data.displayName;
+        if (!dn) return;
+        const lower = String(dn).toLowerCase();
+        if (data.displayNameLower !== lower) {
+          uBatch.update(doc.ref, {displayNameLower: lower});
+          usersUpdated++;
+        }
+      });
+      if (usersUpdated > 0) await uBatch.commit();
+
+      res.status(200).json({
+        ok: true,
+        communitiesUpdated,
+        usersUpdated,
+      });
+    } catch (err) {
+      logger.error("backfill fallo", err);
+      res.status(500).json({ok: false, error: String(err)});
+    }
+  },
+);
 
 /**
  * Suma [delta] al campo karma del usuario [uid]. Se ejecuta sin

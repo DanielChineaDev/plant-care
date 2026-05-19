@@ -63,6 +63,7 @@ import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
 import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.MarkdownText
+import com.BPO.plantcare.ui.components.PollVoteCard
 import com.BPO.plantcare.ui.components.ReportDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,6 +157,7 @@ fun PostDetailScreen(
                     onAuthorClick = { onAuthorClick(current.authorUid) },
                     onAuthorNameClick = { onAuthorNameClick(current.authorUid) },
                     onLikeClick = viewModel::toggleLike,
+                    onPollVote = viewModel::voteOnPoll,
                 )
             }
             item {
@@ -193,6 +195,7 @@ private fun PostHeader(
     onAuthorClick: () -> Unit,
     onAuthorNameClick: () -> Unit,
     onLikeClick: () -> Unit,
+    onPollVote: (String) -> Unit = {},
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -240,6 +243,15 @@ private fun PostHeader(
                 Spacer(modifier = Modifier.size(12.dp))
                 // Markdown simple: **bold**, *italic* y [texto](url).
                 MarkdownText(text = post.text, style = MaterialTheme.typography.bodyLarge)
+            }
+            post.poll?.let { poll ->
+                Spacer(modifier = Modifier.size(12.dp))
+                PollVoteCard(
+                    poll = poll,
+                    myVote = post.myPollVote,
+                    enabled = canInteract,
+                    onVote = onPollVote,
+                )
             }
             if (post.photoUrl != null) {
                 Spacer(modifier = Modifier.size(12.dp))

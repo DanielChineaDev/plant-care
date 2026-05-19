@@ -66,10 +66,20 @@ class CommunityFeedViewModel @Inject constructor(
     private val _events = Channel<FeedEvent>(capacity = Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    fun createPost(text: String, photoFile: File?) {
-        if (text.isBlank() && photoFile == null) return
+    fun createPost(
+        text: String,
+        photoFile: File?,
+        pollOptions: List<com.BPO.plantcare.domain.model.PollOption>? = null,
+    ) {
+        val isPoll = pollOptions != null && pollOptions.size >= 2
+        if (text.isBlank() && photoFile == null && !isPoll) return
         viewModelScope.launch {
-            communityRepository.createPost(communityId, text.trim(), photoFile).fold(
+            communityRepository.createPost(
+                communityId = communityId,
+                text = text.trim(),
+                photoFile = photoFile,
+                pollOptions = pollOptions,
+            ).fold(
                 onSuccess = { _events.send(FeedEvent.PostCreated) },
                 onFailure = { _events.send(FeedEvent.Error(it.localizedMessage.orEmpty())) },
             )
