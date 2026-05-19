@@ -5,6 +5,7 @@ import com.BPO.plantcare.data.repository.AuthRepositoryImpl
 import com.BPO.plantcare.data.repository.CareWikiRepositoryImpl
 import com.BPO.plantcare.data.repository.ChatRepositoryImpl
 import com.BPO.plantcare.data.repository.CommunityRepositoryImpl
+import com.BPO.plantcare.data.repository.DiagnosePhotoRepositoryImpl
 import com.BPO.plantcare.data.repository.DiagnosisRepositoryImpl
 import com.BPO.plantcare.data.repository.GlobalSearchRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantCatalogRepositoryImpl
@@ -22,6 +23,7 @@ import com.BPO.plantcare.domain.repository.AuthRepository
 import com.BPO.plantcare.domain.repository.CareWikiRepository
 import com.BPO.plantcare.domain.repository.ChatRepository
 import com.BPO.plantcare.domain.repository.CommunityRepository
+import com.BPO.plantcare.domain.repository.DiagnosePhotoRepository
 import com.BPO.plantcare.domain.repository.DiagnosisRepository
 import com.BPO.plantcare.domain.repository.GlobalSearchRepository
 import com.BPO.plantcare.domain.repository.PlantCatalogRepository
@@ -123,6 +125,12 @@ abstract class RepositoryModule {
     abstract fun bindDiagnosisRepository(
         impl: DiagnosisRepositoryImpl
     ): DiagnosisRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDiagnosePhotoRepository(
+        impl: DiagnosePhotoRepositoryImpl
+    ): DiagnosePhotoRepository
 
     @Binds
     @Singleton

@@ -38,6 +38,7 @@ fun ToolsScreen(
     onBack: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
+    onOpenDiagnosePhoto: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -72,6 +73,14 @@ fun ToolsScreen(
                     title = "Diagnostico de plagas",
                     description = "Catalogo de plagas y enfermedades comunes con sintomas y tratamientos.",
                     onClick = onOpenDiagnosis,
+                )
+            }
+            item {
+                ToolCard(
+                    icon = Icons.Outlined.HealthAndSafety,
+                    title = "Diagnosticar planta por foto",
+                    description = "Sube una foto de tu planta y obten sugerencias de posibles plagas o enfermedades. (Modo demo)",
+                    onClick = onOpenDiagnosePhoto,
                 )
             }
         }

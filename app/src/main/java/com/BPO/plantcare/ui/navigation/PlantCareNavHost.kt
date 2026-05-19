@@ -31,6 +31,7 @@ import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.myprofile.MyProfileScreen
+import com.BPO.plantcare.ui.screens.diagnosephoto.DiagnosePhotoScreen
 import com.BPO.plantcare.ui.screens.globalsearch.GlobalSearchScreen
 import com.BPO.plantcare.ui.screens.moderation.ModerationScreen
 import com.BPO.plantcare.ui.screens.notifications.NotificationsScreen
@@ -53,6 +54,7 @@ object Routes {
     const val NOTIFICATIONS = "notifications"
     const val GLOBAL_SEARCH = "global_search"
     const val MODERATION = "moderation"
+    const val DIAGNOSE_PHOTO = "diagnose_photo"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -254,6 +256,19 @@ fun PlantCareNavHost(
         }
 
         composable(
+            Routes.DIAGNOSE_PHOTO,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            DiagnosePhotoScreen(
+                onBack = { navController.popBackStack() },
+                onDiagnosisClick = { id -> navController.navigate(Routes.diagnosisDetail(id)) },
+            )
+        }
+
+        composable(
             Routes.NOTIFICATIONS,
             enterTransition = slideEnter,
             exitTransition = slideExit,
@@ -279,6 +294,7 @@ fun PlantCareNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+                onOpenDiagnosePhoto = { navController.navigate(Routes.DIAGNOSE_PHOTO) },
             )
         }
 
