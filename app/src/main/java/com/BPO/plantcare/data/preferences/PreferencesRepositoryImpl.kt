@@ -33,6 +33,7 @@ class PreferencesRepositoryImpl @Inject constructor(
             latitude = prefs[Keys.LATITUDE],
             longitude = prefs[Keys.LONGITUDE],
             locationUpdatedAt = prefs[Keys.LOCATION_UPDATED_AT],
+            seasonalAdjustEnabled = prefs[Keys.SEASONAL_ADJUST] ?: true,
         )
     }
 
@@ -68,6 +69,10 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setSeasonalAdjustEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.SEASONAL_ADJUST] = enabled }
+    }
+
     private object Keys {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
@@ -78,5 +83,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         val LATITUDE = doublePreferencesKey("latitude")
         val LONGITUDE = doublePreferencesKey("longitude")
         val LOCATION_UPDATED_AT = longPreferencesKey("location_updated_at")
+        val SEASONAL_ADJUST = booleanPreferencesKey("seasonal_adjust")
     }
 }

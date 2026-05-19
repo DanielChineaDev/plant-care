@@ -88,6 +88,7 @@ import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.components.CareGuideCard
 import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.PlantTasksCard
+import com.BPO.plantcare.ui.components.WateringHistoryChart
 import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
@@ -221,6 +222,11 @@ fun PlantDetailScreen(
                 onPhotoClick = { photoId ->
                     plant?.id?.let { onPhotoClick(it, photoId) }
                 },
+            )
+            WateringHistoryChart(
+                history = history,
+                suggestedIntervalDays = current.wateringIntervalDays,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
             HistoryCard(
                 history = history,

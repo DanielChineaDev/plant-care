@@ -11,4 +11,5 @@ interface PreferencesRepository {
     suspend fun setTravelRange(start: Long?, end: Long?)
     suspend fun setWeatherAware(enabled: Boolean)
     suspend fun setLocation(latitude: Double?, longitude: Double?, updatedAt: Long?)
+    suspend fun setSeasonalAdjustEnabled(enabled: Boolean)
 }

@@ -10,6 +10,8 @@ import com.BPO.plantcare.core.widget.WateringWidget
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.UserSettings
 import com.BPO.plantcare.domain.model.needsWatering
+import com.BPO.plantcare.domain.model.seasonAdjusted
+import com.BPO.plantcare.domain.model.seasonOf
 import com.BPO.plantcare.domain.repository.PlantRepository
 import com.BPO.plantcare.domain.repository.PreferencesRepository
 import com.BPO.plantcare.domain.repository.WeatherRepository
@@ -32,8 +34,21 @@ class WateringReminderWorker @AssistedInject constructor(
         val settings = preferences.settings.first()
 
         val onTrip = settings.isCurrentlyOnTrip(now)
-        val allDue = repository.observeAll().first().filter { it.needsWatering(now) }
+        val allPlants = repository.observeAll().first()
 
+        // Si el usuario activo el ajuste estacional, multiplicamos el
+        // intervalo de cada planta por el factor de la estacion en curso
+        // (invierno: x1.5, verano: x0.85). De lo contrario usamos su
+        // intervalo guardado tal cual.
+        val effective = allPlants.map { plant ->
+            if (settings.seasonalAdjustEnabled) {
+                plant.copy(
+                    wateringIntervalDays = seasonAdjusted(plant.wateringIntervalDays, seasonOf()),
+                )
+            } else plant
+        }
+
+        val allDue = effective.filter { it.needsWatering(now) }
         val toNotify = filterByRainfall(allDue, settings)
 
         if (toNotify.isNotEmpty() && !onTrip) {

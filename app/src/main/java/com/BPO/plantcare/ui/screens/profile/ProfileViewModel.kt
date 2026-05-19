@@ -73,6 +73,10 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch { preferences.setWeatherAware(enabled) }
     }
 
+    fun setSeasonalAdjustEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferences.setSeasonalAdjustEnabled(enabled) }
+    }
+
     fun refreshLocation() {
         viewModelScope.launch {
             val loc = locationProvider.getLastKnownLocation()

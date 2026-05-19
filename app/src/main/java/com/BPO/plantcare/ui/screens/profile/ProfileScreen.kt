@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -115,6 +116,11 @@ fun ProfileScreen(
                 onToggle = viewModel::setNotificationsEnabled,
                 onHourChange = viewModel::setReminderHour,
                 onTest = viewModel::testWateringNotification,
+            )
+
+            SeasonalAdjustCard(
+                settings = settings,
+                onToggle = viewModel::setSeasonalAdjustEnabled,
             )
 
             TravelModeCard(
@@ -252,6 +258,56 @@ private fun WeatherCard(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SeasonalAdjustCard(
+    settings: com.BPO.plantcare.domain.model.UserSettings,
+    onToggle: (Boolean) -> Unit,
+) {
+    val season = com.BPO.plantcare.domain.model.seasonOf()
+    val seasonLabel = when (season) {
+        com.BPO.plantcare.domain.model.Season.Winter -> "invierno (riega 50% menos)"
+        com.BPO.plantcare.domain.model.Season.Summer -> "verano (riega 15% mas)"
+        com.BPO.plantcare.domain.model.Season.SpringOrAutumn -> "primavera/otono (sin ajuste)"
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.WbSunny,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Ajuste estacional del riego",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Adaptar riego segun estacion", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = "Hoy estamos en $seasonLabel. El intervalo guardado en cada planta NO cambia; solo cuando toca la notif diaria.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.seasonalAdjustEnabled,
+                    onCheckedChange = onToggle,
+                )
             }
         }
     }

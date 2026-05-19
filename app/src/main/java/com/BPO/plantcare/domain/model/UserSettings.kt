@@ -10,6 +10,12 @@ data class UserSettings(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val locationUpdatedAt: Long? = null,
+    /**
+     * Si esta activo, ajustamos el intervalo de riego segun la estacion
+     * (15% mas frecuente en verano, 50% menos en invierno). Aplica a
+     * needsWatering y status; el intervalo guardado en Plant no cambia.
+     */
+    val seasonalAdjustEnabled: Boolean = true,
 ) {
     /** True si las notificaciones deben suprimirse ahora por estar de viaje. */
     fun isCurrentlyOnTrip(now: Long = System.currentTimeMillis()): Boolean {
