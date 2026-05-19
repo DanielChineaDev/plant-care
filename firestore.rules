@@ -150,6 +150,22 @@ service cloud.firestore {
       }
     }
 
+    // ---------- /notifications ----------
+    // Centro de notificaciones in-app. Las crea SOLO el Admin SDK desde
+    // Cloud Functions (post_like, post_comment, community_join). El cliente
+    // solo lee las propias y puede actualizar el flag `read` (todo el resto
+    // queda inmutable desde el cliente).
+    match /notifications/{userId}/items/{notificationId} {
+      allow read: if isMe(userId);
+      allow create: if false; // solo backend con Admin SDK.
+      allow delete: if isMe(userId);
+      // Update: solo permitido cambiar el campo "read" a true/false. Asi el
+      // cliente puede marcar como leida pero no inventarse notifs falsas
+      // ni cambiar el contenido (fromUid, postId, etc.).
+      allow update: if isMe(userId)
+        && changedKeys().hasOnly(['read']);
+    }
+
     // ---------- /conversations ----------
     // Chat 1-a-1. El id es deterministico: sorted(uidA, uidB).joinToString("_")
     match /conversations/{conversationId} {

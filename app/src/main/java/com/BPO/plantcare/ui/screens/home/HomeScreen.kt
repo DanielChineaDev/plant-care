@@ -63,6 +63,7 @@ fun HomeScreen(
     onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     onPostClick: (communityId: String, postId: String) -> Unit = { _, _ -> },
     onAuthorClick: (uid: String) -> Unit = {},
@@ -90,6 +91,11 @@ fun HomeScreen(
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
+                },
+                actions = {
+                    com.BPO.plantcare.ui.components.NotificationsActionButton(
+                        onClick = onNotificationsClick,
+                    )
                 },
             )
         },

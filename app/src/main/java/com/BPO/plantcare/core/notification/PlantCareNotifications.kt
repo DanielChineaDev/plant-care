@@ -15,6 +15,9 @@ object PlantCareNotifications {
     /** Cada tarea se notifica con id = (taskId.toInt() XOR base) para no colisionar. */
     const val NOTIFICATION_ID_TASKS_BASE = 5000
 
+    /** Likes, comentarios, nuevos miembros... Cualquier "actividad social". */
+    const val CHANNEL_ID_ACTIVITY = "activity_notifications"
+
     fun registerChannels(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val watering = NotificationChannel(
@@ -38,6 +41,13 @@ object PlantCareNotifications {
         ).apply {
             description = "Recordatorios de tareas: abonar, podar, trasplantar, etc."
         }
-        manager.createNotificationChannels(listOf(watering, chat, tasks))
+        val activity = NotificationChannel(
+            CHANNEL_ID_ACTIVITY,
+            "Actividad social",
+            NotificationManager.IMPORTANCE_DEFAULT,
+        ).apply {
+            description = "Likes, comentarios y nuevos miembros en tus comunidades."
+        }
+        manager.createNotificationChannels(listOf(watering, chat, tasks, activity))
     }
 }

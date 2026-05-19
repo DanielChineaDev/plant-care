@@ -1,22 +1,22 @@
 /**
  * Cloud Functions de PlantCare.
  *
- * Trigger:
- *   onMessageCreated -> conversations/{cid}/messages/{mid}
+ * Triggers:
+ *   onChatMessageCreated    -> conversations/{cid}/messages/{mid}
+ *   onPostLiked             -> communities/{cid}/posts/{pid}/likes/{uid}
+ *   onPostCommentCreated    -> communities/{cid}/posts/{pid}/comments/{cmid}
+ *   onCommunityMemberJoined -> communities/{cid}/members/{uid}
  *
- * Flujo:
- *   1. Lee el doc de la conversacion padre y obtiene participants[].
- *   2. Calcula el recipientUid (el participante que NO es el sender).
- *   3. Lee users/{recipientUid}/fcmTokens/* para obtener los tokens
- *      activos en sus dispositivos.
- *   4. Envia un multicast con title=nombre del sender, body=texto del
- *      mensaje y data={type:"chat", chatUid: senderUid} para deep-link.
- *   5. Limpia tokens invalidos (UNREGISTERED / INVALID_ARGUMENT) del
- *      Firestore para no acumular basura.
+ * Cada trigger:
+ *   1) Calcula el destinatario de la notificacion (autor del post, creador
+ *      de la comunidad, etc.) y un payload con metadata.
+ *   2) Escribe un doc en notifications/{recipientUid}/items/{autoId} para
+ *      que el cliente lo lea en el "centro de notificaciones" dentro de la
+ *      app.
+ *   3) Manda FCM al recipient si tiene tokens registrados.
  *
  * Requisitos:
- *   - Proyecto Firebase en plan Blaze (Cloud Functions de pago segun uso;
- *     el tier gratis cubre ~125K invocaciones/mes, sobra para esto).
+ *   - Proyecto Firebase en plan Blaze.
  *   - Despliegue: `firebase deploy --only functions`
  */
 
@@ -29,110 +29,262 @@ admin.initializeApp();
 const db = admin.firestore();
 const messaging = admin.messaging();
 
+const REGION = "europe-west1";
+
+// ============================================================================
+// Chat 1-a-1: notificacion push y deep link al chat.
+// ============================================================================
 exports.onChatMessageCreated = onDocumentCreated(
   {
     document: "conversations/{conversationId}/messages/{messageId}",
-    // Colocada con Firestore (eur3) para minimizar latencia.
-    region: "europe-west1",
+    region: REGION,
   },
   async (event) => {
     const snap = event.data;
-    if (!snap) {
-      logger.warn("Sin snapshot en el evento, salgo.");
-      return;
-    }
+    if (!snap) return;
     const message = snap.data();
     const {conversationId} = event.params;
 
     const senderUid = message.senderUid;
     const text = message.text || "";
-    if (!senderUid || !text) {
-      logger.warn("Mensaje sin senderUid o text, salgo.", {conversationId});
-      return;
-    }
+    if (!senderUid || !text) return;
 
-    // 1. Cargar conversacion padre para obtener participants.
-    const convRef = db.collection("conversations").doc(conversationId);
-    const convSnap = await convRef.get();
-    if (!convSnap.exists) {
-      logger.warn("Conversacion padre no existe", {conversationId});
-      return;
-    }
-    const conv = convSnap.data();
-    const participants = conv.participants || [];
+    const convSnap = await db.collection("conversations").doc(conversationId).get();
+    if (!convSnap.exists) return;
+    const participants = convSnap.data().participants || [];
     const recipients = participants.filter((uid) => uid !== senderUid);
-    if (recipients.length === 0) {
-      logger.warn("Sin recipients", {conversationId, senderUid});
-      return;
-    }
+    if (recipients.length === 0) return;
 
-    // 2. Cargar perfil del sender para mostrar nombre.
-    let senderName = "Nuevo mensaje";
-    try {
-      const senderSnap = await db.collection("users").doc(senderUid).get();
-      if (senderSnap.exists) {
-        const senderData = senderSnap.data();
-        senderName = senderData.displayName || senderName;
-      }
-    } catch (err) {
-      logger.warn("No pude leer perfil del sender", {senderUid, err});
-    }
+    const senderName = await loadDisplayName(senderUid, "Nuevo mensaje");
 
-    // 3. Por cada recipient, leer sus tokens FCM y mandar push.
     await Promise.all(
       recipients.map((recipientUid) =>
-        sendToRecipient({recipientUid, senderUid, senderName, text}),
+        sendChatPush({recipientUid, senderUid, senderName, text}),
       ),
     );
   },
 );
 
-async function sendToRecipient({recipientUid, senderUid, senderName, text}) {
-  const tokensCol = db
-    .collection("users")
-    .doc(recipientUid)
-    .collection("fcmTokens");
-  const tokensSnap = await tokensCol.get();
-  if (tokensSnap.empty) {
-    logger.info("Recipient sin tokens FCM", {recipientUid});
-    return;
+// ============================================================================
+// Like en post: notificacion al autor del post.
+// ============================================================================
+exports.onPostLiked = onDocumentCreated(
+  {
+    document: "communities/{communityId}/posts/{postId}/likes/{likerUid}",
+    region: REGION,
+  },
+  async (event) => {
+    const {communityId, postId, likerUid} = event.params;
+
+    const postSnap = await db
+      .collection("communities").doc(communityId)
+      .collection("posts").doc(postId)
+      .get();
+    if (!postSnap.exists) return;
+    const authorUid = postSnap.data().authorUid;
+    if (!authorUid || authorUid === likerUid) return;
+
+    const likerName = await loadDisplayName(likerUid, "Alguien");
+    const postText = (postSnap.data().text || "").slice(0, 80);
+
+    await writeNotification(authorUid, {
+      type: "post_like",
+      fromUid: likerUid,
+      fromName: likerName,
+      communityId,
+      postId,
+      preview: postText,
+    });
+
+    await sendActivityPush({
+      recipientUid: authorUid,
+      title: `${likerName} le ha dado like a tu publicacion`,
+      body: postText || "Toca para verla",
+      data: {
+        type: "post",
+        communityId,
+        postId,
+      },
+    });
+  },
+);
+
+// ============================================================================
+// Comentario en post: notificacion al autor del post.
+// ============================================================================
+exports.onPostCommentCreated = onDocumentCreated(
+  {
+    document: "communities/{communityId}/posts/{postId}/comments/{commentId}",
+    region: REGION,
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const comment = snap.data();
+    const {communityId, postId} = event.params;
+
+    const commenterUid = comment.authorUid;
+    if (!commenterUid) return;
+
+    const postSnap = await db
+      .collection("communities").doc(communityId)
+      .collection("posts").doc(postId)
+      .get();
+    if (!postSnap.exists) return;
+    const authorUid = postSnap.data().authorUid;
+    if (!authorUid || authorUid === commenterUid) return;
+
+    const commenterName = comment.authorName || (await loadDisplayName(commenterUid, "Alguien"));
+    const commentText = (comment.text || "").slice(0, 120);
+
+    await writeNotification(authorUid, {
+      type: "post_comment",
+      fromUid: commenterUid,
+      fromName: commenterName,
+      communityId,
+      postId,
+      preview: commentText,
+    });
+
+    await sendActivityPush({
+      recipientUid: authorUid,
+      title: `${commenterName} ha comentado tu publicacion`,
+      body: commentText || "Toca para verlo",
+      data: {
+        type: "post",
+        communityId,
+        postId,
+      },
+    });
+  },
+);
+
+// ============================================================================
+// Nuevo miembro en una comunidad: notificacion al creador de la comunidad.
+// ============================================================================
+exports.onCommunityMemberJoined = onDocumentCreated(
+  {
+    document: "communities/{communityId}/members/{memberUid}",
+    region: REGION,
+  },
+  async (event) => {
+    const {communityId, memberUid} = event.params;
+
+    const commSnap = await db.collection("communities").doc(communityId).get();
+    if (!commSnap.exists) return;
+    const creatorUid = commSnap.data().createdBy;
+    const communityName = commSnap.data().name || "tu comunidad";
+    if (!creatorUid || creatorUid === memberUid) return;
+
+    const memberName = await loadDisplayName(memberUid, "Alguien");
+
+    await writeNotification(creatorUid, {
+      type: "community_join",
+      fromUid: memberUid,
+      fromName: memberName,
+      communityId,
+      preview: `Se ha unido a ${communityName}`,
+    });
+
+    await sendActivityPush({
+      recipientUid: creatorUid,
+      title: `${memberName} se ha unido a ${communityName}`,
+      body: "Toca para ver la comunidad",
+      data: {
+        type: "community",
+        communityId,
+      },
+    });
+  },
+);
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+async function loadDisplayName(uid, fallback) {
+  try {
+    const snap = await db.collection("users").doc(uid).get();
+    if (snap.exists) {
+      const d = snap.data();
+      return d.displayName || fallback;
+    }
+  } catch (err) {
+    logger.warn("loadDisplayName fallo", {uid, err});
   }
+  return fallback;
+}
 
-  const tokens = tokensSnap.docs.map((d) => d.id);
+/**
+ * Inserta un doc en notifications/{uid}/items/{autoId}. El cliente observa
+ * esta subcoleccion para el centro de notificaciones y el badge.
+ */
+async function writeNotification(recipientUid, payload) {
+  try {
+    await db.collection("notifications").doc(recipientUid)
+      .collection("items").add({
+        ...payload,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        read: false,
+      });
+  } catch (err) {
+    logger.error("writeNotification fallo", {recipientUid, err});
+  }
+}
 
-  // chatUid en el data payload = el OTRO usuario desde el punto de vista
-  // del recipient (es decir, el sender). Eso casa con Routes.chat(uid) en
-  // el cliente, que abre el chat con ese uid.
-  const messagePayload = {
-    notification: {
-      title: senderName,
-      body: text,
-    },
+async function sendChatPush({recipientUid, senderUid, senderName, text}) {
+  await sendMulticast({
+    recipientUid,
+    notification: {title: senderName, body: text},
     data: {
       type: "chat",
       chatUid: senderUid,
       title: senderName,
       body: text,
     },
+    androidChannel: "chat_messages",
+  });
+}
+
+async function sendActivityPush({recipientUid, title, body, data}) {
+  // Sanitize: FCM data values deben ser todo strings.
+  const stringifiedData = {};
+  Object.keys(data || {}).forEach((k) => {
+    stringifiedData[k] = String(data[k]);
+  });
+  await sendMulticast({
+    recipientUid,
+    notification: {title, body},
+    data: stringifiedData,
+    androidChannel: "activity_notifications",
+  });
+}
+
+async function sendMulticast({recipientUid, notification, data, androidChannel}) {
+  const tokensCol = db.collection("users").doc(recipientUid).collection("fcmTokens");
+  const tokensSnap = await tokensCol.get();
+  if (tokensSnap.empty) return;
+
+  const tokens = tokensSnap.docs.map((d) => d.id);
+  const payload = {
+    notification,
+    data: data || {},
     android: {
       priority: "high",
-      notification: {
-        channelId: "chat_messages",
-        sound: "default",
-      },
+      notification: {channelId: androidChannel, sound: "default"},
     },
     tokens,
   };
 
   try {
-    const response = await messaging.sendEachForMulticast(messagePayload);
+    const response = await messaging.sendEachForMulticast(payload);
     logger.info("Push enviado", {
       recipientUid,
+      channel: androidChannel,
       success: response.successCount,
       failure: response.failureCount,
     });
 
-    // 4. Limpiar tokens invalidos.
     const stale = [];
     response.responses.forEach((resp, idx) => {
       if (!resp.success) {
@@ -142,18 +294,13 @@ async function sendToRecipient({recipientUid, senderUid, senderName, text}) {
           code === "messaging/registration-token-not-registered"
         ) {
           stale.push(tokens[idx]);
-        } else {
-          logger.warn("Fallo push (no tocamos token)", {token: tokens[idx], code});
         }
       }
     });
     if (stale.length > 0) {
-      logger.info("Borrando tokens invalidos", {recipientUid, count: stale.length});
-      await Promise.all(
-        stale.map((t) => tokensCol.doc(t).delete().catch(() => {})),
-      );
+      await Promise.all(stale.map((t) => tokensCol.doc(t).delete().catch(() => {})));
     }
   } catch (err) {
-    logger.error("Error mandando multicast", {recipientUid, err});
+    logger.error("Multicast fallo", {recipientUid, err});
   }
 }

@@ -31,6 +31,7 @@ import com.BPO.plantcare.ui.screens.identify.IdentifyScreen
 import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.myprofile.MyProfileScreen
+import com.BPO.plantcare.ui.screens.notifications.NotificationsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
 import com.BPO.plantcare.ui.screens.profile.ProfileScreen
@@ -47,6 +48,7 @@ object Routes {
     const val MY_PROFILE = "my_profile"
     const val EDIT_PROFILE = "edit_profile"
     const val TOOLS = "tools"
+    const val NOTIFICATIONS = "notifications"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -131,6 +133,7 @@ fun PlantCareNavHost(
         composable(TopLevelDestination.Home.route) {
             HomeScreen(
                 onOpenDrawer = onOpenDrawer,
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onCommunitiesClick = { navController.navigate(TopLevelDestination.Communities.route) },
@@ -141,6 +144,7 @@ fun PlantCareNavHost(
         composable(TopLevelDestination.MyPlants.route) {
             MyPlantsScreen(
                 onOpenDrawer = onOpenDrawer,
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
             )
@@ -148,6 +152,7 @@ fun PlantCareNavHost(
         composable(TopLevelDestination.Communities.route) {
             CommunitiesListScreen(
                 onOpenDrawer = onOpenDrawer,
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
                 onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
@@ -156,12 +161,14 @@ fun PlantCareNavHost(
         composable(TopLevelDestination.Search.route) {
             SearchScreen(
                 onOpenDrawer = onOpenDrawer,
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onPlantClick = { name -> navController.navigate(Routes.catalogDetail(name)) },
             )
         }
         composable(TopLevelDestination.Messages.route) {
             ChatsListScreen(
                 onOpenDrawer = onOpenDrawer,
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onChatClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
@@ -213,6 +220,21 @@ fun PlantCareNavHost(
         ) {
             com.BPO.plantcare.ui.screens.editprofile.EditProfileScreen(
                 onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            Routes.NOTIFICATIONS,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+                onCommunityClick = { cid -> navController.navigate(Routes.communityFeed(cid)) },
+                onProfileClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
 

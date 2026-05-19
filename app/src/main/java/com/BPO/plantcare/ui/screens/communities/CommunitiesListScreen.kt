@@ -74,6 +74,7 @@ import java.io.File
 @Composable
 fun CommunitiesListScreen(
     onOpenDrawer: () -> Unit,
+    onNotificationsClick: () -> Unit,
     onCommunityClick: (String) -> Unit,
     viewModel: CommunitiesListViewModel = hiltViewModel(),
     onPostClick: (communityId: String, postId: String) -> Unit = { _, _ -> },
@@ -105,6 +106,11 @@ fun CommunitiesListScreen(
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
+                },
+                actions = {
+                    com.BPO.plantcare.ui.components.NotificationsActionButton(
+                        onClick = onNotificationsClick,
+                    )
                 },
             )
         },

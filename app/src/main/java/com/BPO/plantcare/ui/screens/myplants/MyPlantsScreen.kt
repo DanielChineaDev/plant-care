@@ -67,6 +67,7 @@ import kotlin.math.max
 @Composable
 fun MyPlantsScreen(
     onOpenDrawer: () -> Unit,
+    onNotificationsClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onIdentifyClick: () -> Unit,
     viewModel: MyPlantsViewModel = hiltViewModel(),
@@ -82,6 +83,11 @@ fun MyPlantsScreen(
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
+                },
+                actions = {
+                    com.BPO.plantcare.ui.components.NotificationsActionButton(
+                        onClick = onNotificationsClick,
+                    )
                 },
             )
         },

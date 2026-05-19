@@ -43,6 +43,7 @@ import com.BPO.plantcare.domain.model.Conversation
 @Composable
 fun ChatsListScreen(
     onOpenDrawer: () -> Unit,
+    onNotificationsClick: () -> Unit,
     onChatClick: (otherUid: String) -> Unit,
     viewModel: ChatsListViewModel = hiltViewModel(),
 ) {
@@ -57,6 +58,11 @@ fun ChatsListScreen(
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
+                },
+                actions = {
+                    com.BPO.plantcare.ui.components.NotificationsActionButton(
+                        onClick = onNotificationsClick,
+                    )
                 },
             )
         },

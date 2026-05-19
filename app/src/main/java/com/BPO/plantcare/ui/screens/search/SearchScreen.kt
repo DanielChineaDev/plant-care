@@ -57,6 +57,7 @@ import com.BPO.plantcare.domain.model.PlantCareGuide
 @Composable
 fun SearchScreen(
     onOpenDrawer: () -> Unit,
+    onNotificationsClick: () -> Unit,
     onPlantClick: (String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
@@ -72,6 +73,11 @@ fun SearchScreen(
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Outlined.Menu, contentDescription = "Menu")
                     }
+                },
+                actions = {
+                    com.BPO.plantcare.ui.components.NotificationsActionButton(
+                        onClick = onNotificationsClick,
+                    )
                 },
             )
         },
