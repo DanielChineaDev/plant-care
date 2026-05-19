@@ -67,4 +67,37 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+/**
+ * v4 -> v5: anade tabla plant_tasks (tareas de cuidado configurables por
+ * planta: abonar, podar, trasplantar, rotar, limpiar hojas, fumigar...).
+ *
+ * NO seed: no creamos tareas automaticas para plantas existentes. El user
+ * las activa explicitamente desde la ficha de planta.
+ */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `plant_tasks` (
+                `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                `plantId` INTEGER NOT NULL,
+                `type` TEXT NOT NULL,
+                `intervalDays` INTEGER NOT NULL,
+                `lastDoneAt` INTEGER,
+                `snoozedUntil` INTEGER,
+                `enabled` INTEGER NOT NULL,
+                `createdAt` INTEGER NOT NULL,
+                FOREIGN KEY(`plantId`) REFERENCES `plants`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_plant_tasks_plantId` ON `plant_tasks` (`plantId`)"
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_plant_tasks_plantId_type` ON `plant_tasks` (`plantId`, `type`)"
+        )
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)

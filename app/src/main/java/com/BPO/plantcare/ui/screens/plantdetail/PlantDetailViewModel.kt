@@ -6,10 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.GuideMatch
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantPhoto
+import com.BPO.plantcare.domain.model.PlantTask
+import com.BPO.plantcare.domain.model.PlantTaskType
 import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.usecase.AddPlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.AddWateringLogUseCase
+import com.BPO.plantcare.domain.usecase.DisableTaskUseCase
+import com.BPO.plantcare.domain.usecase.EnableTaskUseCase
+import com.BPO.plantcare.domain.usecase.MarkTaskDoneUseCase
+import com.BPO.plantcare.domain.usecase.ObservePlantTasksUseCase
 import com.BPO.plantcare.domain.usecase.UpdatePlantPhotoUseCase
+import com.BPO.plantcare.domain.usecase.UpdateTaskIntervalUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantPhotoUseCase
 import com.BPO.plantcare.domain.usecase.DeletePlantUseCase
 import com.BPO.plantcare.domain.usecase.DeleteWateringLogUseCase
@@ -54,9 +61,14 @@ class PlantDetailViewModel @Inject constructor(
     private val getWikipediaSummary: GetWikipediaSummaryUseCase,
     private val getCareGuide: GetPlantCareGuideUseCase,
     observePhotos: ObservePlantPhotosUseCase,
+    observeTasksForPlant: ObservePlantTasksUseCase,
     private val addPhoto: AddPlantPhotoUseCase,
     private val deletePhoto: DeletePlantPhotoUseCase,
     private val updatePlantPhoto: UpdatePlantPhotoUseCase,
+    private val enableTask: EnableTaskUseCase,
+    private val disableTask: DisableTaskUseCase,
+    private val markTaskDone: MarkTaskDoneUseCase,
+    private val updateTaskInterval: UpdateTaskIntervalUseCase,
 ) : ViewModel() {
 
     private val plantId: Long = checkNotNull(savedStateHandle.get<Long>(NavArgs.PLANT_ID))
@@ -82,6 +94,13 @@ class PlantDetailViewModel @Inject constructor(
         )
 
     val photos: StateFlow<List<PlantPhoto>> = observePhotos(plantId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
+
+    /** Tareas configurables (no-riego) para esta planta. */
+    val tasks: StateFlow<List<PlantTask>> = observeTasksForPlant(plantId).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList(),
@@ -173,5 +192,24 @@ class PlantDetailViewModel @Inject constructor(
             deletePlant(current)
             _events.send(PlantDetailEvent.Deleted)
         }
+    }
+
+    // ---- Tareas de cuidado ----
+    fun onToggleTask(type: PlantTaskType, currentTaskId: Long?, enable: Boolean) {
+        viewModelScope.launch {
+            if (enable) {
+                enableTask(plantId, type)
+            } else if (currentTaskId != null) {
+                disableTask(currentTaskId)
+            }
+        }
+    }
+
+    fun onMarkTaskDone(taskId: Long) {
+        viewModelScope.launch { markTaskDone(taskId) }
+    }
+
+    fun onUpdateTaskInterval(taskId: Long, days: Int) {
+        viewModelScope.launch { updateTaskInterval(taskId, days) }
     }
 }

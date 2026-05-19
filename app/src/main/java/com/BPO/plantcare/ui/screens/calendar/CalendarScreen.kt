@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.LocalFlorist
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.BPO.plantcare.domain.model.CalendarEvent
@@ -94,8 +96,12 @@ fun CalendarScreen(
         LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
             item {
                 TodayTasksCard(
-                    tasks = events[today].orEmpty().filter { it.type == CalendarEventType.WateringDue },
+                    tasks = events[today].orEmpty().filter {
+                        it.type == CalendarEventType.WateringDue ||
+                            it.type == CalendarEventType.TaskDue
+                    },
                     onWatered = viewModel::onWatered,
+                    onTaskDone = viewModel::onTaskDone,
                 )
             }
             item {
@@ -111,6 +117,7 @@ fun CalendarScreen(
                     date = selectedDate,
                     events = events[selectedDate].orEmpty(),
                     onWatered = viewModel::onWatered,
+                    onTaskDone = viewModel::onTaskDone,
                 )
             }
             item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -122,6 +129,7 @@ fun CalendarScreen(
 private fun TodayTasksCard(
     tasks: List<CalendarEvent>,
     onWatered: (Long) -> Unit,
+    onTaskDone: (Long) -> Unit,
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -143,7 +151,7 @@ private fun TodayTasksCard(
             Spacer(modifier = Modifier.height(8.dp))
             if (tasks.isEmpty()) {
                 Text(
-                    text = "✨ No hay riegos pendientes hoy. ¡Buen trabajo!",
+                    text = "✨ Nada pendiente hoy. ¡Buen trabajo!",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -151,6 +159,7 @@ private fun TodayTasksCard(
                     EventRow(
                         event = event,
                         onWatered = { onWatered(event.plant.id) },
+                        onTaskDone = { event.task?.id?.let(onTaskDone) },
                     )
                 }
             }
@@ -322,6 +331,7 @@ private fun DayEventsCard(
     date: LocalDate,
     events: List<CalendarEvent>,
     onWatered: (Long) -> Unit,
+    onTaskDone: (Long) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -343,7 +353,11 @@ private fun DayEventsCard(
                 )
             } else {
                 events.forEach { event ->
-                    EventRow(event = event, onWatered = { onWatered(event.plant.id) })
+                    EventRow(
+                        event = event,
+                        onWatered = { onWatered(event.plant.id) },
+                        onTaskDone = { event.task?.id?.let(onTaskDone) },
+                    )
                 }
             }
         }
@@ -351,7 +365,11 @@ private fun DayEventsCard(
 }
 
 @Composable
-private fun EventRow(event: CalendarEvent, onWatered: () -> Unit) {
+private fun EventRow(
+    event: CalendarEvent,
+    onWatered: () -> Unit,
+    onTaskDone: () -> Unit,
+) {
     val today = remember { LocalDate.now() }
     val (icon, tint, label) = when (event.type) {
         CalendarEventType.Watered -> Triple(Icons.Outlined.WaterDrop, StatusHealthy, "Regada")
@@ -359,6 +377,12 @@ private fun EventRow(event: CalendarEvent, onWatered: () -> Unit) {
             val isOverdue = event.date.isBefore(today)
             val color = if (isOverdue) StatusThirsty else StatusWarning
             Triple(Icons.Outlined.LocalFlorist, color, if (isOverdue) "Atrasada" else "Toca regar")
+        }
+        CalendarEventType.TaskDue -> {
+            val isOverdue = event.date.isBefore(today)
+            val color = if (isOverdue) StatusThirsty else StatusWarning
+            val labelText = event.task?.type?.label?.let { "$it" } ?: "Tarea"
+            Triple(Icons.Outlined.LocalFlorist, color, if (isOverdue) "$labelText (atrasada)" else labelText)
         }
     }
     Row(
@@ -374,7 +398,11 @@ private fun EventRow(event: CalendarEvent, onWatered: () -> Unit) {
                 .background(tint.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
+            if (event.type == CalendarEventType.TaskDue) {
+                Text(text = event.task?.type?.emoji.orEmpty(), fontSize = 18.sp)
+            } else {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -389,13 +417,24 @@ private fun EventRow(event: CalendarEvent, onWatered: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (event.type == CalendarEventType.WateringDue && !event.date.isAfter(today)) {
-            IconButton(onClick = onWatered) {
-                Icon(
-                    Icons.Outlined.WaterDrop,
-                    contentDescription = "Marcar como regada",
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+        when {
+            event.type == CalendarEventType.WateringDue && !event.date.isAfter(today) -> {
+                IconButton(onClick = onWatered) {
+                    Icon(
+                        Icons.Outlined.WaterDrop,
+                        contentDescription = "Marcar como regada",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            event.type == CalendarEventType.TaskDue && !event.date.isAfter(today) -> {
+                IconButton(onClick = onTaskDone) {
+                    Icon(
+                        imageVector = Icons.Outlined.Check,
+                        contentDescription = "Marcar tarea como hecha",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
         }
     }

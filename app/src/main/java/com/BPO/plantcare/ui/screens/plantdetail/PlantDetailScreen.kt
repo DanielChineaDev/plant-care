@@ -87,6 +87,7 @@ import com.BPO.plantcare.domain.model.WateringLog
 import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.components.CareGuideCard
 import com.BPO.plantcare.ui.components.DrawerActionButton
+import com.BPO.plantcare.ui.components.PlantTasksCard
 import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
@@ -106,6 +107,7 @@ fun PlantDetailScreen(
     val plant by viewModel.plant.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
     val careGuide by viewModel.careGuide.collectAsStateWithLifecycle()
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
     val photos by viewModel.photos.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -194,6 +196,17 @@ fun PlantDetailScreen(
                 onMarkWatered = viewModel::onMarkWatered,
                 onIntervalChange = viewModel::onIntervalChange,
             )
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                PlantTasksCard(
+                    tasks = tasks,
+                    plantAddedAt = current.addedAt,
+                    onToggle = viewModel::onToggleTask,
+                    onMarkDone = viewModel::onMarkTaskDone,
+                    onUpdateInterval = viewModel::onUpdateTaskInterval,
+                )
+            }
             careGuide?.let { match ->
                 CareGuideCard(
                     guide = match.guide,

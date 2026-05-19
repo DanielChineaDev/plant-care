@@ -59,6 +59,16 @@
             </intent-filter>
         </service>
 
+        <!-- Receiver para acciones de notificacion de tareas (snooze + done). -->
+        <receiver
+            android:name=".core.notification.TaskActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.BPO.plantcare.action.TASK_SNOOZE" />
+                <action android:name="com.BPO.plantcare.action.TASK_DONE" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

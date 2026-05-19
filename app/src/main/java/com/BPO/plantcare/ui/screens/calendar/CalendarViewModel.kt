@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.CalendarEvent
 import com.BPO.plantcare.domain.usecase.GetCalendarEventsUseCase
 import com.BPO.plantcare.domain.usecase.MarkPlantWateredUseCase
+import com.BPO.plantcare.domain.usecase.MarkTaskDoneUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class CalendarViewModel @Inject constructor(
     getCalendarEvents: GetCalendarEventsUseCase,
     private val markWatered: MarkPlantWateredUseCase,
+    private val markTaskDone: MarkTaskDoneUseCase,
 ) : ViewModel() {
 
     val events: StateFlow<Map<LocalDate, List<CalendarEvent>>> = getCalendarEvents()
@@ -28,5 +30,9 @@ class CalendarViewModel @Inject constructor(
 
     fun onWatered(plantId: Long) {
         viewModelScope.launch { markWatered(plantId) }
+    }
+
+    fun onTaskDone(taskId: Long) {
+        viewModelScope.launch { markTaskDone(taskId) }
     }
 }

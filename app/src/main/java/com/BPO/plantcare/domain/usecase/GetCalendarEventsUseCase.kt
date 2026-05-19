@@ -3,8 +3,11 @@ package com.BPO.plantcare.domain.usecase
 import com.BPO.plantcare.domain.model.CalendarEvent
 import com.BPO.plantcare.domain.model.CalendarEventType
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.PlantTask
 import com.BPO.plantcare.domain.model.WateringLog
+import com.BPO.plantcare.domain.model.nextDueAt
 import com.BPO.plantcare.domain.repository.PlantRepository
+import com.BPO.plantcare.domain.repository.PlantTaskRepository
 import com.BPO.plantcare.domain.repository.WateringLogRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -16,6 +19,7 @@ import javax.inject.Inject
 class GetCalendarEventsUseCase @Inject constructor(
     private val plantRepository: PlantRepository,
     private val logRepository: WateringLogRepository,
+    private val taskRepository: PlantTaskRepository,
 ) {
     operator fun invoke(
         windowDays: Int = WINDOW_DAYS_DEFAULT,
@@ -23,13 +27,15 @@ class GetCalendarEventsUseCase @Inject constructor(
         combine(
             plantRepository.observeAll(),
             logRepository.observeAll(),
-        ) { plants, logs ->
-            buildEvents(plants, logs, windowDays)
+            taskRepository.observeAllEnabled(),
+        ) { plants, logs, tasks ->
+            buildEvents(plants, logs, tasks, windowDays)
         }
 
     private fun buildEvents(
         plants: List<Plant>,
         logs: List<WateringLog>,
+        tasks: List<PlantTask>,
         windowDays: Int,
     ): Map<LocalDate, List<CalendarEvent>> {
         val plantById = plants.associateBy { it.id }
@@ -54,6 +60,24 @@ class GetCalendarEventsUseCase @Inject constructor(
                 if (next.isAfter(horizon)) break
                 events += CalendarEvent(next, CalendarEventType.WateringDue, plant)
                 n++
+            }
+        }
+
+        // Tareas no-riego: proyectamos ocurrencias hasta el horizonte. La
+        // primera siempre se anade (puede ser hoy o atrasada).
+        tasks.forEach { task ->
+            val plant = plantById[task.plantId] ?: return@forEach
+            val interval = task.intervalDays.toLong().coerceAtLeast(1)
+            val firstDueDate = task.nextDueAt(plant.addedAt).toLocalDate()
+            var current = firstDueDate
+            while (!current.isAfter(horizon)) {
+                events += CalendarEvent(
+                    date = current,
+                    type = CalendarEventType.TaskDue,
+                    plant = plant,
+                    task = task,
+                )
+                current = current.plusDays(interval)
             }
         }
         return events.groupBy { it.date }

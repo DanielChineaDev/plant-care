@@ -12,6 +12,7 @@ import javax.inject.Singleton
 @Singleton
 class WateringReminderManager @Inject constructor(
     private val scheduler: WateringReminderScheduler,
+    private val taskScheduler: PlantTaskReminderScheduler,
     private val preferences: PreferencesRepository,
 ) {
     /** Lee las preferencias actuales y aplica el scheduling correspondiente. */
@@ -20,8 +21,10 @@ class WateringReminderManager @Inject constructor(
         if (settings.notificationsEnabled) {
             // En arranque: no resetear, respetamos el periodo ya programado.
             scheduler.scheduleDaily(settings.reminderHour, resetSchedule = false)
+            taskScheduler.scheduleDaily(settings.reminderHour, resetSchedule = false)
         } else {
             scheduler.cancel()
+            taskScheduler.cancel()
         }
     }
 
@@ -31,8 +34,10 @@ class WateringReminderManager @Inject constructor(
             val hour = preferences.settings.first().reminderHour
             // Al reactivar las notif queremos empezar ya.
             scheduler.scheduleDaily(hour, resetSchedule = true)
+            taskScheduler.scheduleDaily(hour, resetSchedule = true)
         } else {
             scheduler.cancel()
+            taskScheduler.cancel()
         }
     }
 
@@ -44,6 +49,7 @@ class WateringReminderManager @Inject constructor(
             // nuevo initialDelay se aplique YA (de lo contrario con UPDATE
             // el cambio no entraria hasta el siguiente ciclo de 24h).
             scheduler.scheduleDaily(settings.reminderHour, resetSchedule = true)
+            taskScheduler.scheduleDaily(settings.reminderHour, resetSchedule = true)
         }
     }
 
