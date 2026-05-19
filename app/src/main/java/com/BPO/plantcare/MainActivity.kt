@@ -156,7 +156,13 @@ private fun PlantCareApp(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             bottomBar = {
-                if (!hideNavChrome) PlantCareBottomBar(navController, counts)
+                if (!hideNavChrome) {
+                    PlantCareBottomBar(
+                        navController = navController,
+                        counts = counts,
+                        onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
+                    )
+                }
             },
         ) { innerPadding ->
             PlantCareNavHost(

@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
@@ -119,10 +119,12 @@ fun FeedPostCard(
                     modifier = Modifier.clickable { onLikeClick() },
                 ) {
                     Icon(
-                        imageVector = if (post.isLikedByMe) Icons.Outlined.Favorite
+                        imageVector = if (post.isLikedByMe) Icons.Filled.Favorite
                         else Icons.Outlined.FavoriteBorder,
                         contentDescription = if (post.isLikedByMe) "Quitar like" else "Dar like",
-                        tint = if (post.isLikedByMe) MaterialTheme.colorScheme.primary
+                        // Cuando el user ya le dio like: corazon rojo relleno
+                        // (estilo Instagram). Si no, contorno gris.
+                        tint = if (post.isLikedByMe) Color(0xFFE53935)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.size(4.dp))

@@ -42,7 +42,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.ui.components.CareGuideCard
-import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.screens.common.WikipediaUiState
 
@@ -50,7 +49,6 @@ import com.BPO.plantcare.ui.screens.common.WikipediaUiState
 @Composable
 fun CatalogPlantDetailScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
     viewModel: CatalogPlantDetailViewModel = hiltViewModel(),
 ) {
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
@@ -78,7 +76,6 @@ fun CatalogPlantDetailScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

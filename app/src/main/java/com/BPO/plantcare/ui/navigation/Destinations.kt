@@ -2,17 +2,18 @@ package com.BPO.plantcare.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
- * Destinos del bottom nav (5 pestanas).
+ * Destinos del bottom nav (4 pestanas + 1 FAB central).
  *
- * Calendario, Mi Perfil, Identificar, Herramientas y Configuracion ya no
- * estan aqui: viven en el drawer lateral.
+ * El FAB central (Identificar planta) NO es un destino navegable porque
+ * abre la pantalla de identificacion como detalle, no como tab.
+ * Calendario, Mi Perfil, Comunidades, Herramientas y Configuracion viven
+ * en el drawer lateral.
  */
 enum class TopLevelDestination(
     val route: String,
@@ -21,7 +22,6 @@ enum class TopLevelDestination(
 ) {
     Home(route = "home", label = "Inicio", icon = Icons.Outlined.Home),
     MyPlants(route = "my_plants", label = "Plantas", icon = Icons.Outlined.Spa),
-    Communities(route = "communities", label = "Comunidad", icon = Icons.Outlined.Groups),
     Search(route = "search", label = "Buscar", icon = Icons.Outlined.Search),
     Messages(route = "messages", label = "Mensajes", icon = Icons.Outlined.ChatBubbleOutline),
 }

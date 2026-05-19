@@ -42,13 +42,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.BPO.plantcare.domain.model.LightLevel
 import com.BPO.plantcare.domain.model.PlantCareGuide
-import com.BPO.plantcare.ui.components.DrawerActionButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LightMeterScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
     viewModel: LightMeterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -62,7 +60,6 @@ fun LightMeterScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
             )
         },
     ) { padding ->

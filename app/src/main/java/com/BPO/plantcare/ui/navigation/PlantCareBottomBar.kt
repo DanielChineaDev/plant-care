@@ -1,60 +1,180 @@
 package com.BPO.plantcare.ui.navigation
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
+/**
+ * Bottom nav custom de 5 slots:
+ *  - 4 destinos navegables (Home, MyPlants, Search, Messages).
+ *  - 1 FAB grande central para "Identificar planta", la funcion principal
+ *    de la app. NO es un destino: solo lanza la pantalla Identify como
+ *    detalle, asi que no marca selected.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlantCareBottomBar(
     navController: NavHostController,
     counts: BottomBarCounts,
+    onIdentifyClick: () -> Unit,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    NavigationBar {
-        TopLevelDestination.entries.forEach { destination ->
-            val selected = backStackEntry?.destination?.hierarchy
-                ?.any { it.route == destination.route } == true
-            val showDot = badgeFor(destination, counts)
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (currentRoute != destination.route) {
-                        navController.navigate(destination.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
-                icon = {
-                    BadgedBox(
-                        badge = {
-                            // Badge sin numero: solo un punto rojo cuando hay
-                            // algo que requiere atencion.
-                            if (showDot) Badge()
-                        },
-                    ) {
-                        Icon(destination.icon, contentDescription = destination.label)
-                    }
-                },
-                label = { Text(destination.label) },
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround,
+        ) {
+            val destinations = TopLevelDestination.entries
+            // 5 slots: 0,1 normales | 2 = FAB Identify | 3,4 normales
+            // (asumiendo destinations.size == 4)
+            destinations.take(2).forEach { dest ->
+                NavSlot(
+                    destination = dest,
+                    selected = backStackEntry?.destination?.hierarchy
+                        ?.any { it.route == dest.route } == true,
+                    showBadgeDot = badgeFor(dest, counts),
+                    onClick = { navigateTo(navController, currentRoute, dest) },
+                )
+            }
+            IdentifyFab(onClick = onIdentifyClick)
+            destinations.drop(2).forEach { dest ->
+                NavSlot(
+                    destination = dest,
+                    selected = backStackEntry?.destination?.hierarchy
+                        ?.any { it.route == dest.route } == true,
+                    showBadgeDot = badgeFor(dest, counts),
+                    onClick = { navigateTo(navController, currentRoute, dest) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavSlot(
+    destination: TopLevelDestination,
+    selected: Boolean,
+    showBadgeDot: Boolean,
+    onClick: () -> Unit,
+) {
+    val tint = if (selected) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.onSurfaceVariant
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = 12.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        BadgedBox(
+            badge = { if (showBadgeDot) Badge() },
+        ) {
+            Icon(
+                imageVector = destination.icon,
+                contentDescription = destination.label,
+                tint = tint,
             )
         }
+        Text(
+            text = destination.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = tint,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+    }
+}
+
+/**
+ * FAB central de "Identificar planta". Sobresale 12dp por encima del bottom
+ * bar para llamar la atencion; usa color primary y shape circular.
+ */
+@Composable
+private fun IdentifyFab(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .offset(y = (-12).dp)
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            onClick = onClick,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shadowElevation = 10.dp,
+            modifier = Modifier.size(64.dp),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CameraAlt,
+                    contentDescription = "Identificar planta",
+                    modifier = Modifier.size(34.dp),
+                )
+            }
+        }
+    }
+}
+
+private fun navigateTo(
+    navController: NavHostController,
+    currentRoute: String?,
+    destination: TopLevelDestination,
+) {
+    if (currentRoute == destination.route) return
+    navController.navigate(destination.route) {
+        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 
@@ -63,3 +183,7 @@ private fun badgeFor(destination: TopLevelDestination, counts: BottomBarCounts):
         TopLevelDestination.MyPlants -> counts.plantsNeedAttention
         else -> false
     }
+
+// Mantenemos imports usados explicitamente.
+@Suppress("unused")
+private val UNUSED_VECTOR_GUARD: ImageVector = Icons.Outlined.CameraAlt

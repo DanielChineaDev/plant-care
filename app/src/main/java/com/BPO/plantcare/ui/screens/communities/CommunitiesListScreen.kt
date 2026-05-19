@@ -24,9 +24,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -73,7 +73,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunitiesListScreen(
-    onOpenDrawer: () -> Unit,
+    onBack: () -> Unit,
     onNotificationsClick: () -> Unit,
     onCommunityClick: (String) -> Unit,
     viewModel: CommunitiesListViewModel = hiltViewModel(),
@@ -103,8 +103,8 @@ fun CommunitiesListScreen(
             TopAppBar(
                 title = { Text("Comunidades") },
                 navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {

@@ -18,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
@@ -98,14 +97,14 @@ private fun PlantCareDrawerContent(
                 onClick = { onNavigate(Routes.MY_PROFILE) },
             )
             DrawerItem(
+                icon = Icons.Outlined.Groups,
+                label = "Comunidades",
+                onClick = { onNavigate(Routes.COMMUNITIES) },
+            )
+            DrawerItem(
                 icon = Icons.Outlined.CalendarMonth,
                 label = "Calendario",
                 onClick = { onNavigate(Routes.CALENDAR) },
-            )
-            DrawerItem(
-                icon = Icons.Outlined.CameraAlt,
-                label = "Identificar planta",
-                onClick = { onNavigate(Routes.IDENTIFY) },
             )
             DrawerItem(
                 icon = Icons.Outlined.Build,
@@ -132,11 +131,6 @@ private fun PlantCareDrawerContent(
                     )
                 }
             }
-            DrawerItem(
-                icon = Icons.Outlined.Groups,
-                label = "Ver todas",
-                onClick = { onNavigate(TopLevelDestination.Communities.route) },
-            )
 
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider()

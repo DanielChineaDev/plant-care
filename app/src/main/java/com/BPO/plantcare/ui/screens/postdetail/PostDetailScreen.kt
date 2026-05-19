@@ -61,7 +61,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
-import com.BPO.plantcare.ui.components.DrawerActionButton
 import com.BPO.plantcare.ui.components.MarkdownText
 import com.BPO.plantcare.ui.components.PollVoteCard
 import com.BPO.plantcare.ui.components.ReportDialog
@@ -70,7 +69,6 @@ import com.BPO.plantcare.ui.components.ReportDialog
 @Composable
 fun PostDetailScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit,
     onAuthorClick: (uid: String) -> Unit,
     onAuthorNameClick: (uid: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
@@ -123,7 +121,6 @@ fun PostDetailScreen(
                             Icon(Icons.Outlined.Flag, contentDescription = "Reportar")
                         }
                     }
-                    DrawerActionButton(onOpenDrawer)
                 },
             )
         },
@@ -276,7 +273,7 @@ private fun PostHeader(
                         imageVector = if (post.isLikedByMe) Icons.Filled.Favorite
                         else Icons.Outlined.FavoriteBorder,
                         contentDescription = null,
-                        tint = if (post.isLikedByMe) MaterialTheme.colorScheme.error
+                        tint = if (post.isLikedByMe) androidx.compose.ui.graphics.Color(0xFFE53935)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

@@ -55,6 +55,8 @@ object Routes {
     const val GLOBAL_SEARCH = "global_search"
     const val MODERATION = "moderation"
     const val DIAGNOSE_PHOTO = "diagnose_photo"
+    /** Listado de comunidades. Ya no es top-level; se llega desde drawer. */
+    const val COMMUNITIES = "communities"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -143,7 +145,7 @@ fun PlantCareNavHost(
                 onGlobalSearchClick = { navController.navigate(Routes.GLOBAL_SEARCH) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
-                onCommunitiesClick = { navController.navigate(TopLevelDestination.Communities.route) },
+                onCommunitiesClick = { navController.navigate(Routes.COMMUNITIES) },
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
                 onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
@@ -154,15 +156,6 @@ fun PlantCareNavHost(
                 onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
-            )
-        }
-        composable(TopLevelDestination.Communities.route) {
-            CommunitiesListScreen(
-                onOpenDrawer = onOpenDrawer,
-                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
-                onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
-                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
-                onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
         composable(TopLevelDestination.Search.route) {
@@ -215,6 +208,22 @@ fun PlantCareNavHost(
             MyProfileScreen(
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(Routes.EDIT_PROFILE) },
+            )
+        }
+
+        composable(
+            Routes.COMMUNITIES,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            CommunitiesListScreen(
+                onBack = { navController.popBackStack() },
+                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                onCommunityClick = { id -> navController.navigate(Routes.communityFeed(id)) },
+                onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
+                onAuthorClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
         }
 
@@ -318,7 +327,6 @@ fun PlantCareNavHost(
         ) {
             LightMeterScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
             )
         }
 
@@ -331,7 +339,6 @@ fun PlantCareNavHost(
         ) {
             DiagnosisListScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onDiagnosisClick = { id -> navController.navigate(Routes.diagnosisDetail(id)) },
             )
         }
@@ -346,7 +353,6 @@ fun PlantCareNavHost(
         ) {
             DiagnosisDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
             )
         }
 
@@ -360,7 +366,6 @@ fun PlantCareNavHost(
         ) {
             CommunityFeedScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
                 onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
@@ -380,7 +385,6 @@ fun PlantCareNavHost(
         ) {
             PostDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onAuthorClick = { uid -> navController.navigate(Routes.chat(uid)) },
                 onAuthorNameClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
@@ -396,7 +400,6 @@ fun PlantCareNavHost(
         ) {
             PublicProfileScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onMessageClick = { uid -> navController.navigate(Routes.chat(uid)) },
             )
         }
@@ -411,7 +414,6 @@ fun PlantCareNavHost(
         ) {
             ChatScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
             )
         }
 
@@ -425,7 +427,6 @@ fun PlantCareNavHost(
         ) {
             PlantDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
                 onPhotoClick = { plantId, photoId ->
                     navController.navigate(Routes.photoViewer(plantId, photoId))
                 },
@@ -442,7 +443,6 @@ fun PlantCareNavHost(
         ) {
             CatalogPlantDetailScreen(
                 onBack = { navController.popBackStack() },
-                onOpenDrawer = onOpenDrawer,
             )
         }
 
