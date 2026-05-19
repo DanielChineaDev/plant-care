@@ -165,6 +165,21 @@ service cloud.firestore {
         && resource.data.authorUid == request.auth.uid;
     }
 
+    // ---------- /reports ----------
+    // Cola de moderacion. Cualquier user logueado crea un reporte (siempre
+    // arrancando con status 'pending' y reporterUid = caller). Solo
+    // admins pueden leer la cola entera y cambiar el status (dismissed/
+    // actioned). Nadie puede editar otros campos.
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin()
+        && changedKeys().hasOnly(['status']);
+      allow delete: if isAdmin();
+    }
+
     // ---------- /notifications ----------
     // Centro de notificaciones in-app. Las crea SOLO el Admin SDK desde
     // Cloud Functions (post_like, post_comment, community_join). El cliente

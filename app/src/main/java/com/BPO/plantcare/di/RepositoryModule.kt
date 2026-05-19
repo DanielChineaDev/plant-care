@@ -14,6 +14,7 @@ import com.BPO.plantcare.data.repository.PlantRepositoryImpl
 import com.BPO.plantcare.data.repository.NotificationRepositoryImpl
 import com.BPO.plantcare.data.repository.PlantTaskRepositoryImpl
 import com.BPO.plantcare.data.repository.PublicProfileRepositoryImpl
+import com.BPO.plantcare.data.repository.ReportRepositoryImpl
 import com.BPO.plantcare.data.repository.WateringLogRepositoryImpl
 import com.BPO.plantcare.data.repository.WeatherRepositoryImpl
 import com.BPO.plantcare.data.repository.WikipediaRepositoryImpl
@@ -31,6 +32,7 @@ import com.BPO.plantcare.domain.repository.NotificationRepository
 import com.BPO.plantcare.domain.repository.PlantTaskRepository
 import com.BPO.plantcare.domain.repository.PreferencesRepository
 import com.BPO.plantcare.domain.repository.PublicProfileRepository
+import com.BPO.plantcare.domain.repository.ReportRepository
 import com.BPO.plantcare.domain.repository.WateringLogRepository
 import com.BPO.plantcare.domain.repository.WeatherRepository
 import com.BPO.plantcare.domain.repository.WikipediaRepository
@@ -145,4 +147,10 @@ abstract class RepositoryModule {
     abstract fun bindPublicProfileRepository(
         impl: PublicProfileRepositoryImpl
     ): PublicProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReportRepository(
+        impl: ReportRepositoryImpl
+    ): ReportRepository
 }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -140,6 +141,13 @@ private fun PlantCareDrawerContent(
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider()
 
+            if (profile?.isAdmin == true) {
+                DrawerItem(
+                    icon = Icons.Outlined.Shield,
+                    label = "Moderacion",
+                    onClick = { onNavigate(Routes.MODERATION) },
+                )
+            }
             DrawerItem(
                 icon = Icons.Outlined.Settings,
                 label = "Configuracion",

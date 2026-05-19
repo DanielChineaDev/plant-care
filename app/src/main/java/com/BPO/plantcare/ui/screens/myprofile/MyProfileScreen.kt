@@ -175,6 +175,12 @@ private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Text(
+                text = "Karma: ${profile.karma}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 4.dp),
+            )
             Spacer(modifier = Modifier.size(12.dp))
             Button(
                 onClick = onEditClick,

@@ -131,6 +131,11 @@ private fun ProfileHeader(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 8.dp),
             )
+            Text(
+                text = "Karma: ${profile.karma}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
             Spacer(modifier = Modifier.size(12.dp))
             Button(onClick = onMessageClick) {
                 Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null)

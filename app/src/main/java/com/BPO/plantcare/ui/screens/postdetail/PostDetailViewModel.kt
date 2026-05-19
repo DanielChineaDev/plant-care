@@ -5,9 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
+import com.BPO.plantcare.domain.model.ReportReason
+import com.BPO.plantcare.domain.model.ReportedContentType
 import com.BPO.plantcare.domain.repository.AuthRepository
 import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.CommunityRepository
+import com.BPO.plantcare.domain.repository.ReportRepository
 import com.BPO.plantcare.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -22,6 +25,7 @@ import javax.inject.Inject
 sealed interface PostDetailEvent {
     data class Error(val message: String) : PostDetailEvent
     data object CommentPosted : PostDetailEvent
+    data object Reported : PostDetailEvent
 }
 
 @HiltViewModel
@@ -29,6 +33,7 @@ class PostDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val communityRepository: CommunityRepository,
     authRepository: AuthRepository,
+    private val reportRepository: ReportRepository,
 ) : ViewModel() {
 
     private val communityId: String =
@@ -96,6 +101,23 @@ class PostDetailViewModel @Inject constructor(
     fun deleteComment(commentId: String) {
         viewModelScope.launch {
             communityRepository.deleteComment(communityId, postId, commentId).onFailure {
+                _events.send(PostDetailEvent.Error(it.localizedMessage.orEmpty()))
+            }
+        }
+    }
+
+    fun reportPost(reason: ReportReason, notes: String?) {
+        viewModelScope.launch {
+            reportRepository.submitReport(
+                contentType = ReportedContentType.Post,
+                communityId = communityId,
+                postId = postId,
+                commentId = null,
+                reason = reason,
+                notes = notes,
+            ).onSuccess {
+                _events.send(PostDetailEvent.Reported)
+            }.onFailure {
                 _events.send(PostDetailEvent.Error(it.localizedMessage.orEmpty()))
             }
         }

@@ -239,6 +239,7 @@ class AuthRepositoryImpl @Inject constructor(
             createdAt = doc.getLong("createdAt") ?: 0L,
             isCollectionPublic = doc.getBoolean("isCollectionPublic") ?: false,
             isAdmin = doc.getBoolean("isAdmin") ?: false,
+            karma = doc.getLong("karma") ?: 0L,
         )
     }
 

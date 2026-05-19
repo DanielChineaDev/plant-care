@@ -16,4 +16,10 @@ data class UserProfile(
      * isAdmin = true.
      */
     val isAdmin: Boolean = false,
+    /**
+     * Reputacion del usuario: +1 por cada like recibido, -1 al retirarlo.
+     * En el futuro tambien -N por reportes confirmados. Lo escribe el
+     * Cloud Function, el cliente solo lo lee.
+     */
+    val karma: Long = 0,
 )

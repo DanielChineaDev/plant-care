@@ -115,6 +115,7 @@ class PublicProfileRepositoryImpl @Inject constructor(
             createdAt = getLong("createdAt") ?: 0L,
             isCollectionPublic = getBoolean("isCollectionPublic") ?: false,
             isAdmin = getBoolean("isAdmin") ?: false,
+            karma = getLong("karma") ?: 0L,
         )
     }
 

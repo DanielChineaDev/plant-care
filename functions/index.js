@@ -20,7 +20,7 @@
  *   - Despliegue: `firebase deploy --only functions`
  */
 
-const {onDocumentCreated} = require("firebase-functions/v2/firestore");
+const {onDocumentCreated, onDocumentDeleted} = require("firebase-functions/v2/firestore");
 const {logger} = require("firebase-functions");
 const admin = require("firebase-admin");
 
@@ -87,6 +87,9 @@ exports.onPostLiked = onDocumentCreated(
     const likerName = await loadDisplayName(likerUid, "Alguien");
     const postText = (postSnap.data().text || "").slice(0, 80);
 
+    // Karma +1 al autor del post por like recibido.
+    await incrementKarma(authorUid, 1);
+
     await writeNotification(authorUid, {
       type: "post_like",
       fromUid: likerUid,
@@ -106,6 +109,27 @@ exports.onPostLiked = onDocumentCreated(
         postId,
       },
     });
+  },
+);
+
+// ============================================================================
+// Like retirado: -1 karma al autor del post.
+// ============================================================================
+exports.onPostUnliked = onDocumentDeleted(
+  {
+    document: "communities/{communityId}/posts/{postId}/likes/{likerUid}",
+    region: REGION,
+  },
+  async (event) => {
+    const {communityId, postId} = event.params;
+    const postSnap = await db
+      .collection("communities").doc(communityId)
+      .collection("posts").doc(postId)
+      .get();
+    if (!postSnap.exists) return;
+    const authorUid = postSnap.data().authorUid;
+    if (!authorUid) return;
+    await incrementKarma(authorUid, -1);
   },
 );
 
@@ -201,6 +225,19 @@ exports.onCommunityMemberJoined = onDocumentCreated(
 // ============================================================================
 // Helpers
 // ============================================================================
+
+/**
+ * Suma [delta] al campo karma del usuario [uid]. Se ejecuta sin
+ * transaccion porque FieldValue.increment es atomico.
+ */
+async function incrementKarma(uid, delta) {
+  try {
+    await db.collection("users").doc(uid)
+      .set({karma: admin.firestore.FieldValue.increment(delta)}, {merge: true});
+  } catch (err) {
+    logger.warn("incrementKarma fallo", {uid, delta, err});
+  }
+}
 
 async function loadDisplayName(uid, fallback) {
   try {

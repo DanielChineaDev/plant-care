@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Card
@@ -61,6 +62,8 @@ import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
 import com.BPO.plantcare.ui.components.DrawerActionButton
+import com.BPO.plantcare.ui.components.MarkdownText
+import com.BPO.plantcare.ui.components.ReportDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +80,7 @@ fun PostDetailScreen(
     val currentUid by viewModel.currentUid.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var commentText by rememberSaveable { mutableStateOf("") }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -86,9 +90,21 @@ fun PostDetailScreen(
                     commentText = ""
                     "Comentario publicado"
                 }
+                PostDetailEvent.Reported -> "Gracias, hemos recibido tu reporte"
             }
             snackbarHostState.showSnackbar(msg)
         }
+    }
+
+    if (showReportDialog) {
+        ReportDialog(
+            title = "Reportar publicacion",
+            onConfirm = { reason, notes ->
+                viewModel.reportPost(reason, notes)
+                showReportDialog = false
+            },
+            onDismiss = { showReportDialog = false },
+        )
     }
 
     Scaffold(
@@ -100,7 +116,14 @@ fun PostDetailScreen(
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = { DrawerActionButton(onOpenDrawer) },
+                actions = {
+                    if (isSignedIn) {
+                        IconButton(onClick = { showReportDialog = true }) {
+                            Icon(Icons.Outlined.Flag, contentDescription = "Reportar")
+                        }
+                    }
+                    DrawerActionButton(onOpenDrawer)
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -215,7 +238,8 @@ private fun PostHeader(
             }
             if (post.text.isNotBlank()) {
                 Spacer(modifier = Modifier.size(12.dp))
-                Text(text = post.text, style = MaterialTheme.typography.bodyLarge)
+                // Markdown simple: **bold**, *italic* y [texto](url).
+                MarkdownText(text = post.text, style = MaterialTheme.typography.bodyLarge)
             }
             if (post.photoUrl != null) {
                 Spacer(modifier = Modifier.size(12.dp))

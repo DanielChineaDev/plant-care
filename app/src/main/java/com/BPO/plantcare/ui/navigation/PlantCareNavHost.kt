@@ -32,6 +32,7 @@ import com.BPO.plantcare.ui.screens.lightmeter.LightMeterScreen
 import com.BPO.plantcare.ui.screens.myplants.MyPlantsScreen
 import com.BPO.plantcare.ui.screens.myprofile.MyProfileScreen
 import com.BPO.plantcare.ui.screens.globalsearch.GlobalSearchScreen
+import com.BPO.plantcare.ui.screens.moderation.ModerationScreen
 import com.BPO.plantcare.ui.screens.notifications.NotificationsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
@@ -51,6 +52,7 @@ object Routes {
     const val TOOLS = "tools"
     const val NOTIFICATIONS = "notifications"
     const val GLOBAL_SEARCH = "global_search"
+    const val MODERATION = "moderation"
 
     private const val DIAGNOSIS_DETAIL = "diagnosis_detail"
     fun diagnosisDetail(id: String) = "$DIAGNOSIS_DETAIL/$id"
@@ -239,6 +241,16 @@ fun PlantCareNavHost(
                 onCommunityClick = { cid -> navController.navigate(Routes.communityFeed(cid)) },
                 onUserClick = { uid -> navController.navigate(Routes.publicProfile(uid)) },
             )
+        }
+
+        composable(
+            Routes.MODERATION,
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            ModerationScreen(onBack = { navController.popBackStack() })
         }
 
         composable(
