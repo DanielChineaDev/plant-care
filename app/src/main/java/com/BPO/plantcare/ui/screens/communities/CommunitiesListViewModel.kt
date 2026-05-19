@@ -11,8 +11,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -39,12 +41,37 @@ class CommunitiesListViewModel @Inject constructor(
     authRepository: AuthRepository,
 ) : ViewModel() {
 
-    val communities: StateFlow<List<Community>> =
+    private val rawCommunities: StateFlow<List<Community>> =
         communityRepository.observeCommunities().stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList(),
         )
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    /**
+     * Comunidades filtradas por el texto del buscador. Si el buscador esta
+     * vacio, devuelve todas. Match case-insensitive sobre nombre y
+     * descripcion.
+     */
+    val communities: StateFlow<List<Community>> = combine(rawCommunities, _searchQuery) { list, q ->
+        val term = q.trim().lowercase()
+        if (term.isEmpty()) list
+        else list.filter { c ->
+            c.name.lowercase().contains(term) ||
+                c.description.lowercase().contains(term)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
+
+    fun onSearchQueryChange(value: String) {
+        _searchQuery.value = value
+    }
 
     /**
      * Pair de (populares, resto) calculado una sola vez por emision de
@@ -89,7 +116,7 @@ class CommunitiesListViewModel @Inject constructor(
      * unidas. Se usa para el bloque "Publicaciones destacadas" al fondo de
      * Comunidades como descubrimiento.
      */
-    val featuredPosts: StateFlow<List<FeaturedPost>> = communities
+    val featuredPosts: StateFlow<List<FeaturedPost>> = rawCommunities
         .flatMapLatest { all ->
             val sample = all.sortedByDescending { it.memberCount }.take(FEATURED_SOURCE_COMMUNITIES)
             if (sample.isEmpty()) {
@@ -97,8 +124,16 @@ class CommunitiesListViewModel @Inject constructor(
             } else {
                 combine(
                     sample.map { community ->
-                        communityRepository.observePosts(community.id, FEATURED_PER_COMMUNITY)
-                            .map { posts -> posts.map { FeaturedPost(it, community) } }
+                        // Combinamos posts con el set de likes del user para
+                        // que el corazon se vea rojo si ya le diste like.
+                        combine(
+                            communityRepository.observePosts(community.id, FEATURED_PER_COMMUNITY),
+                            communityRepository.observeLikedPostsInCommunity(community.id),
+                        ) { posts, liked ->
+                            posts.map { p ->
+                                FeaturedPost(p.copy(isLikedByMe = p.id in liked), community)
+                            }
+                        }
                     },
                 ) { lists ->
                     lists.toList().flatMap { it.toList() }

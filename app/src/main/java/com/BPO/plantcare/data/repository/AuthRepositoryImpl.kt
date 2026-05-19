@@ -73,6 +73,12 @@ class AuthRepositoryImpl @Inject constructor(
         .flowOn(Dispatchers.IO)
 
     private fun firebaseAuthFlow(): Flow<FirebaseUser?> = callbackFlow {
+        // Emitimos el currentUser ACTUAL inmediatamente al subscribirnos,
+        // sin esperar al primer disparo del AuthStateListener. En arranque
+        // frio el listener puede tardar varios segundos en disparar
+        // (Firebase inicializa en background); sin este trySend el splash
+        // se quedaba en blanco con solo el CircularProgressIndicator.
+        trySend(firebaseAuth.currentUser)
         val listener = FirebaseAuth.AuthStateListener { auth ->
             trySend(auth.currentUser)
         }

@@ -143,7 +143,6 @@ fun PlantCareNavHost(
                 onOpenDrawer = onOpenDrawer,
                 onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
                 onGlobalSearchClick = { navController.navigate(Routes.GLOBAL_SEARCH) },
-                onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
                 onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
                 onCommunitiesClick = { navController.navigate(Routes.COMMUNITIES) },
                 onPostClick = { cid, pid -> navController.navigate(Routes.postDetail(cid, pid)) },

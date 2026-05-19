@@ -16,9 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
@@ -61,7 +59,6 @@ import java.io.File
 @Composable
 fun HomeScreen(
     onOpenDrawer: () -> Unit,
-    onIdentifyClick: () -> Unit,
     onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
     onNotificationsClick: () -> Unit,
@@ -148,12 +145,10 @@ fun HomeScreen(
                 }
             }
 
-            // Bloque "Identificar" + plantas recientes al final, como contexto
-            // personal del usuario por debajo del feed social.
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                IdentifyHeroCard(onClick = onIdentifyClick)
-            }
+            // Plantas recientes al final como contexto personal por
+            // debajo del feed social. El boton "Identificar" se eliminó
+            // de aqui porque ya hay un FAB grande central en el bottom
+            // bar para esa accion.
             item {
                 Text(
                     text = "Plantas recientes",
@@ -248,45 +243,6 @@ private fun EmptyFeedCard() {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-}
-
-@Composable
-private fun IdentifyHeroCard(onClick: () -> Unit) {
-    ElevatedCard(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-        shape = RoundedCornerShape(20.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.CameraAlt,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp),
-            )
-            Spacer(modifier = Modifier.size(12.dp))
-            Column {
-                Text(
-                    text = "Identifica una planta",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-                Text(
-                    text = "Saca una foto y descubre su especie y cuidados.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            }
         }
     }
 }

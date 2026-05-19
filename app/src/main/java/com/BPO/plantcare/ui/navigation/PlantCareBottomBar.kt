@@ -70,7 +70,7 @@ fun PlantCareBottomBar(
                 // o botones de Android) para que el contenido no quede
                 // tapado por el handler de gestos.
                 .windowInsetsPadding(WindowInsets.navigationBars)
-                .height(80.dp),
+                .height(68.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {

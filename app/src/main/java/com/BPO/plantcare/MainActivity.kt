@@ -13,6 +13,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -102,7 +103,13 @@ private fun PlantCareRoot(
 @Composable
 private fun SplashScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+        androidx.compose.foundation.layout.Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+        ) {
+            com.BPO.plantcare.ui.components.PlantCareLogo(size = 96.dp)
+            CircularProgressIndicator()
+        }
     }
 }
 
@@ -155,6 +162,12 @@ private fun PlantCareApp(
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            // No queremos que el Scaffold root anada padding por las
+            // status/nav bars al content: cada pantalla tiene su propio
+            // Scaffold con TopAppBar que YA respeta status bars, y el
+            // bottomBar respeta nav bars por su cuenta. Aplicar insets
+            // aqui duplicaba el espacio superior en todas las pantallas.
+            contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 if (!hideNavChrome) {
                     PlantCareBottomBar(
