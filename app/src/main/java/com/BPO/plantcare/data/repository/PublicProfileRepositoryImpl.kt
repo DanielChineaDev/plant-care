@@ -105,6 +105,38 @@ class PublicProfileRepositoryImpl @Inject constructor(
         batch.commit().await()
     }
 
+    override fun observeAchievements(uid: String): Flow<Map<String, Long>> = callbackFlow {
+        val reg = firestore.collection(USERS).document(uid)
+            .collection(ACHIEVEMENTS)
+            .addSnapshotListener { snap, err ->
+                if (err != null) {
+                    trySend(emptyMap()); return@addSnapshotListener
+                }
+                val map = snap?.documents?.associate { doc ->
+                    doc.id to ((doc.getDate("unlockedAt") ?: Date(0)).time)
+                }.orEmpty()
+                trySend(map)
+            }
+        awaitClose { reg.remove() }
+    }
+
+    override suspend fun recordAchievement(achievementId: String): Result<Unit> = runCatching {
+        val uid = requireUid()
+        val ref = firestore.collection(USERS).document(uid)
+            .collection(ACHIEVEMENTS).document(achievementId)
+        // Solo escribimos si no existe, para no pisar la fecha original.
+        val existing = ref.get().await()
+        if (!existing.exists()) {
+            ref.set(mapOf("unlockedAt" to FieldValue.serverTimestamp())).await()
+        }
+    }
+
+    override suspend fun setBadgesPublic(enabled: Boolean): Result<Unit> = runCatching {
+        val uid = requireUid()
+        firestore.collection(USERS).document(uid)
+            .update("badgesPublic", enabled).await()
+    }
+
     private fun DocumentSnapshot.toUserProfile(): UserProfile? {
         if (!exists()) return null
         return UserProfile(
@@ -120,6 +152,7 @@ class PublicProfileRepositoryImpl @Inject constructor(
             location = getString("location"),
             favoritePlants = (get("favoritePlants") as? List<*>)
                 ?.filterIsInstance<String>().orEmpty(),
+            badgesPublic = getBoolean("badgesPublic") ?: true,
         )
     }
 
@@ -138,5 +171,6 @@ class PublicProfileRepositoryImpl @Inject constructor(
     companion object {
         private const val USERS = "users"
         private const val PUBLIC_PLANTS = "publicPlants"
+        private const val ACHIEVEMENTS = "achievements"
     }
 }

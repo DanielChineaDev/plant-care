@@ -98,9 +98,33 @@ class MyProfileViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileStats())
 
-    val achievements: StateFlow<List<Achievement>> = stats
-        .map { it.achievements() }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /** Fechas de desbloqueo de logros del usuario (Firestore). */
+    private val achievementDates: StateFlow<Map<String, Long>> = signedInProfile
+        .flatMapLatest { local ->
+            val uid = local?.uid ?: return@flatMapLatest flowOf(emptyMap())
+            publicProfileRepository.observeAchievements(uid)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
+    val achievements: StateFlow<List<Achievement>> =
+        combine(stats, achievementDates) { s, dates -> s.achievements(dates) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        // Cuando un logro pasa a desbloqueado y aun no esta registrado en
+        // Firestore, guardamos la fecha (una vez). Asi se conserva entre
+        // dispositivos y lo pueden ver otros usuarios.
+        viewModelScope.launch {
+            combine(stats, achievementDates) { s, dates -> s to dates }
+                .collect { (s, dates) ->
+                    s.achievements(dates).forEach { ach ->
+                        if (ach.unlocked && !dates.containsKey(ach.id)) {
+                            publicProfileRepository.recordAchievement(ach.id)
+                        }
+                    }
+                }
+        }
+    }
 
     val loading: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
 

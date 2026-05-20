@@ -28,4 +28,6 @@ data class UserProfile(
     val location: String? = null,
     /** Nombres de las plantas favoritas del usuario. */
     val favoritePlants: List<String> = emptyList(),
+    /** Si las insignias/logros del usuario son visibles para los demas. */
+    val badgesPublic: Boolean = true,
 )

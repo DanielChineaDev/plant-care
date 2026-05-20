@@ -1,8 +1,11 @@
 package com.BPO.plantcare.ui.screens.publicprofile
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -58,6 +61,7 @@ fun PublicProfileScreen(
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val plants by viewModel.publicPlants.collectAsStateWithLifecycle()
+    val achievements by viewModel.achievements.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -78,16 +82,20 @@ fun PublicProfileScreen(
             }
             return@Scaffold
         }
+        // Solo mostramos insignias si el usuario las tiene publicas.
+        val badges = if (current.badgesPublic) achievements else emptyList()
         if (current.isCollectionPublic) {
             ProfileWithPlants(
                 profile = current,
                 plants = plants,
+                achievements = badges,
                 onMessageClick = { onMessageClick(current.uid) },
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
         } else {
             PrivateProfile(
                 profile = current,
+                achievements = badges,
                 onMessageClick = { onMessageClick(current.uid) },
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
@@ -129,7 +137,7 @@ private fun ProfileHeader(
                 modifier = Modifier.padding(top = 8.dp),
             )
             Text(
-                text = "Karma: ${profile.karma}",
+                text = "Karma: ${profile.karma.coerceAtLeast(0)}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -147,6 +155,7 @@ private fun ProfileHeader(
 private fun ProfileWithPlants(
     profile: UserProfile,
     plants: List<PublicPlant>,
+    achievements: List<com.BPO.plantcare.domain.model.Achievement>,
     onMessageClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -160,6 +169,10 @@ private fun ProfileWithPlants(
         item(span = { GridItemSpan(2) }) {
             Column {
                 ProfileHeader(profile = profile, onMessageClick = onMessageClick)
+                if (achievements.isNotEmpty()) {
+                    Spacer(modifier = Modifier.size(12.dp))
+                    BadgesRow(achievements)
+                }
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(
                     text = "${plants.size} plantas en su coleccion",
@@ -235,13 +248,63 @@ private fun PublicPlantCard(plant: PublicPlant) {
 }
 
 @Composable
+private fun BadgesRow(achievements: List<com.BPO.plantcare.domain.model.Achievement>) {
+    Column {
+        Text(
+            text = "Logros (${achievements.size})",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            achievements.forEach { ach ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.size(width = 80.dp, height = 96.dp),
+                ) {
+                    androidx.compose.material3.Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.size(56.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = ach.emoji,
+                                style = MaterialTheme.typography.headlineSmall,
+                            )
+                        }
+                    }
+                    Text(
+                        text = ach.title,
+                        style = MaterialTheme.typography.labelSmall,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun PrivateProfile(
     profile: UserProfile,
+    achievements: List<com.BPO.plantcare.domain.model.Achievement>,
     onMessageClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         ProfileHeader(profile = profile, onMessageClick = onMessageClick)
+        if (achievements.isNotEmpty()) {
+            BadgesRow(achievements)
+        }
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(24.dp),

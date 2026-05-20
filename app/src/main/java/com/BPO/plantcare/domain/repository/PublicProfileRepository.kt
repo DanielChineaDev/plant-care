@@ -20,4 +20,13 @@ interface PublicProfileRepository {
 
     /** Resincroniza el mirror publico con las plantas locales actuales. */
     suspend fun resyncMyPublicCollection(): Result<Unit>
+
+    /** Mapa logroId -> fecha de desbloqueo (epoch millis) del usuario [uid]. */
+    fun observeAchievements(uid: String): Flow<Map<String, Long>>
+
+    /** Registra un logro conseguido por el usuario actual (si no existia). */
+    suspend fun recordAchievement(achievementId: String): Result<Unit>
+
+    /** Cambia la visibilidad publica de las insignias del usuario actual. */
+    suspend fun setBadgesPublic(enabled: Boolean): Result<Unit>
 }

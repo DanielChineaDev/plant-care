@@ -39,6 +39,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -78,6 +81,7 @@ fun MyProfileScreen(
     val plants by viewModel.publicPlants.collectAsStateWithLifecycle()
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val achievements by viewModel.achievements.collectAsStateWithLifecycle()
+    var selectedAchievement by remember { mutableStateOf<Achievement?>(null) }
 
     Scaffold(
         topBar = {
@@ -115,7 +119,10 @@ fun MyProfileScreen(
                     Spacer(modifier = Modifier.size(12.dp))
                     StatsCard(stats = stats)
                     Spacer(modifier = Modifier.size(12.dp))
-                    AchievementsSection(achievements = achievements)
+                    AchievementsSection(
+                        achievements = achievements,
+                        onBadgeClick = { selectedAchievement = it },
+                    )
                     if (!current.isCollectionPublic) {
                         Spacer(modifier = Modifier.size(12.dp))
                         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -155,6 +162,51 @@ fun MyProfileScreen(
             }
         }
     }
+
+    selectedAchievement?.let { ach ->
+        AchievementDialog(achievement = ach, onDismiss = { selectedAchievement = null })
+    }
+}
+
+@Composable
+private fun AchievementDialog(achievement: Achievement, onDismiss: () -> Unit) {
+    val dateFmt = remember {
+        java.text.SimpleDateFormat("d 'de' MMMM 'de' yyyy", java.util.Locale("es", "ES"))
+    }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Text(text = achievement.emoji, fontSize = 40.sp) },
+        title = { Text(achievement.title) },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = achievement.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                if (achievement.unlocked) {
+                    val dateText = if (achievement.unlockedAt > 0)
+                        "Conseguido el ${dateFmt.format(java.util.Date(achievement.unlockedAt))}"
+                    else "¡Conseguido!"
+                    Text(
+                        text = dateText,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    Text(
+                        text = "Aún no conseguido",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cerrar") }
+        },
+    )
 }
 
 @Composable
@@ -299,7 +351,10 @@ private fun StatTile(emoji: String, value: String, label: String, modifier: Modi
 }
 
 @Composable
-private fun AchievementsSection(achievements: List<Achievement>) {
+private fun AchievementsSection(
+    achievements: List<Achievement>,
+    onBadgeClick: (Achievement) -> Unit,
+) {
     if (achievements.isEmpty()) return
     val unlocked = achievements.count { it.unlocked }
     Column {
@@ -311,18 +366,19 @@ private fun AchievementsSection(achievements: List<Achievement>) {
         Spacer(modifier = Modifier.size(8.dp))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             items(achievements) { ach ->
-                AchievementBadge(ach)
+                AchievementBadge(ach, onClick = { onBadgeClick(ach) })
             }
         }
     }
 }
 
 @Composable
-private fun AchievementBadge(achievement: Achievement) {
+private fun AchievementBadge(achievement: Achievement, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = if (achievement.unlocked) MaterialTheme.colorScheme.secondaryContainer
         else MaterialTheme.colorScheme.surfaceVariant,
+        onClick = onClick,
         modifier = Modifier
             .size(width = 96.dp, height = 110.dp)
             .alpha(if (achievement.unlocked) 1f else 0.5f),

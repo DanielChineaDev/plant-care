@@ -30,6 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val publicProfileRepository:
+        com.BPO.plantcare.domain.repository.PublicProfileRepository,
 ) : ViewModel() {
 
     val profile: StateFlow<UserProfile?> = authRepository.authState
@@ -76,6 +78,13 @@ class EditProfileViewModel @Inject constructor(
                 _state.update { it.copy(savingDetails = false) }
                 _events.trySend(EditProfileEvent.Error(humanize(err)))
             }
+        }
+    }
+
+    fun setBadgesPublic(enabled: Boolean) {
+        viewModelScope.launch {
+            publicProfileRepository.setBadgesPublic(enabled)
+                .onFailure { _events.trySend(EditProfileEvent.Error(humanize(it))) }
         }
     }
 

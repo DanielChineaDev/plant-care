@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -179,6 +180,11 @@ fun EditProfileScreen(
                 },
             )
 
+            BadgesVisibilityCard(
+                isPublic = profile?.badgesPublic ?: true,
+                onToggle = viewModel::setBadgesPublic,
+            )
+
             PasswordCard(
                 password = password,
                 confirm = confirmPassword,
@@ -278,6 +284,33 @@ private fun NameCard(
                     )
                 } else Text("Guardar nombre")
             }
+        }
+    }
+}
+
+@Composable
+private fun BadgesVisibilityCard(isPublic: Boolean, onToggle: (Boolean) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Insignias publicas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = "Permite que otros usuarios vean tus logros en tu perfil.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            androidx.compose.material3.Switch(checked = isPublic, onCheckedChange = onToggle)
         }
     }
 }

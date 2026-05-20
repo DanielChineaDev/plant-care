@@ -68,6 +68,13 @@ service cloud.firestore {
       match /postLikes/{postId} {
         allow read, write: if isMe(userId);
       }
+      // Logros/insignias: cualquiera logueado puede leerlos (para verlos en
+      // perfiles ajenos); solo el dueno los escribe. El cliente respeta el
+      // flag badgesPublic del perfil para decidir si mostrarlos.
+      match /achievements/{achievementId} {
+        allow read: if isSignedIn();
+        allow write: if isMe(userId);
+      }
       // Plantas publicas: cualquiera puede leer (solo aparecen aqui si el
       // user activo isCollectionPublic). Solo el dueno escribe.
       match /publicPlants/{plantId} {
