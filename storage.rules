@@ -33,6 +33,16 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Fotos de chat. Path: chat_photos/{conversationId}/{fileName}.jpg
+    // Solo logueados leen/suben (el conversationId no permite validar
+    // participantes aqui, pero la coleccion Firestore si lo hace). Max 5 MB.
+    match /chat_photos/{conversationId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Avatares de usuario. Path: avatars/{uid}/{fileName}.jpg
     match /avatars/{uid}/{fileName} {
       // Cualquiera puede ver los avatares (aparecen en posts, comentarios,

@@ -22,6 +22,19 @@ data class ChatMessage(
     val senderUid: String,
     val text: String,
     val createdAt: Long,
+    /** Foto adjunta opcional (URL en Storage). */
+    val photoUrl: String? = null,
+    /** Reacciones: uid -> emoji. */
+    val reactions: Map<String, String> = emptyMap(),
+)
+
+/**
+ * "Presencia" del otro usuario en la conversacion: si esta escribiendo
+ * ahora mismo y hasta que mensaje ha leido (timestamp).
+ */
+data class ChatPresence(
+    val otherTyping: Boolean = false,
+    val otherLastReadAt: Long = 0L,
 )
 
 /** Genera el id deterministico de una conversacion entre [uidA] y [uidB]. */

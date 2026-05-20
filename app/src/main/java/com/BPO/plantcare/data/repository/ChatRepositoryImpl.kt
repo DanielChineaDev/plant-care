@@ -1,6 +1,8 @@
 package com.BPO.plantcare.data.repository
 
+import android.net.Uri
 import com.BPO.plantcare.domain.model.ChatMessage
+import com.BPO.plantcare.domain.model.ChatPresence
 import com.BPO.plantcare.domain.model.Conversation
 import com.BPO.plantcare.domain.model.conversationIdOf
 import com.BPO.plantcare.domain.repository.ChatRepository
@@ -9,6 +11,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,6 +28,7 @@ import javax.inject.Singleton
 class ChatRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
+    private val firebaseStorage: FirebaseStorage,
 ) : ChatRepository {
 
     private fun currentUid(): String? = firebaseAuth.currentUser?.uid
@@ -73,11 +78,27 @@ class ChatRepositoryImpl @Inject constructor(
         otherName: String,
         otherPhoto: String?,
         text: String,
+        photoFile: File?,
     ): Result<Unit> = runCatching {
         val me = firebaseAuth.currentUser ?: error("Inicia sesion para enviar mensajes")
         val cid = conversationIdOf(me.uid, otherUid)
         val convRef = firestore.collection(CONVERSATIONS).document(cid)
         val msgRef = convRef.collection(MESSAGES).document()
+
+        // Subimos la foto (si la hay) ANTES de la transaccion.
+        val photoUrl: String? = if (photoFile != null) {
+            val storageRef = firebaseStorage.reference
+                .child("chat_photos/$cid/${msgRef.id}.jpg")
+            storageRef.putFile(Uri.fromFile(photoFile)).await()
+            storageRef.downloadUrl.await().toString()
+        } else null
+
+        // Resumen para la lista de conversaciones (texto o "Foto").
+        val preview = when {
+            text.isNotBlank() -> text
+            photoUrl != null -> "📷 Foto"
+            else -> ""
+        }
 
         // Una transaccion: crea/actualiza la conversacion + inserta el mensaje.
         firestore.runTransaction { tx ->
@@ -97,7 +118,7 @@ class ChatRepositoryImpl @Inject constructor(
                             me.uid to myPhoto,
                             otherUid to otherPhoto,
                         ),
-                        "lastMessage" to text,
+                        "lastMessage" to preview,
                         "lastMessageAt" to now,
                         "lastMessageBy" to me.uid,
                     ),
@@ -106,9 +127,11 @@ class ChatRepositoryImpl @Inject constructor(
                 tx.update(
                     convRef,
                     mapOf(
-                        "lastMessage" to text,
+                        "lastMessage" to preview,
                         "lastMessageAt" to now,
                         "lastMessageBy" to me.uid,
+                        // Al enviar dejamos de "escribir".
+                        "typing.${me.uid}" to 0L,
                     ),
                 )
             }
@@ -117,11 +140,73 @@ class ChatRepositoryImpl @Inject constructor(
                 mapOf(
                     "senderUid" to me.uid,
                     "text" to text,
+                    "photoUrl" to photoUrl,
+                    "reactions" to emptyMap<String, String>(),
                     "createdAt" to now,
                 ),
             )
             null
         }.await()
+    }
+
+    override fun observePresence(conversationId: String, otherUid: String): Flow<ChatPresence> =
+        callbackFlow {
+            val reg = firestore.collection(CONVERSATIONS).document(conversationId)
+                .addSnapshotListener { snap, err ->
+                    if (err != null || snap == null) {
+                        trySend(ChatPresence()); return@addSnapshotListener
+                    }
+                    @Suppress("UNCHECKED_CAST")
+                    val typing = (snap.get("typing") as? Map<String, Any?>).orEmpty()
+                    @Suppress("UNCHECKED_CAST")
+                    val lastRead = (snap.get("lastReadAt") as? Map<String, Any?>).orEmpty()
+                    val typingTs = (typing[otherUid] as? Date)?.time
+                        ?: (typing[otherUid] as? Number)?.toLong() ?: 0L
+                    val readTs = (lastRead[otherUid] as? Date)?.time
+                        ?: (lastRead[otherUid] as? Number)?.toLong() ?: 0L
+                    trySend(
+                        ChatPresence(
+                            otherTyping = System.currentTimeMillis() - typingTs < TYPING_WINDOW_MS,
+                            otherLastReadAt = readTs,
+                        ),
+                    )
+                }
+            awaitClose { reg.remove() }
+        }
+
+    override suspend fun markRead(otherUid: String): Result<Unit> = runCatching {
+        val me = currentUid() ?: return@runCatching
+        val cid = conversationIdOf(me, otherUid)
+        // update falla si la conversacion no existe todavia: lo ignoramos.
+        runCatching {
+            firestore.collection(CONVERSATIONS).document(cid)
+                .update("lastReadAt.$me", FieldValue.serverTimestamp())
+                .await()
+        }
+    }
+
+    override suspend fun setTyping(otherUid: String, typing: Boolean): Result<Unit> = runCatching {
+        val me = currentUid() ?: return@runCatching
+        val cid = conversationIdOf(me, otherUid)
+        val value: Any = if (typing) FieldValue.serverTimestamp() else 0L
+        runCatching {
+            firestore.collection(CONVERSATIONS).document(cid)
+                .update("typing.$me", value)
+                .await()
+        }
+    }
+
+    override suspend fun reactToMessage(
+        otherUid: String,
+        messageId: String,
+        emoji: String?,
+    ): Result<Unit> = runCatching {
+        val me = currentUid() ?: error("Inicia sesion")
+        val cid = conversationIdOf(me, otherUid)
+        val msgRef = firestore.collection(CONVERSATIONS).document(cid)
+            .collection(MESSAGES).document(messageId)
+        val value: Any = emoji ?: FieldValue.delete()
+        msgRef.update("reactions.$me", value).await()
     }
 
     private fun DocumentSnapshot.toConversation(myUid: String): Conversation? {
@@ -146,17 +231,24 @@ class ChatRepositoryImpl @Inject constructor(
 
     private fun DocumentSnapshot.toMessage(conversationId: String): ChatMessage? {
         if (!exists()) return null
+        @Suppress("UNCHECKED_CAST")
+        val reactions = (get("reactions") as? Map<String, Any?>).orEmpty()
+            .mapNotNull { (k, v) -> (v as? String)?.let { k to it } }
+            .toMap()
         return ChatMessage(
             id = id,
             conversationId = conversationId,
             senderUid = getString("senderUid").orEmpty(),
             text = getString("text").orEmpty(),
             createdAt = (getDate("createdAt") ?: Date(0)).time,
+            photoUrl = getString("photoUrl"),
+            reactions = reactions,
         )
     }
 
     companion object {
         private const val CONVERSATIONS = "conversations"
         private const val MESSAGES = "messages"
+        private const val TYPING_WINDOW_MS = 6_000L
     }
 }

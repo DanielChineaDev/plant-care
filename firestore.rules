@@ -250,7 +250,11 @@ service cloud.firestore {
         allow read: if isParticipant();
         allow create: if isParticipant()
           && request.resource.data.senderUid == request.auth.uid;
-        allow update, delete: if false;
+        // Update SOLO para el mapa de reacciones (cualquier participante).
+        // El resto del mensaje queda inmutable.
+        allow update: if isParticipant()
+          && changedKeys().hasOnly(['reactions']);
+        allow delete: if false;
       }
     }
   }
