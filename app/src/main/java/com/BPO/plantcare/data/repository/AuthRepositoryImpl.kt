@@ -185,6 +185,22 @@ class AuthRepositoryImpl @Inject constructor(
             ).await()
     }
 
+    override suspend fun updateProfileDetails(
+        bio: String?,
+        location: String?,
+        favoritePlants: List<String>,
+    ): Result<Unit> = runCatching {
+        val user = firebaseAuth.currentUser ?: error("Sin sesion activa")
+        firestore.collection(USERS).document(user.uid)
+            .update(
+                mapOf(
+                    "bio" to bio?.trim()?.ifBlank { null },
+                    "location" to location?.trim()?.ifBlank { null },
+                    "favoritePlants" to favoritePlants.map { it.trim() }.filter { it.isNotEmpty() },
+                ),
+            ).await()
+    }
+
     override suspend fun updateAvatar(file: java.io.File): Result<String> = runCatching {
         val user = firebaseAuth.currentUser ?: error("Sin sesion activa")
         // Path: avatars/{uid}/avatar_{timestamp}.jpg. Cambiamos el nombre cada
@@ -272,6 +288,10 @@ class AuthRepositoryImpl @Inject constructor(
             isCollectionPublic = doc.getBoolean("isCollectionPublic") ?: false,
             isAdmin = doc.getBoolean("isAdmin") ?: false,
             karma = doc.getLong("karma") ?: 0L,
+            bio = doc.getString("bio"),
+            location = doc.getString("location"),
+            favoritePlants = (doc.get("favoritePlants") as? List<*>)
+                ?.filterIsInstance<String>().orEmpty(),
         )
     }
 
@@ -286,6 +306,11 @@ class AuthRepositoryImpl @Inject constructor(
                 createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
                 isCollectionPublic = doc.getBoolean("isCollectionPublic") ?: false,
                 isAdmin = doc.getBoolean("isAdmin") ?: false,
+                karma = doc.getLong("karma") ?: 0L,
+                bio = doc.getString("bio"),
+                location = doc.getString("location"),
+                favoritePlants = (doc.get("favoritePlants") as? List<*>)
+                    ?.filterIsInstance<String>().orEmpty(),
             )
         } else {
             val now = System.currentTimeMillis()

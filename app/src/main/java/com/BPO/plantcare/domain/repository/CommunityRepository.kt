@@ -70,6 +70,11 @@ interface CommunityRepository {
         optionId: String,
     ): Result<Unit>
 
+    /** Numero total de posts del usuario en todas las comunidades. */
+    suspend fun countUserPosts(uid: String): Result<Int>
+    /** Numero total de comentarios del usuario en todas las comunidades. */
+    suspend fun countUserComments(uid: String): Result<Int>
+
     fun observePost(communityId: String, postId: String): Flow<CommunityPost?>
     fun observeComments(communityId: String, postId: String): Flow<List<Comment>>
     suspend fun addComment(communityId: String, postId: String, text: String): Result<String>

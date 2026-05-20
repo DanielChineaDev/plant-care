@@ -310,6 +310,24 @@ class CommunityRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun countUserPosts(uid: String): Result<Int> = runCatching {
+        val snap = firestore.collectionGroup(POSTS)
+            .whereEqualTo("authorUid", uid)
+            .count()
+            .get(com.google.firebase.firestore.AggregateSource.SERVER)
+            .await()
+        snap.count.toInt()
+    }
+
+    override suspend fun countUserComments(uid: String): Result<Int> = runCatching {
+        val snap = firestore.collectionGroup(COMMENTS)
+            .whereEqualTo("authorUid", uid)
+            .count()
+            .get(com.google.firebase.firestore.AggregateSource.SERVER)
+            .await()
+        snap.count.toInt()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun observePost(communityId: String, postId: String): Flow<CommunityPost?> =
         firebaseAuth.uidFlow().flatMapLatest { uid ->

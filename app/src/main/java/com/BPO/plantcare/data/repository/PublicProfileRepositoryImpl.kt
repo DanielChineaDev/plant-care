@@ -116,6 +116,10 @@ class PublicProfileRepositoryImpl @Inject constructor(
             isCollectionPublic = getBoolean("isCollectionPublic") ?: false,
             isAdmin = getBoolean("isAdmin") ?: false,
             karma = getLong("karma") ?: 0L,
+            bio = getString("bio"),
+            location = getString("location"),
+            favoritePlants = (get("favoritePlants") as? List<*>)
+                ?.filterIsInstance<String>().orEmpty(),
         )
     }
 

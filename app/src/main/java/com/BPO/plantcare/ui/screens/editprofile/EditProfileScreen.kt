@@ -83,6 +83,13 @@ fun EditProfileScreen(
     var name by rememberSaveable(profile?.displayName) {
         mutableStateOf(profile?.displayName.orEmpty())
     }
+    var bio by rememberSaveable(profile?.bio) { mutableStateOf(profile?.bio.orEmpty()) }
+    var location by rememberSaveable(profile?.location) {
+        mutableStateOf(profile?.location.orEmpty())
+    }
+    var favorites by rememberSaveable(profile?.favoritePlants) {
+        mutableStateOf(profile?.favoritePlants?.joinToString(", ").orEmpty())
+    }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -106,6 +113,7 @@ fun EditProfileScreen(
                     confirmPassword = ""
                     "Contrasena actualizada"
                 }
+                EditProfileEvent.DetailsSaved -> "Perfil actualizado"
                 is EditProfileEvent.Error -> event.message
             }
             snackbarHostState.showSnackbar(msg)
@@ -150,6 +158,25 @@ fun EditProfileScreen(
                 onNameChange = { name = it },
                 saving = state.savingName,
                 onSave = { viewModel.saveName(name) },
+            )
+
+            DetailsCard(
+                bio = bio,
+                location = location,
+                favorites = favorites,
+                onBioChange = { bio = it },
+                onLocationChange = { location = it },
+                onFavoritesChange = { favorites = it },
+                saving = state.savingDetails,
+                onSave = {
+                    viewModel.saveDetails(
+                        bio = bio,
+                        location = location,
+                        favoritePlants = favorites.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() },
+                    )
+                },
             )
 
             PasswordCard(
@@ -250,6 +277,75 @@ private fun NameCard(
                         strokeWidth = 2.dp,
                     )
                 } else Text("Guardar nombre")
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailsCard(
+    bio: String,
+    location: String,
+    favorites: String,
+    onBioChange: (String) -> Unit,
+    onLocationChange: (String) -> Unit,
+    onFavoritesChange: (String) -> Unit,
+    saving: Boolean,
+    onSave: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Sobre ti",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedTextField(
+                value = bio,
+                onValueChange = { if (it.length <= 160) onBioChange(it) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Biografia") },
+                placeholder = { Text("Cuentanos algo sobre ti") },
+                minLines = 2,
+                maxLines = 4,
+                supportingText = { Text("${bio.length}/160") },
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedTextField(
+                value = location,
+                onValueChange = onLocationChange,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text("Localizacion (opcional)") },
+                placeholder = { Text("Ej. Madrid") },
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            OutlinedTextField(
+                value = favorites,
+                onValueChange = onFavoritesChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Plantas favoritas") },
+                placeholder = { Text("Separadas por comas: Monstera, Pothos") },
+                minLines = 1,
+                maxLines = 3,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Button(
+                onClick = onSave,
+                enabled = !saving,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (saving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                } else Text("Guardar perfil")
             }
         }
     }

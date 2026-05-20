@@ -62,6 +62,23 @@ class EditProfileViewModel @Inject constructor(
         }
     }
 
+    fun saveDetails(bio: String, location: String, favoritePlants: List<String>) {
+        _state.update { it.copy(savingDetails = true) }
+        viewModelScope.launch {
+            authRepository.updateProfileDetails(
+                bio = bio,
+                location = location,
+                favoritePlants = favoritePlants,
+            ).onSuccess {
+                _state.update { it.copy(savingDetails = false) }
+                _events.trySend(EditProfileEvent.DetailsSaved)
+            }.onFailure { err ->
+                _state.update { it.copy(savingDetails = false) }
+                _events.trySend(EditProfileEvent.Error(humanize(err)))
+            }
+        }
+    }
+
     fun uploadAvatar(file: File) {
         _state.update { it.copy(uploadingPhoto = true) }
         viewModelScope.launch {
@@ -115,11 +132,13 @@ data class EditProfileState(
     val savingName: Boolean = false,
     val uploadingPhoto: Boolean = false,
     val changingPassword: Boolean = false,
+    val savingDetails: Boolean = false,
 )
 
 sealed interface EditProfileEvent {
     data object NameSaved : EditProfileEvent
     data object PhotoSaved : EditProfileEvent
     data object PasswordChanged : EditProfileEvent
+    data object DetailsSaved : EditProfileEvent
     data class Error(val message: String) : EditProfileEvent
 }

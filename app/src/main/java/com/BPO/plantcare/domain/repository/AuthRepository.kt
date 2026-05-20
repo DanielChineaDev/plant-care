@@ -47,6 +47,13 @@ interface AuthRepository {
     /** Actualiza el nombre publico en FirebaseAuth + Firestore. */
     suspend fun updateDisplayName(displayName: String): Result<Unit>
 
+    /** Actualiza bio, localizacion y plantas favoritas en Firestore. */
+    suspend fun updateProfileDetails(
+        bio: String?,
+        location: String?,
+        favoritePlants: List<String>,
+    ): Result<Unit>
+
     /**
      * Sube una imagen como avatar del usuario actual a Storage y guarda la
      * URL publica en users/{uid}/photoUrl + en FirebaseAuth.

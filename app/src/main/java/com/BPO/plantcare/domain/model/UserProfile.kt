@@ -22,4 +22,10 @@ data class UserProfile(
      * Cloud Function, el cliente solo lo lee.
      */
     val karma: Long = 0,
+    /** Biografia corta opcional. */
+    val bio: String? = null,
+    /** Localizacion opcional (texto libre, ej. "Madrid"). */
+    val location: String? = null,
+    /** Nombres de las plantas favoritas del usuario. */
+    val favoritePlants: List<String> = emptyList(),
 )
