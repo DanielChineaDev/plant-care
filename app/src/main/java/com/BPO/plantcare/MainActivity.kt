@@ -19,7 +19,11 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +41,7 @@ import com.BPO.plantcare.core.notification.FcmService
 import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.ui.auth.AuthGateViewModel
 import com.BPO.plantcare.ui.navigation.BottomBarViewModel
+import com.BPO.plantcare.ui.navigation.LocalIsExpandedScreen
 import com.BPO.plantcare.ui.navigation.PlantCareBottomBar
 import com.BPO.plantcare.ui.navigation.PlantCareDrawerContent
 import com.BPO.plantcare.ui.navigation.PlantCareNavHost
@@ -52,16 +57,21 @@ class MainActivity : ComponentActivity() {
 
     private var pendingChatUid by mutableStateOf<String?>(null)
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingChatUid = intent.getStringExtra(FcmService.EXTRA_CHAT_UID)
         enableEdgeToEdge()
         setContent {
-            PlantCareTheme {
-                PlantCareRoot(
-                    pendingChatUid = pendingChatUid,
-                    onDeepLinkConsumed = { pendingChatUid = null },
-                )
+            val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
+            val isExpanded = widthSizeClass == WindowWidthSizeClass.Expanded
+            CompositionLocalProvider(LocalIsExpandedScreen provides isExpanded) {
+                PlantCareTheme {
+                    PlantCareRoot(
+                        pendingChatUid = pendingChatUid,
+                        onDeepLinkConsumed = { pendingChatUid = null },
+                    )
+                }
             }
         }
     }

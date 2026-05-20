@@ -9,7 +9,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -150,12 +157,36 @@ fun PlantCareNavHost(
             )
         }
         composable(TopLevelDestination.MyPlants.route) {
-            MyPlantsScreen(
-                onOpenDrawer = onOpenDrawer,
-                onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
-                onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
-                onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
-            )
+            if (LocalIsExpandedScreen.current) {
+                // Tablets/anchas: maestro-detalle. La lista actualiza la
+                // seleccion local y el panel derecho muestra la ficha.
+                var selectedPlantId by rememberSaveable { mutableStateOf<Long?>(null) }
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        MyPlantsScreen(
+                            onOpenDrawer = onOpenDrawer,
+                            onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                            onPlantClick = { id -> selectedPlantId = id },
+                            onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
+                        )
+                    }
+                    com.BPO.plantcare.ui.screens.plantdetail.PlantDetailPane(
+                        plantId = selectedPlantId,
+                        onClose = { selectedPlantId = null },
+                        onPhotoClick = { plantId, photoId ->
+                            navController.navigate(Routes.photoViewer(plantId, photoId))
+                        },
+                        modifier = Modifier.weight(1.4f),
+                    )
+                }
+            } else {
+                MyPlantsScreen(
+                    onOpenDrawer = onOpenDrawer,
+                    onNotificationsClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                    onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
+                    onIdentifyClick = { navController.navigate(Routes.IDENTIFY) },
+                )
+            }
         }
         composable(TopLevelDestination.Search.route) {
             SearchScreen(
