@@ -28,6 +28,8 @@ class PlantCareApplication : Application(), Configuration.Provider, SingletonIma
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var reminderManager: WateringReminderManager
+    @Inject lateinit var plantSyncManager: com.BPO.plantcare.data.sync.PlantSyncManager
+    @Inject lateinit var authRepository: com.BPO.plantcare.domain.repository.AuthRepository
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -44,6 +46,8 @@ class PlantCareApplication : Application(), Configuration.Provider, SingletonIma
         super.onCreate()
         PlantCareNotifications.registerChannels(this)
         applicationScope.launch { reminderManager.applyOnStartup() }
+        // Sincroniza las plantas con la nube segun la sesion activa.
+        plantSyncManager.start(applicationScope, authRepository)
     }
 
     /**

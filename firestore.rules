@@ -65,6 +65,11 @@ service cloud.firestore {
       match /joinedCommunities/{communityId} {
         allow read, write: if isMe(userId);
       }
+      // Espejo en la nube de las plantas del usuario (sync multi-dispositivo).
+      // Privado: solo el dueno lee/escribe.
+      match /plants/{plantId} {
+        allow read, write: if isMe(userId);
+      }
       match /postLikes/{postId} {
         allow read, write: if isMe(userId);
       }

@@ -18,6 +18,15 @@ interface PlantDao {
     @Query("SELECT * FROM plants WHERE id = :id")
     fun observeById(id: Long): Flow<PlantEntity?>
 
+    @Query("SELECT * FROM plants WHERE id = :id")
+    suspend fun getById(id: Long): PlantEntity?
+
+    @Query("SELECT * FROM plants")
+    suspend fun getAll(): List<PlantEntity>
+
+    @Query("DELETE FROM plants")
+    suspend fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(plant: PlantEntity): Long
 
