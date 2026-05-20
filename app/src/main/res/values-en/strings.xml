@@ -77,4 +77,19 @@
     <string name="home_empty_feed">Your communities have no posts yet</string>
     <string name="home_recent_plants">Recent plants</string>
     <string name="home_no_plants">You haven\'t added any plants yet</string>
+
+    <!-- Profile common -->
+    <string name="user_default">User</string>
+    <string name="sign_out">Sign out</string>
+
+    <!-- Side menu (drawer) -->
+    <string name="drawer_section_other">Other sections</string>
+    <string name="drawer_my_profile">My profile</string>
+    <string name="drawer_communities">Communities</string>
+    <string name="drawer_calendar">Calendar</string>
+    <string name="drawer_tools">Tools</string>
+    <string name="drawer_section_communities">Your communities</string>
+    <string name="drawer_no_communities">You haven\'t joined any community yet.</string>
+    <string name="drawer_moderation">Moderation</string>
+    <string name="drawer_settings">Settings</string>
 </resources>

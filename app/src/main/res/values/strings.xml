@@ -77,4 +77,19 @@
     <string name="home_empty_feed">Tus comunidades aún no tienen publicaciones</string>
     <string name="home_recent_plants">Plantas recientes</string>
     <string name="home_no_plants">Aún no has añadido ninguna planta</string>
+
+    <!-- Comun perfil -->
+    <string name="user_default">Usuario</string>
+    <string name="sign_out">Cerrar sesión</string>
+
+    <!-- Menu lateral (drawer) -->
+    <string name="drawer_section_other">Otras secciones</string>
+    <string name="drawer_my_profile">Mi perfil</string>
+    <string name="drawer_communities">Comunidades</string>
+    <string name="drawer_calendar">Calendario</string>
+    <string name="drawer_tools">Herramientas</string>
+    <string name="drawer_section_communities">Tus comunidades</string>
+    <string name="drawer_no_communities">Aún no te has unido a ninguna comunidad.</string>
+    <string name="drawer_moderation">Moderación</string>
+    <string name="drawer_settings">Configuración</string>
 </resources>

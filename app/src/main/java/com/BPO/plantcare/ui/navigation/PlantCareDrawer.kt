@@ -37,10 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.BPO.plantcare.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.domain.model.Community
@@ -89,36 +91,36 @@ private fun PlantCareDrawerContent(
 
             HorizontalDivider()
 
-            SectionHeader(text = "Otras secciones")
+            SectionHeader(text = stringResource(R.string.drawer_section_other))
 
             DrawerItem(
                 icon = Icons.Outlined.Person,
-                label = "Mi perfil",
+                label = stringResource(R.string.drawer_my_profile),
                 onClick = { onNavigate(Routes.MY_PROFILE) },
             )
             DrawerItem(
                 icon = Icons.Outlined.Groups,
-                label = "Comunidades",
+                label = stringResource(R.string.drawer_communities),
                 onClick = { onNavigate(Routes.COMMUNITIES) },
             )
             DrawerItem(
                 icon = Icons.Outlined.CalendarMonth,
-                label = "Calendario",
+                label = stringResource(R.string.drawer_calendar),
                 onClick = { onNavigate(Routes.CALENDAR) },
             )
             DrawerItem(
                 icon = Icons.Outlined.Build,
-                label = "Herramientas",
+                label = stringResource(R.string.drawer_tools),
                 onClick = { onNavigate(Routes.TOOLS) },
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            SectionHeader(text = "Tus comunidades")
+            SectionHeader(text = stringResource(R.string.drawer_section_communities))
 
             if (joinedCommunities.isEmpty()) {
                 Text(
-                    text = "Aun no te has unido a ninguna comunidad.",
+                    text = stringResource(R.string.drawer_no_communities),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 4.dp),
@@ -138,18 +140,18 @@ private fun PlantCareDrawerContent(
             if (profile?.isAdmin == true) {
                 DrawerItem(
                     icon = Icons.Outlined.Shield,
-                    label = "Moderacion",
+                    label = stringResource(R.string.drawer_moderation),
                     onClick = { onNavigate(Routes.MODERATION) },
                 )
             }
             DrawerItem(
                 icon = Icons.Outlined.Settings,
-                label = "Configuracion",
+                label = stringResource(R.string.drawer_settings),
                 onClick = { onNavigate(Routes.SETTINGS) },
             )
             DrawerItem(
                 icon = Icons.Outlined.Logout,
-                label = "Cerrar sesion",
+                label = stringResource(R.string.sign_out),
                 onClick = onSignOut,
             )
 
@@ -215,7 +217,7 @@ private fun DrawerHeader(profile: UserProfile?) {
             Spacer(modifier = Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = profile?.displayName ?: "Usuario",
+                    text = profile?.displayName ?: stringResource(R.string.user_default),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
