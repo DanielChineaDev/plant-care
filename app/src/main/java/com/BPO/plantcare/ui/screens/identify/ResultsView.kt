@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CardDefaults
@@ -45,6 +46,7 @@ fun ResultsView(
     suggestions: List<PlantSuggestion>,
     onRetake: () -> Unit,
     onAddToMyPlants: (PlantSuggestion) -> Unit,
+    onViewDetail: (PlantSuggestion) -> Unit = {},
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -71,6 +73,7 @@ fun ResultsView(
             SuggestionCard(
                 suggestion = suggestion,
                 onAddClick = { onAddToMyPlants(suggestion) },
+                onViewDetail = { onViewDetail(suggestion) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp),
@@ -95,6 +98,7 @@ fun ResultsView(
 private fun SuggestionCard(
     suggestion: PlantSuggestion,
     onAddClick: () -> Unit,
+    onViewDetail: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
@@ -144,13 +148,23 @@ private fun SuggestionCard(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            FilledTonalButton(
-                onClick = onAddClick,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Outlined.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Añadir a mis plantas")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onViewDetail,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Outlined.Info, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ver detalle")
+                }
+                FilledTonalButton(
+                    onClick = onAddClick,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Añadir")
+                }
             }
         }
     }

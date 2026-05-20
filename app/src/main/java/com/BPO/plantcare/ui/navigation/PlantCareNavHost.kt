@@ -238,6 +238,7 @@ fun PlantCareNavHost(
             MyProfileScreen(
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(Routes.EDIT_PROFILE) },
+                onSpeciesClick = { name -> navController.navigate(Routes.catalogDetail(name)) },
             )
         }
 
@@ -345,7 +346,10 @@ fun PlantCareNavHost(
             popEnterTransition = slidePopEnter,
             popExitTransition = slidePopExit,
         ) {
-            IdentifyScreen(onBack = { navController.popBackStack() })
+            IdentifyScreen(
+                onBack = { navController.popBackStack() },
+                onViewSpecies = { name -> navController.navigate(Routes.catalogDetail(name)) },
+            )
         }
 
         composable(

@@ -174,11 +174,6 @@ fun ProfileScreen(
                 )
             }
 
-            BackupCard(
-                onExport = viewModel::exportBackup,
-                onImport = viewModel::importBackup,
-            )
-
             SignOutCard(onSignOut = { viewModel.signOut() })
 
             Spacer(modifier = Modifier.size(16.dp))
@@ -331,60 +326,6 @@ private fun PaletteSwatch(
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             modifier = Modifier.padding(top = 4.dp),
         )
-    }
-}
-
-@Composable
-private fun BackupCard(
-    onExport: (android.net.Uri) -> Unit,
-    onImport: (android.net.Uri) -> Unit,
-) {
-    // SAF: CreateDocument("application/json") para exportar; OpenDocument
-    // para importar.
-    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri -> if (uri != null) onExport(uri) }
-    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
-    ) { uri -> if (uri != null) onImport(uri) }
-
-    val suggested = "plantcare_backup_${java.time.LocalDate.now()}.json"
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Backup",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "Exporta tu coleccion (plantas + historial de riegos) como archivo JSON, o importa uno previo. Util para cambiar de movil. Las fotos no se exportan.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            OutlinedButton(
-                onClick = { exportLauncher.launch(suggested) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Exportar mis plantas a JSON")
-            }
-            Spacer(modifier = Modifier.size(6.dp))
-            OutlinedButton(
-                onClick = { importLauncher.launch(arrayOf("application/json")) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Importar desde JSON")
-            }
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                text = "Ojo: el import anade plantas como NUEVAS, no reemplaza. Si importas dos veces el mismo archivo, se duplicaran.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
     }
 }
 

@@ -452,13 +452,20 @@ exports.backfillLowercaseFields = onRequest(
 );
 
 /**
- * Suma [delta] al campo karma del usuario [uid]. Se ejecuta sin
- * transaccion porque FieldValue.increment es atomico.
+ * Suma [delta] al campo karma del usuario [uid], con suelo en 0 (el karma
+ * nunca puede ser negativo). Usamos una transaccion para leer el valor
+ * actual y aplicar el clamp; FieldValue.increment no permite acotar.
  */
 async function incrementKarma(uid, delta) {
   try {
-    await db.collection("users").doc(uid)
-      .set({karma: admin.firestore.FieldValue.increment(delta)}, {merge: true});
+    const ref = db.collection("users").doc(uid);
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const current = (snap.exists && typeof snap.data().karma === "number") ?
+        snap.data().karma : 0;
+      const next = Math.max(0, current + delta);
+      tx.set(ref, {karma: next}, {merge: true});
+    });
   } catch (err) {
     logger.warn("incrementKarma fallo", {uid, delta, err});
   }

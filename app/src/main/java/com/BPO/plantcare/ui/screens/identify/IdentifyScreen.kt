@@ -66,6 +66,7 @@ import java.io.File
 @Composable
 fun IdentifyScreen(
     onBack: () -> Unit,
+    onViewSpecies: (scientificName: String) -> Unit = {},
     viewModel: IdentifyViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -109,6 +110,7 @@ fun IdentifyScreen(
                 onIdentify = viewModel::identify,
                 onRetake = viewModel::retake,
                 onAddToMyPlants = viewModel::addSuggestionToMyPlants,
+                onViewSpecies = onViewSpecies,
             )
 
             is PermissionStatus.Denied -> PermissionRationale(
@@ -128,6 +130,7 @@ private fun IdentifyContent(
     onIdentify: () -> Unit,
     onRetake: () -> Unit,
     onAddToMyPlants: (PlantSuggestion) -> Unit,
+    onViewSpecies: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -150,6 +153,7 @@ private fun IdentifyContent(
                 suggestions = state.suggestions,
                 onRetake = onRetake,
                 onAddToMyPlants = onAddToMyPlants,
+                onViewDetail = { onViewSpecies(it.scientificName) },
             )
 
             is IdentifyUiState.Error -> ErrorView(

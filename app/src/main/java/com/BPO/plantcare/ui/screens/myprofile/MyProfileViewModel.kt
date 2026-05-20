@@ -94,7 +94,7 @@ class MyProfileViewModel @Inject constructor(
             totalWaterings = logs.size,
             memberSinceDays = daysSince(prof?.createdAt ?: 0L),
             wateringStreak = wateringStreak(logs.map { it.timestamp }),
-            karma = prof?.karma ?: 0L,
+            karma = (prof?.karma ?: 0L).coerceAtLeast(0L),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileStats())
 

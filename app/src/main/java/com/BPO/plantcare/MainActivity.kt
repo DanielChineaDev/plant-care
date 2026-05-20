@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
@@ -145,9 +146,10 @@ private fun PlantCareApp(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    // PhotoViewer es la unica pantalla "inmersiva" donde no queremos nav
-    // visible (visor fullscreen de fotos).
-    val hideNavChrome = currentRoute?.startsWith("photoviewer") == true
+    // Pantallas "inmersivas" sin bottom bar: el visor fullscreen de fotos y
+    // la pantalla de identificar (camara/resultado a pantalla completa).
+    val hideNavChrome = currentRoute?.startsWith("photoviewer") == true ||
+        currentRoute == Routes.IDENTIFY
 
     val counts by bottomBarViewModel.counts.collectAsStateWithLifecycle()
 
@@ -203,10 +205,18 @@ private fun PlantCareApp(
                 }
             },
         ) { innerPadding ->
+            // padding(innerPadding) reserva el alto del bottom bar; ademas
+            // consumeWindowInsets avisa a los Scaffold internos de cada
+            // pantalla de que esos insets YA estan aplicados, para que no
+            // vuelvan a anadir el inset de la barra de navegacion del sistema
+            // (lo que dejaba un hueco entre el contenido y el bottom bar en
+            // pantallas como detalle de planta o buscar).
             PlantCareNavHost(
                 navController = navController,
                 onOpenDrawer = { scope.launch { drawerState.open() } },
-                modifier = Modifier.padding(innerPadding),
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
             )
         }
     }

@@ -71,6 +71,7 @@ import com.BPO.plantcare.domain.model.UserProfile
 fun MyProfileScreen(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
+    onSpeciesClick: (scientificName: String) -> Unit = {},
     viewModel: MyProfileViewModel = hiltViewModel(),
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
@@ -149,7 +150,7 @@ fun MyProfileScreen(
                 }
             } else {
                 items(plants, key = { it.id }) { plant ->
-                    PublicPlantCard(plant)
+                    PublicPlantCard(plant, onClick = { onSpeciesClick(plant.scientificName) })
                 }
             }
         }
@@ -233,7 +234,7 @@ private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
                 }
             }
             Text(
-                text = "Karma: ${profile.karma}",
+                text = "Karma: ${profile.karma.coerceAtLeast(0)}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = 8.dp),
@@ -346,8 +347,8 @@ private fun AchievementBadge(achievement: Achievement) {
 }
 
 @Composable
-private fun PublicPlantCard(plant: PublicPlant) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+private fun PublicPlantCard(plant: PublicPlant, onClick: () -> Unit = {}) {
+    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column {
             Box(
                 modifier = Modifier

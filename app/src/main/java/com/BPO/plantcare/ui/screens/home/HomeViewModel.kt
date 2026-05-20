@@ -107,8 +107,14 @@ class HomeViewModel @Inject constructor(
             } else {
                 combine(
                     communities.map { community ->
-                        communityRepository.observePosts(community.id, FEED_LIMIT_PER_COMMUNITY)
-                            .map { posts -> posts.map { FeedItem(it, community) } }
+                        // Combinamos posts con el set de likes del usuario para
+                        // que el corazon se vea rojo si ya le diste like.
+                        combine(
+                            communityRepository.observePosts(community.id, FEED_LIMIT_PER_COMMUNITY),
+                            communityRepository.observeLikedPostsInCommunity(community.id),
+                        ) { posts, liked ->
+                            posts.map { FeedItem(it.copy(isLikedByMe = it.id in liked), community) }
+                        }
                     },
                 ) { lists ->
                     lists.toList().flatMap { it.toList() }
