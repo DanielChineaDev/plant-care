@@ -58,12 +58,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.ChatMessage
 import java.io.File
@@ -88,12 +91,13 @@ fun ChatScreen(
     var pendingPhoto by remember { mutableStateOf<File?>(null) }
     var reactingTo by remember { mutableStateOf<ChatMessage?>(null) }
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 is ChatEvent.Error -> snackbarHostState.showSnackbar(
-                    event.message.ifBlank { "Error al enviar" },
+                    event.message.ifBlank { context.getString(R.string.chat_error_send) },
                 )
             }
         }
@@ -133,12 +137,13 @@ fun ChatScreen(
                             Spacer(modifier = Modifier.size(8.dp))
                             Column {
                                 Text(
-                                    text = otherProfile?.displayName ?: "Chat",
+                                    text = otherProfile?.displayName
+                                        ?: stringResource(R.string.user_default),
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                                 if (presence.otherTyping) {
                                     Text(
-                                        text = "escribiendo…",
+                                        text = stringResource(R.string.chat_typing),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary,
                                     )
@@ -148,12 +153,12 @@ fun ChatScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                            Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                         }
                     },
                     actions = {
                         IconButton(onClick = viewModel::openSearch) {
-                            Icon(Icons.Outlined.Search, contentDescription = "Buscar")
+                            Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.home_search))
                         }
                     },
                 )
@@ -185,8 +190,8 @@ fun ChatScreen(
             ) {
                 Text(
                     text = if (searchQuery.isNullOrBlank())
-                        "Aun no hay mensajes.\nEscribe el primero abajo."
-                    else "Sin resultados",
+                        stringResource(R.string.chat_empty)
+                    else stringResource(R.string.chat_search_no_results),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -238,12 +243,12 @@ private fun SearchTopBar(
                 onValueChange = onQueryChange,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Buscar en la conversacion") },
+                placeholder = { Text(stringResource(R.string.chat_search_placeholder)) },
             )
         },
         navigationIcon = {
             IconButton(onClick = onClose) {
-                Icon(Icons.Outlined.Close, contentDescription = "Cerrar busqueda")
+                Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.chat_search_close))
             }
         },
     )
@@ -349,7 +354,7 @@ private fun ReactionPicker(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Reaccionar") },
+        title = { Text(stringResource(R.string.chat_react)) },
         text = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 REACTION_EMOJIS.forEach { emoji ->
@@ -374,10 +379,10 @@ private fun ReactionPicker(
         },
         confirmButton = {
             if (current != null) {
-                TextButton(onClick = { onPick(null) }) { Text("Quitar") }
+                TextButton(onClick = { onPick(null) }) { Text(stringResource(R.string.chat_remove_reaction)) }
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cerrar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } },
     )
 }
 
@@ -407,7 +412,7 @@ private fun ChatInput(
             Box(modifier = Modifier.padding(start = 12.dp, top = 8.dp)) {
                 AsyncImage(
                     model = pendingPhoto,
-                    contentDescription = "Foto a enviar",
+                    contentDescription = stringResource(R.string.chat_photo_to_send),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(72.dp)
@@ -418,7 +423,7 @@ private fun ChatInput(
                     onClick = onClearPhoto,
                     modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
                 ) {
-                    Icon(Icons.Outlined.Close, contentDescription = "Quitar foto")
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.chat_remove_photo))
                 }
             }
         }
@@ -437,12 +442,12 @@ private fun ChatInput(
                     )
                 },
             ) {
-                Icon(Icons.Outlined.AddPhotoAlternate, contentDescription = "Adjuntar foto")
+                Icon(Icons.Outlined.AddPhotoAlternate, contentDescription = stringResource(R.string.chat_attach_photo))
             }
             OutlinedTextField(
                 value = value,
                 onValueChange = onChange,
-                placeholder = { Text("Mensaje") },
+                placeholder = { Text(stringResource(R.string.chat_message_placeholder)) },
                 modifier = Modifier.weight(1f),
                 maxLines = 4,
             )
@@ -451,7 +456,7 @@ private fun ChatInput(
                 onClick = onSend,
                 enabled = value.isNotBlank() || pendingPhoto != null,
             ) {
-                Icon(Icons.Outlined.Send, contentDescription = "Enviar")
+                Icon(Icons.Outlined.Send, contentDescription = stringResource(R.string.chat_send))
             }
         }
     }

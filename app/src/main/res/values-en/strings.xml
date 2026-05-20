@@ -138,4 +138,30 @@
     <string name="drawer_no_communities">You haven\'t joined any community yet.</string>
     <string name="drawer_moderation">Moderation</string>
     <string name="drawer_settings">Settings</string>
+
+    <!-- Messages -->
+    <string name="time_now">now</string>
+    <string name="chats_empty_signin">Sign in to use chats.</string>
+    <string name="chats_empty">You have no conversations yet.\nTap any user\'s avatar in a community to start chatting.</string>
+    <string name="chat_typing">typing…</string>
+    <string name="chat_search_placeholder">Search in the conversation</string>
+    <string name="chat_search_close">Close search</string>
+    <string name="chat_search_no_results">No results</string>
+    <string name="chat_empty">No messages yet.\nWrite the first one below.</string>
+    <string name="chat_message_placeholder">Message</string>
+    <string name="chat_attach_photo">Attach photo</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_react">React</string>
+    <string name="chat_remove_reaction">Remove</string>
+    <string name="chat_photo_to_send">Photo to send</string>
+    <string name="chat_remove_photo">Remove photo</string>
+    <string name="chat_error_send">Failed to send</string>
+
+    <!-- Search -->
+    <string name="search_placeholder">Search by common or scientific name</string>
+    <string name="search_indoor">Indoor</string>
+    <string name="search_outdoor">Outdoor</string>
+    <string name="search_clear_filters">Clear filters</string>
+    <string name="search_empty_filters">No results with the current filters</string>
+    <string name="search_no_results">No results for \"%s\"</string>
 </resources>

@@ -138,4 +138,30 @@
     <string name="drawer_no_communities">Aún no te has unido a ninguna comunidad.</string>
     <string name="drawer_moderation">Moderación</string>
     <string name="drawer_settings">Configuración</string>
+
+    <!-- Mensajes -->
+    <string name="time_now">ahora</string>
+    <string name="chats_empty_signin">Inicia sesión para tener chats.</string>
+    <string name="chats_empty">Aún no tienes conversaciones.\nToca el avatar de cualquier usuario en una comunidad para empezar a chatear.</string>
+    <string name="chat_typing">escribiendo…</string>
+    <string name="chat_search_placeholder">Buscar en la conversación</string>
+    <string name="chat_search_close">Cerrar búsqueda</string>
+    <string name="chat_search_no_results">Sin resultados</string>
+    <string name="chat_empty">Aún no hay mensajes.\nEscribe el primero abajo.</string>
+    <string name="chat_message_placeholder">Mensaje</string>
+    <string name="chat_attach_photo">Adjuntar foto</string>
+    <string name="chat_send">Enviar</string>
+    <string name="chat_react">Reaccionar</string>
+    <string name="chat_remove_reaction">Quitar</string>
+    <string name="chat_photo_to_send">Foto a enviar</string>
+    <string name="chat_remove_photo">Quitar foto</string>
+    <string name="chat_error_send">Error al enviar</string>
+
+    <!-- Buscar -->
+    <string name="search_placeholder">Busca por nombre común o científico</string>
+    <string name="search_indoor">Interior</string>
+    <string name="search_outdoor">Exterior</string>
+    <string name="search_clear_filters">Limpiar filtros</string>
+    <string name="search_empty_filters">Ningún resultado con los filtros actuales</string>
+    <string name="search_no_results">Sin resultados para «%s»</string>
 </resources>

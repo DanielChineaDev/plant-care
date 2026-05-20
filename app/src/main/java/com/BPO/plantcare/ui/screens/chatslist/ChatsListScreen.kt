@@ -32,11 +32,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Conversation
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,10 +55,10 @@ fun ChatsListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mensajes") },
+                title = { Text(stringResource(R.string.nav_messages)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu))
                     }
                 },
                 actions = {
@@ -69,14 +71,14 @@ fun ChatsListScreen(
     ) { padding ->
         if (!isSignedIn) {
             EmptyState(
-                message = "Inicia sesion para tener chats.",
+                message = stringResource(R.string.chats_empty_signin),
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
             return@Scaffold
         }
         if (conversations.isEmpty()) {
             EmptyState(
-                message = "Aun no tienes conversaciones.\nToca el avatar de cualquier usuario en una comunidad para empezar a chatear.",
+                message = stringResource(R.string.chats_empty),
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
             return@Scaffold
@@ -125,7 +127,7 @@ private fun ConversationRow(conv: Conversation, onClick: () -> Unit) {
             Spacer(modifier = Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = conv.otherUserName.ifBlank { "Usuario" },
+                    text = conv.otherUserName.ifBlank { stringResource(R.string.user_default) },
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -140,7 +142,7 @@ private fun ConversationRow(conv: Conversation, onClick: () -> Unit) {
                 )
             }
             Text(
-                text = relativeTime(conv.lastMessageAt),
+                text = relativeTime(conv.lastMessageAt, stringResource(R.string.time_now)),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -173,12 +175,12 @@ private fun EmptyState(message: String, modifier: Modifier = Modifier) {
 
 private const val MS_PER_MIN = 60_000L
 
-private fun relativeTime(timestamp: Long): String {
+private fun relativeTime(timestamp: Long, nowLabel: String): String {
     if (timestamp <= 0) return ""
     val diff = System.currentTimeMillis() - timestamp
     val minutes = diff / MS_PER_MIN
     return when {
-        minutes < 1 -> "ahora"
+        minutes < 1 -> nowLabel
         minutes < 60 -> "${minutes}m"
         minutes < 60 * 24 -> "${minutes / 60}h"
         else -> "${minutes / (60 * 24)}d"

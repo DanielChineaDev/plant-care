@@ -43,12 +43,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.LightLevel
 import com.BPO.plantcare.domain.model.PlantCareGuide
@@ -68,10 +70,10 @@ fun SearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Buscar") },
+                title = { Text(stringResource(R.string.nav_search)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu))
                     }
                 },
                 actions = {
@@ -139,12 +141,12 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Busca por nombre comun o cientifico") },
+        placeholder = { Text(stringResource(R.string.search_placeholder)) },
         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                    Icon(Icons.Outlined.Clear, contentDescription = stringResource(R.string.clear))
                 }
             }
         },
@@ -177,7 +179,7 @@ private fun FiltersRow(
                         else LocationFilter.INDOOR
                     )
                 },
-                label = { Text("Interior") },
+                label = { Text(stringResource(R.string.search_indoor)) },
             )
             FilterChip(
                 selected = filters.location == LocationFilter.OUTDOOR,
@@ -187,7 +189,7 @@ private fun FiltersRow(
                         else LocationFilter.OUTDOOR
                     )
                 },
-                label = { Text("Exterior") },
+                label = { Text(stringResource(R.string.search_outdoor)) },
             )
             CareDifficulty.entries.forEach { d ->
                 FilterChip(
@@ -215,7 +217,7 @@ private fun FiltersRow(
             }
             if (filters.hasActiveFilters) {
                 TextButton(onClick = onClear) {
-                    Text("Limpiar filtros")
+                    Text(stringResource(R.string.search_clear_filters))
                 }
             }
         }
@@ -306,8 +308,8 @@ private fun EmptyResults(query: String) {
         )
         Text(
             text = if (query.isBlank())
-                "Ningun resultado con los filtros actuales"
-            else "Sin resultados para \"$query\"",
+                stringResource(R.string.search_empty_filters)
+            else stringResource(R.string.search_no_results, query),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 12.dp),
