@@ -212,9 +212,10 @@ fun CommunityFeedScreen(
         )
     }
 
-    if (showEditCommunity) {
+    val editTarget = community
+    if (showEditCommunity && editTarget != null) {
         EditCommunityDialog(
-            community = current ?: return,
+            community = editTarget,
             onConfirm = { name, desc, photo ->
                 viewModel.updateCommunity(name, desc, photo)
                 showEditCommunity = false
