@@ -3,7 +3,9 @@ package com.BPO.plantcare.data.repository
 import android.net.Uri
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
+import com.BPO.plantcare.domain.model.CommunityMember
 import com.BPO.plantcare.domain.model.CommunityPost
+import com.BPO.plantcare.domain.model.PostTag
 import com.BPO.plantcare.domain.repository.CommunityRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -148,6 +150,7 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     private suspend fun joinCommunityInternal(uid: String, communityId: String) {
+        val user = firebaseAuth.currentUser
         val communityRef = firestore.collection(COMMUNITIES).document(communityId)
         val memberRef = communityRef.collection(MEMBERS).document(uid)
         val mirrorRef = firestore.collection(USERS).document(uid)
@@ -155,7 +158,16 @@ class CommunityRepositoryImpl @Inject constructor(
         firestore.runTransaction { tx ->
             val existing = tx.get(memberRef)
             if (existing.exists()) return@runTransaction null
-            tx.set(memberRef, mapOf("joinedAt" to FieldValue.serverTimestamp()))
+            // Denormalizamos nombre/foto en el doc del miembro para poder
+            // listar miembros sin pedir cada perfil por separado.
+            tx.set(
+                memberRef,
+                mapOf(
+                    "joinedAt" to FieldValue.serverTimestamp(),
+                    "name" to (user?.displayName ?: ""),
+                    "photoUrl" to user?.photoUrl?.toString(),
+                ),
+            )
             tx.set(mirrorRef, mapOf("joinedAt" to FieldValue.serverTimestamp()))
             tx.update(communityRef, "memberCount", FieldValue.increment(1))
             null
@@ -176,6 +188,87 @@ class CommunityRepositoryImpl @Inject constructor(
             tx.update(communityRef, "memberCount", FieldValue.increment(-1))
             null
         }.await()
+    }
+
+    override fun observeMembers(communityId: String): Flow<List<CommunityMember>> = callbackFlow {
+        // Necesitamos el createdBy de la comunidad para marcar al fundador.
+        val communityRef = firestore.collection(COMMUNITIES).document(communityId)
+        var createdBy: String? = null
+        val communityReg = communityRef.addSnapshotListener { snap, _ ->
+            createdBy = snap?.getString("createdBy")
+        }
+        val membersReg = communityRef.collection(MEMBERS)
+            .orderBy("joinedAt", Query.Direction.ASCENDING)
+            .addSnapshotListener { snap, err ->
+                if (err != null) {
+                    trySend(emptyList()); return@addSnapshotListener
+                }
+                val list = snap?.documents?.map { doc ->
+                    CommunityMember(
+                        uid = doc.id,
+                        name = doc.getString("name").orEmpty(),
+                        photoUrl = doc.getString("photoUrl"),
+                        joinedAt = (doc.getDate("joinedAt") ?: Date(0)).time,
+                        isCreator = doc.id == createdBy,
+                    )
+                }.orEmpty()
+                trySend(list)
+            }
+        awaitClose {
+            communityReg.remove()
+            membersReg.remove()
+        }
+    }
+
+    override suspend fun updateCommunity(
+        communityId: String,
+        name: String,
+        description: String,
+        photoFile: File?,
+    ): Result<Unit> = runCatching {
+        requireUid()
+        val docRef = firestore.collection(COMMUNITIES).document(communityId)
+        val photoUrl: String? = if (photoFile != null) {
+            val storageRef = firebaseStorage.reference.child("communities/$communityId/cover.jpg")
+            storageRef.putFile(Uri.fromFile(photoFile)).await()
+            storageRef.downloadUrl.await().toString()
+        } else null
+
+        val data = mutableMapOf<String, Any?>(
+            "name" to name,
+            "nameLower" to name.lowercase(),
+            "description" to description,
+        )
+        if (photoUrl != null) data["photoUrl"] = photoUrl
+        docRef.update(data).await()
+    }
+
+    override suspend fun removeMember(
+        communityId: String,
+        memberUid: String,
+    ): Result<Unit> = runCatching {
+        requireUid()
+        val communityRef = firestore.collection(COMMUNITIES).document(communityId)
+        val memberRef = communityRef.collection(MEMBERS).document(memberUid)
+        firestore.runTransaction { tx ->
+            val existing = tx.get(memberRef)
+            if (!existing.exists()) return@runTransaction null
+            tx.delete(memberRef)
+            tx.update(communityRef, "memberCount", FieldValue.increment(-1))
+            null
+        }.await()
+    }
+
+    override suspend fun setPostFeatured(
+        communityId: String,
+        postId: String,
+        featured: Boolean,
+    ): Result<Unit> = runCatching {
+        requireUid()
+        firestore.collection(COMMUNITIES).document(communityId)
+            .collection(POSTS).document(postId)
+            .update("featured", featured)
+            .await()
     }
 
     // ---- Posts ----
@@ -269,6 +362,7 @@ class CommunityRepositoryImpl @Inject constructor(
         text: String,
         photoFile: File?,
         pollOptions: List<com.BPO.plantcare.domain.model.PollOption>?,
+        tag: PostTag?,
     ): Result<String> = runCatching {
         val user = firebaseAuth.currentUser ?: error("Inicia sesion para publicar")
         val doc = firestore.collection(COMMUNITIES).document(communityId)
@@ -293,6 +387,8 @@ class CommunityRepositoryImpl @Inject constructor(
             "createdAt" to FieldValue.serverTimestamp(),
             "likeCount" to 0L,
             "commentCount" to 0L,
+            "featured" to false,
+            "tag" to tag?.key,
         )
         if (isPoll) {
             baseData["pollOptions"] = pollOptions!!.map {
@@ -490,6 +586,8 @@ class CommunityRepositoryImpl @Inject constructor(
             likeCount = getLong("likeCount") ?: 0L,
             commentCount = getLong("commentCount") ?: 0L,
             poll = parsePoll(),
+            tag = PostTag.fromKey(getString("tag")),
+            featured = getBoolean("featured") ?: false,
         )
     }
 

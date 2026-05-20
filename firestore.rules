@@ -93,11 +93,14 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.memberCount == 0;
 
-      // Update solo para incrementar/decrementar memberCount en
-      // transacciones de join/leave. No se pueden cambiar nombre/desc/etc.
-      allow update: if isSignedIn()
-        && onlyChanged(['memberCount'])
-        && (memberCountDelta() == 1 || memberCountDelta() == -1);
+      // Update permitido en dos casos:
+      //  - cualquier logueado para +/-1 en memberCount (join/leave).
+      //  - un admin para editar nombre/desc/portada de la comunidad.
+      allow update: if (isSignedIn()
+          && onlyChanged(['memberCount'])
+          && (memberCountDelta() == 1 || memberCountDelta() == -1))
+        || (isAdmin()
+          && changedKeys().hasOnly(['name', 'nameLower', 'description', 'photoUrl']));
 
       // Por ahora no permitimos borrar comunidades.
       allow delete: if false;
@@ -105,8 +108,10 @@ service cloud.firestore {
       // ---------- /communities/{c}/members ----------
       match /members/{userId} {
         allow read: if isSignedIn();
-        // Solo el usuario puede crear/borrar su propia membership.
-        allow create, delete: if isMe(userId);
+        // El usuario crea su propia membership.
+        allow create: if isMe(userId);
+        // El usuario borra su membership; un admin puede expulsar a otros.
+        allow delete: if isMe(userId) || isAdmin();
       }
 
       // ---------- /communities/{c}/posts ----------
@@ -126,8 +131,9 @@ service cloud.firestore {
         // delta exacto del map (Firestore no lo permite facilmente);
         // confiamos en la transaccion del cliente. Reglas no dejan tocar
         // texto/foto/autor/pollOptions una vez creado.
-        allow update: if isSignedIn()
-          && changedKeys().hasOnly(['likeCount', 'commentCount', 'pollVotesCount']);
+        allow update: if (isSignedIn()
+            && changedKeys().hasOnly(['likeCount', 'commentCount', 'pollVotesCount']))
+          || (isAdmin() && changedKeys().hasOnly(['featured']));
 
         // Solo el autor puede borrar su post.
         allow delete: if isSignedIn()

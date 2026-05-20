@@ -22,7 +22,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class FeedSort { Recent, Top }
+/**
+ * Pestanas del feed de Inicio:
+ *  - ForYou: posts de las comunidades a las que el user esta unido.
+ *  - Recent: posts de TODAS las comunidades, ordenados por reciente.
+ *  - Top: posts de TODAS las comunidades, ordenados por engagement.
+ */
+enum class FeedTab { ForYou, Recent, Top }
 
 data class FeedItem(
     val post: CommunityPost,
@@ -53,8 +59,8 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
-    private val _sort = MutableStateFlow(FeedSort.Recent)
-    val sort: StateFlow<FeedSort> = _sort.asStateFlow()
+    private val _tab = MutableStateFlow(FeedTab.ForYou)
+    val tab: StateFlow<FeedTab> = _tab.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
@@ -89,10 +95,11 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
-    private val aggregatedPosts: StateFlow<List<FeedItem>> = joinedCommunities
-        // Solo reconstruimos los N listeners si cambia el SET de comunidades
-        // unidas. Si solo cambia memberCount/photoUrl de una comunidad ya
-        // unida, no tiene sentido tirar y recrear todos los listeners.
+    // Posts agregados de TODAS las comunidades disponibles. La pestana
+    // "Para ti" filtra despues a las unidas; "Recientes"/"Mejor valoradas"
+    // usan el conjunto completo como descubrimiento.
+    private val aggregatedPosts: StateFlow<List<FeedItem>> = allCommunities
+        // Solo reconstruimos los N listeners si cambia el SET de comunidades.
         .distinctUntilChanged { old, new -> old.map { it.id }.toSet() == new.map { it.id }.toSet() }
         .flatMapLatest { communities ->
             if (communities.isEmpty()) {
@@ -114,16 +121,23 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
-    val feed: StateFlow<List<FeedItem>> = combine(aggregatedPosts, _sort) { posts, sort ->
-        when (sort) {
-            FeedSort.Recent -> posts.sortedByDescending { it.post.createdAt }
-            FeedSort.Top -> posts.sortedByDescending { it.post.likeCount * 2 + it.post.commentCount }
-        }.take(FEED_TOTAL_LIMIT)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = emptyList(),
-    )
+    val feed: StateFlow<List<FeedItem>> =
+        combine(aggregatedPosts, joinedCommunities, _tab) { posts, joined, tab ->
+            val joinedIds = joined.map { it.id }.toSet()
+            when (tab) {
+                FeedTab.ForYou -> posts
+                    .filter { it.community.id in joinedIds }
+                    .sortedByDescending { it.post.createdAt }
+                FeedTab.Recent -> posts.sortedByDescending { it.post.createdAt }
+                FeedTab.Top -> posts.sortedByDescending {
+                    it.post.likeCount * 2 + it.post.commentCount
+                }
+            }.take(FEED_TOTAL_LIMIT)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
 
     val hasJoinedCommunities: StateFlow<Boolean> = joinedCommunities
         .map { it.isNotEmpty() }
@@ -146,8 +160,8 @@ class HomeViewModel @Inject constructor(
             initialValue = true,
         )
 
-    fun setSort(sort: FeedSort) {
-        _sort.value = sort
+    fun setTab(tab: FeedTab) {
+        _tab.value = tab
     }
 
     fun toggleLike(communityId: String, postId: String) {

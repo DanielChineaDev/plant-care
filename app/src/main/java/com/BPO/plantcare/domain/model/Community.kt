@@ -32,6 +32,35 @@ data class CommunityPost(
     val poll: Poll? = null,
     /** Id de la opcion votada por el usuario actual, o null si no ha votado. */
     val myPollVote: String? = null,
+    /** Etiqueta/categoria opcional del post (ver [PostTag]). */
+    val tag: PostTag? = null,
+    /** True si un admin marco el post como destacado. */
+    val featured: Boolean = false,
+)
+
+/**
+ * Etiqueta/categoria de un post de comunidad. Sirve para filtrar el feed.
+ * El [key] es lo que se persiste en Firestore; [label] es el texto visible.
+ */
+enum class PostTag(val key: String, val label: String, val emoji: String) {
+    MyPlant("my_plant", "Mi planta", "🪴"),
+    Question("question", "Pregunta", "❓"),
+    PestSos("pest_sos", "Plaga / SOS", "🚨"),
+    BeforeAfter("before_after", "Antes/después", "🔄");
+
+    companion object {
+        fun fromKey(key: String?): PostTag? = entries.firstOrNull { it.key == key }
+    }
+}
+
+/** Miembro de una comunidad, con datos denormalizados para listarlo. */
+data class CommunityMember(
+    val uid: String,
+    val name: String,
+    val photoUrl: String?,
+    val joinedAt: Long,
+    /** True si es quien creo la comunidad. */
+    val isCreator: Boolean = false,
 )
 
 data class Poll(

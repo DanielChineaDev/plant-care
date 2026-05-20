@@ -148,6 +148,40 @@ class CommunitiesListViewModel @Inject constructor(
             initialValue = emptyList(),
         )
 
+    /**
+     * "Trending now": comunidades con mas publicaciones en las ultimas 24h.
+     * Observamos los posts recientes de cada comunidad y las rankeamos por
+     * numero de posts dentro de la ventana. Solo aparecen las que tienen al
+     * menos un post reciente.
+     */
+    val trendingCommunities: StateFlow<List<Community>> = rawCommunities
+        .flatMapLatest { all ->
+            if (all.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                combine(
+                    all.map { community ->
+                        communityRepository.observePosts(community.id, TRENDING_PER_COMMUNITY)
+                            .map { posts ->
+                                val cutoff = System.currentTimeMillis() - DAY_MS
+                                community to posts.count { it.createdAt >= cutoff }
+                            }
+                    },
+                ) { pairs ->
+                    pairs.toList()
+                        .filter { it.second > 0 }
+                        .sortedByDescending { it.second }
+                        .take(TRENDING_LIMIT)
+                        .map { it.first }
+                }
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
+
     val isSignedIn: StateFlow<Boolean> = authRepository.authState
         .map { it is AuthState.SignedIn }
         .stateIn(
@@ -202,5 +236,8 @@ class CommunitiesListViewModel @Inject constructor(
         private const val FEATURED_SOURCE_COMMUNITIES = 5
         private const val FEATURED_PER_COMMUNITY = 10
         private const val FEATURED_TOTAL = 10
+        private const val TRENDING_PER_COMMUNITY = 20
+        private const val TRENDING_LIMIT = 8
+        private const val DAY_MS = 24L * 60L * 60L * 1000L
     }
 }

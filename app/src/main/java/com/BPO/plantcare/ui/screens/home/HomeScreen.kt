@@ -84,7 +84,7 @@ fun HomeScreen(
     }
     val recents by viewModel.recentPlants.collectAsStateWithLifecycle()
     val feed by viewModel.feed.collectAsStateWithLifecycle()
-    val sort by viewModel.sort.collectAsStateWithLifecycle()
+    val tab by viewModel.tab.collectAsStateWithLifecycle()
     val hasJoined by viewModel.hasJoinedCommunities.collectAsStateWithLifecycle()
     val feedLoading by viewModel.feedLoading.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -130,13 +130,16 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                SortFilterRow(
-                    sort = sort,
-                    onSortChange = viewModel::setSort,
+                FeedTabRow(
+                    tab = tab,
+                    onTabChange = viewModel::setTab,
                 )
             }
 
-            if (!hasJoined) {
+            // En "Para ti" sin comunidades unidas mostramos el card de
+            // sugerencias. En "Recientes"/"Mejor valoradas" mostramos el
+            // feed de descubrimiento aunque no sigas ninguna comunidad.
+            if (tab == FeedTab.ForYou && !hasJoined) {
                 item {
                     SuggestedCommunitiesCard(
                         communities = suggested,
@@ -195,20 +198,25 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SortFilterRow(
-    sort: FeedSort,
-    onSortChange: (FeedSort) -> Unit,
+private fun FeedTabRow(
+    tab: FeedTab,
+    onTabChange: (FeedTab) -> Unit,
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FilterChip(
-            selected = sort == FeedSort.Recent,
-            onClick = { onSortChange(FeedSort.Recent) },
-            label = { Text("Ultimas publicaciones") },
+            selected = tab == FeedTab.ForYou,
+            onClick = { onTabChange(FeedTab.ForYou) },
+            label = { Text("Para ti") },
         )
         FilterChip(
-            selected = sort == FeedSort.Top,
-            onClick = { onSortChange(FeedSort.Top) },
-            label = { Text("Destacadas") },
+            selected = tab == FeedTab.Recent,
+            onClick = { onTabChange(FeedTab.Recent) },
+            label = { Text("Recientes") },
+        )
+        FilterChip(
+            selected = tab == FeedTab.Top,
+            onClick = { onTabChange(FeedTab.Top) },
+            label = { Text("Mejor valoradas") },
         )
     }
 }

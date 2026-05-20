@@ -2,14 +2,18 @@ package com.BPO.plantcare.domain.repository
 
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.Community
+import com.BPO.plantcare.domain.model.CommunityMember
 import com.BPO.plantcare.domain.model.CommunityPost
 import com.BPO.plantcare.domain.model.PollOption
+import com.BPO.plantcare.domain.model.PostTag
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 interface CommunityRepository {
     fun observeCommunities(): Flow<List<Community>>
     fun observeCommunity(communityId: String): Flow<Community?>
+    /** Miembros de la comunidad, ordenados por antiguedad (joinedAt ASC). */
+    fun observeMembers(communityId: String): Flow<List<CommunityMember>>
     /** [photoFile] opcional: si != null se sube a Storage y se guarda la URL. */
     suspend fun createCommunity(
         name: String,
@@ -17,6 +21,24 @@ interface CommunityRepository {
         emoji: String,
         photoFile: File? = null,
     ): Result<String>
+    /**
+     * Edita los metadatos de una comunidad (solo admin, validado por reglas).
+     * Si [photoFile] != null se sube y reemplaza la portada.
+     */
+    suspend fun updateCommunity(
+        communityId: String,
+        name: String,
+        description: String,
+        photoFile: File? = null,
+    ): Result<Unit>
+    /** Expulsa a un miembro (solo admin). Borra su doc de members y decrementa. */
+    suspend fun removeMember(communityId: String, memberUid: String): Result<Unit>
+    /** Marca/desmarca un post como destacado (solo admin). */
+    suspend fun setPostFeatured(
+        communityId: String,
+        postId: String,
+        featured: Boolean,
+    ): Result<Unit>
     suspend fun joinCommunity(communityId: String): Result<Unit>
     suspend fun leaveCommunity(communityId: String): Result<Unit>
 
@@ -33,6 +55,7 @@ interface CommunityRepository {
         text: String,
         photoFile: File? = null,
         pollOptions: List<PollOption>? = null,
+        tag: PostTag? = null,
     ): Result<String>
     suspend fun toggleLike(communityId: String, postId: String): Result<Unit>
 

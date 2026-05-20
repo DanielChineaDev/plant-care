@@ -84,6 +84,7 @@ fun CommunitiesListScreen(
 ) {
     val popular by viewModel.popularCommunities.collectAsStateWithLifecycle()
     val others by viewModel.otherCommunities.collectAsStateWithLifecycle()
+    val trending by viewModel.trendingCommunities.collectAsStateWithLifecycle()
     val featured by viewModel.featuredPosts.collectAsStateWithLifecycle()
     val isSignedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
     val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
@@ -149,6 +150,31 @@ fun CommunitiesListScreen(
                     onQueryChange = viewModel::onSearchQueryChange,
                 )
             }
+
+            // Trending now: comunidades con mas actividad en 24h. Solo se
+            // muestra cuando no hay busqueda activa para no estorbar.
+            if (trending.isNotEmpty() && searchQuery.isBlank()) {
+                item {
+                    SectionTitle(
+                        text = "🔥 Trending ahora",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                    ) {
+                        items(trending, key = { "trend_${it.id}" }) { community ->
+                            TrendingCommunityCard(
+                                community = community,
+                                onClick = { onCommunityClick(community.id) },
+                            )
+                        }
+                    }
+                }
+            }
+
             if (popular.isNotEmpty()) {
                 item {
                     SectionTitle(
@@ -259,6 +285,52 @@ private fun CommunitiesSearchBar(
         },
         placeholder = { Text("Buscar comunidades") },
     )
+}
+
+@Composable
+private fun TrendingCommunityCard(
+    community: Community,
+    onClick: () -> Unit,
+) {
+    // Tarjeta compacta para el carrusel de trending.
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.width(140.dp),
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (community.photoUrl != null) {
+                    AsyncImage(
+                        model = community.photoUrl,
+                        contentDescription = community.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) { Text(text = community.emoji, fontSize = 32.sp) }
+                }
+            }
+            Text(
+                text = community.name,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            )
+        }
+    }
 }
 
 @Composable
