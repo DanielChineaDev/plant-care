@@ -29,6 +29,52 @@
     <!-- Common -->
     <string name="menu">Menu</string>
     <string name="clear">Clear</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Accept</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="close">Close</string>
+
+    <!-- Settings -->
+    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notif_daily">Daily watering reminder</string>
+    <string name="settings_notif_daily_desc">We notify you every morning about the plants due for watering.</string>
+    <string name="settings_notif_hour">Reminder time</string>
+    <string name="settings_notif_test">Test watering notification</string>
+    <string name="settings_seasonal_title">Seasonal watering adjustment</string>
+    <string name="settings_seasonal_toggle">Adapt watering to the season</string>
+    <string name="settings_seasonal_desc">It\'s currently %s. The interval saved per plant does NOT change; only the daily notification does.</string>
+    <string name="season_winter">winter (water 50% less)</string>
+    <string name="season_summer">summer (water 15% more)</string>
+    <string name="season_spring_autumn">spring/autumn (no adjustment)</string>
+    <string name="settings_travel_title">Travel mode</string>
+    <string name="settings_travel_toggle">Pause notifications</string>
+    <string name="settings_travel_desc">While you\'re travelling you won\'t get watering reminders.</string>
+    <string name="settings_travel_from">From: %s</string>
+    <string name="settings_travel_to">To: %s</string>
+    <string name="settings_travel_choose">choose</string>
+    <string name="settings_travel_now">✈ You\'re travelling now. Notifications are paused.</string>
+    <string name="settings_weather_title">Weather</string>
+    <string name="settings_weather_toggle">Skip watering if it rained</string>
+    <string name="settings_weather_desc">For plants marked as outdoor, we skip their reminder if at least 5 mm of rain fell in the last 24h in your area.</string>
+    <string name="settings_weather_grant">Grant location permission</string>
+    <string name="settings_weather_loc_saved">Saved location: %1$s, %2$s</string>
+    <string name="settings_weather_no_loc">No location saved.</string>
+    <string name="settings_weather_update">Update</string>
+    <string name="settings_weather_get">Get</string>
+    <string name="settings_public_title">My collection</string>
+    <string name="settings_public_toggle">Make my collection public</string>
+    <string name="settings_public_desc">Other users will be able to see your plants by tapping your name on any post.</string>
+    <string name="settings_public_resync">Resync public collection</string>
+    <string name="settings_public_resync_hint">After adding/removing plants, tap here to reflect the changes.</string>
+    <string name="settings_account_title">Account</string>
+    <string name="settings_event_location_saved">Location saved</string>
+    <string name="settings_event_location_unavailable">Couldn\'t get the location. Open Google Maps briefly or enable GPS and retry.</string>
+    <string name="settings_event_signed_out">Signed out</string>
+    <string name="settings_event_published">Collection published</string>
+    <string name="settings_event_private">Private collection</string>
+    <string name="settings_event_resynced">Public collection resynced</string>
 
     <!-- Plants screen -->
     <string name="plants_change_view">Change view</string>

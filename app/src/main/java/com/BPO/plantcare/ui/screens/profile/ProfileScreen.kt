@@ -59,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,25 +81,28 @@ fun ProfileScreen(
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                ProfileEvent.LocationSaved -> "Ubicacion guardada"
+                ProfileEvent.LocationSaved ->
+                    context.getString(R.string.settings_event_location_saved)
                 ProfileEvent.LocationUnavailable ->
-                    "No se pudo obtener la ubicacion. Abre Google Maps un momento o activa GPS y reintenta."
-                is ProfileEvent.SignInFailed -> "Error de login: ${event.message}"
-                ProfileEvent.SignedOut -> "Sesion cerrada"
+                    context.getString(R.string.settings_event_location_unavailable)
+                is ProfileEvent.SignInFailed -> event.message
+                ProfileEvent.SignedOut ->
+                    context.getString(R.string.settings_event_signed_out)
                 is ProfileEvent.PublicToggled ->
-                    if (event.enabled) "Coleccion publicada" else "Coleccion privada"
-                ProfileEvent.Resynced -> "Coleccion publica resincronizada"
-                is ProfileEvent.PublicError -> "Error: ${event.message}"
-                is ProfileEvent.BackupExported ->
-                    "Backup creado con ${event.plantCount} plantas"
-                is ProfileEvent.BackupFailed -> "Error en backup: ${event.message}"
-                is ProfileEvent.BackupImported ->
-                    "Importadas ${event.plantCount} plantas desde el backup"
+                    if (event.enabled) context.getString(R.string.settings_event_published)
+                    else context.getString(R.string.settings_event_private)
+                ProfileEvent.Resynced ->
+                    context.getString(R.string.settings_event_resynced)
+                is ProfileEvent.PublicError -> event.message
+                is ProfileEvent.BackupExported -> event.plantCount.toString()
+                is ProfileEvent.BackupFailed -> event.message
+                is ProfileEvent.BackupImported -> event.plantCount.toString()
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -107,10 +111,10 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Configuracion") },
+                title = { Text(stringResource(R.string.drawer_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -337,7 +341,7 @@ private fun SignOutCard(onSignOut: () -> Unit) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Cuenta",
+                text = stringResource(R.string.settings_account_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onErrorContainer,
@@ -346,7 +350,7 @@ private fun SignOutCard(onSignOut: () -> Unit) {
             OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Logout, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Cerrar sesion")
+                Text(stringResource(R.string.sign_out))
             }
         }
     }
@@ -375,7 +379,7 @@ private fun WeatherCard(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Clima",
+                    text = stringResource(R.string.settings_weather_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -388,9 +392,12 @@ private fun WeatherCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Saltar riego si llovio", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        text = "Para plantas marcadas como exterior, omitimos su recordatorio si han caido al menos 5 mm de lluvia en las ultimas 24h en tu zona.",
+                        text = stringResource(R.string.settings_weather_toggle),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_weather_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -407,14 +414,17 @@ private fun WeatherCard(
                     ) {
                         Icon(Icons.Outlined.LocationOn, contentDescription = null)
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text("Conceder permiso de ubicacion")
+                        Text(stringResource(R.string.settings_weather_grant))
                     }
                 } else {
                     Text(
                         text = if (settings.hasLocation)
-                            "Ubicacion guardada: ${"%.3f".format(settings.latitude)}, " +
-                                    "${"%.3f".format(settings.longitude)}"
-                        else "Sin ubicacion guardada.",
+                            stringResource(
+                                R.string.settings_weather_loc_saved,
+                                "%.3f".format(settings.latitude),
+                                "%.3f".format(settings.longitude),
+                            )
+                        else stringResource(R.string.settings_weather_no_loc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -426,10 +436,13 @@ private fun WeatherCard(
                         ) {
                             Icon(Icons.Outlined.LocationOn, contentDescription = null)
                             Spacer(modifier = Modifier.size(8.dp))
-                            Text(if (settings.hasLocation) "Actualizar" else "Obtener")
+                            Text(
+                                if (settings.hasLocation) stringResource(R.string.settings_weather_update)
+                                else stringResource(R.string.settings_weather_get),
+                            )
                         }
                         if (settings.hasLocation) {
-                            TextButton(onClick = onClearLocation) { Text("Borrar") }
+                            TextButton(onClick = onClearLocation) { Text(stringResource(R.string.delete)) }
                         }
                     }
                 }
@@ -445,9 +458,10 @@ private fun SeasonalAdjustCard(
 ) {
     val season = com.BPO.plantcare.domain.model.seasonOf()
     val seasonLabel = when (season) {
-        com.BPO.plantcare.domain.model.Season.Winter -> "invierno (riega 50% menos)"
-        com.BPO.plantcare.domain.model.Season.Summer -> "verano (riega 15% mas)"
-        com.BPO.plantcare.domain.model.Season.SpringOrAutumn -> "primavera/otono (sin ajuste)"
+        com.BPO.plantcare.domain.model.Season.Winter -> stringResource(R.string.season_winter)
+        com.BPO.plantcare.domain.model.Season.Summer -> stringResource(R.string.season_summer)
+        com.BPO.plantcare.domain.model.Season.SpringOrAutumn ->
+            stringResource(R.string.season_spring_autumn)
     }
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -462,7 +476,7 @@ private fun SeasonalAdjustCard(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Ajuste estacional del riego",
+                    text = stringResource(R.string.settings_seasonal_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -472,9 +486,12 @@ private fun SeasonalAdjustCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Adaptar riego segun estacion", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        text = "Hoy estamos en $seasonLabel. El intervalo guardado en cada planta NO cambia; solo cuando toca la notif diaria.",
+                        text = stringResource(R.string.settings_seasonal_toggle),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_seasonal_desc, seasonLabel),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -502,7 +519,7 @@ private fun NotificationsCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Notificaciones",
+                text = stringResource(R.string.settings_notifications_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -514,9 +531,12 @@ private fun NotificationsCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Recordatorio diario de riego", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        text = "Te avisamos cada manana de las plantas que toca regar.",
+                        text = stringResource(R.string.settings_notif_daily),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_notif_daily_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -533,7 +553,7 @@ private fun NotificationsCard(
             OutlinedButton(onClick = onTest, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.NotificationsActive, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Probar notificacion de riego")
+                Text(stringResource(R.string.settings_notif_test))
             }
         }
     }
@@ -560,7 +580,7 @@ private fun TravelModeCard(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Modo viaje",
+                    text = stringResource(R.string.settings_travel_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -573,9 +593,12 @@ private fun TravelModeCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Pausar notificaciones", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        text = "Mientras estes de viaje no recibiras avisos de riego.",
+                        text = stringResource(R.string.settings_travel_toggle),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_travel_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -589,22 +612,23 @@ private fun TravelModeCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    val choose = stringResource(R.string.settings_travel_choose)
                     OutlinedButton(
                         onClick = { pickerOpen = TravelPicker.Start },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Desde: ${formatOrPlaceholder(settings.travelStart)}")
+                        Text(stringResource(R.string.settings_travel_from, formatOrPlaceholder(settings.travelStart, choose)))
                     }
                     OutlinedButton(
                         onClick = { pickerOpen = TravelPicker.End },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Hasta: ${formatOrPlaceholder(settings.travelEnd)}")
+                        Text(stringResource(R.string.settings_travel_to, formatOrPlaceholder(settings.travelEnd, choose)))
                     }
                 }
                 if (settings.isCurrentlyOnTrip()) {
                     Text(
-                        text = "✈ Estas de viaje ahora. Las notificaciones estan pausadas.",
+                        text = stringResource(R.string.settings_travel_now),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(top = 8.dp),
@@ -634,10 +658,10 @@ private fun TravelModeCard(
                         }
                     }
                     pickerOpen = null
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.accept)) }
             },
             dismissButton = {
-                TextButton(onClick = { pickerOpen = null }) { Text("Cancelar") }
+                TextButton(onClick = { pickerOpen = null }) { Text(stringResource(R.string.cancel)) }
             },
         ) {
             DatePicker(state = state)
@@ -647,9 +671,9 @@ private fun TravelModeCard(
 
 private enum class TravelPicker { Start, End }
 
-private fun formatOrPlaceholder(timestamp: Long?): String =
+private fun formatOrPlaceholder(timestamp: Long?, placeholder: String): String =
     timestamp?.let { DateFormat.getDateInstance(DateFormat.SHORT).format(Date(it)) }
-        ?: "elegir"
+        ?: placeholder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -663,7 +687,7 @@ private fun HourSelector(hour: Int, onHourChange: (Int) -> Unit) {
             value = formatHour(hour),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Hora del recordatorio") },
+            label = { Text(stringResource(R.string.settings_notif_hour)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor()
@@ -700,7 +724,7 @@ private fun PublicCollectionCard(
                 Icon(Icons.Outlined.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Mi coleccion",
+                    text = stringResource(R.string.settings_public_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -710,9 +734,12 @@ private fun PublicCollectionCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Hacer publica mi coleccion", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        text = "Otros usuarios podran ver tus plantas tocando tu nombre en cualquier post.",
+                        text = stringResource(R.string.settings_public_toggle),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_public_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -722,10 +749,10 @@ private fun PublicCollectionCard(
             if (isPublic) {
                 Spacer(modifier = Modifier.size(8.dp))
                 OutlinedButton(onClick = onResync, modifier = Modifier.fillMaxWidth()) {
-                    Text("Resincronizar coleccion publica")
+                    Text(stringResource(R.string.settings_public_resync))
                 }
                 Text(
-                    text = "Tras anadir/borrar plantas, pulsa aqui para reflejar los cambios.",
+                    text = stringResource(R.string.settings_public_resync_hint),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),

@@ -29,6 +29,52 @@
     <!-- Comun -->
     <string name="menu">Menú</string>
     <string name="clear">Limpiar</string>
+    <string name="back">Volver</string>
+    <string name="cancel">Cancelar</string>
+    <string name="accept">Aceptar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Borrar</string>
+    <string name="close">Cerrar</string>
+
+    <!-- Configuracion -->
+    <string name="settings_notifications_title">Notificaciones</string>
+    <string name="settings_notif_daily">Recordatorio diario de riego</string>
+    <string name="settings_notif_daily_desc">Te avisamos cada mañana de las plantas que toca regar.</string>
+    <string name="settings_notif_hour">Hora del recordatorio</string>
+    <string name="settings_notif_test">Probar notificación de riego</string>
+    <string name="settings_seasonal_title">Ajuste estacional del riego</string>
+    <string name="settings_seasonal_toggle">Adaptar riego según estación</string>
+    <string name="settings_seasonal_desc">Hoy estamos en %s. El intervalo guardado en cada planta NO cambia; solo cuando toca la notif diaria.</string>
+    <string name="season_winter">invierno (riega 50% menos)</string>
+    <string name="season_summer">verano (riega 15% más)</string>
+    <string name="season_spring_autumn">primavera/otoño (sin ajuste)</string>
+    <string name="settings_travel_title">Modo viaje</string>
+    <string name="settings_travel_toggle">Pausar notificaciones</string>
+    <string name="settings_travel_desc">Mientras estés de viaje no recibirás avisos de riego.</string>
+    <string name="settings_travel_from">Desde: %s</string>
+    <string name="settings_travel_to">Hasta: %s</string>
+    <string name="settings_travel_choose">elegir</string>
+    <string name="settings_travel_now">✈ Estás de viaje ahora. Las notificaciones están pausadas.</string>
+    <string name="settings_weather_title">Clima</string>
+    <string name="settings_weather_toggle">Saltar riego si llovió</string>
+    <string name="settings_weather_desc">Para plantas marcadas como exterior, omitimos su recordatorio si han caído al menos 5 mm de lluvia en las últimas 24h en tu zona.</string>
+    <string name="settings_weather_grant">Conceder permiso de ubicación</string>
+    <string name="settings_weather_loc_saved">Ubicación guardada: %1$s, %2$s</string>
+    <string name="settings_weather_no_loc">Sin ubicación guardada.</string>
+    <string name="settings_weather_update">Actualizar</string>
+    <string name="settings_weather_get">Obtener</string>
+    <string name="settings_public_title">Mi colección</string>
+    <string name="settings_public_toggle">Hacer pública mi colección</string>
+    <string name="settings_public_desc">Otros usuarios podrán ver tus plantas tocando tu nombre en cualquier post.</string>
+    <string name="settings_public_resync">Resincronizar colección pública</string>
+    <string name="settings_public_resync_hint">Tras añadir/borrar plantas, pulsa aquí para reflejar los cambios.</string>
+    <string name="settings_account_title">Cuenta</string>
+    <string name="settings_event_location_saved">Ubicación guardada</string>
+    <string name="settings_event_location_unavailable">No se pudo obtener la ubicación. Abre Google Maps un momento o activa GPS y reintenta.</string>
+    <string name="settings_event_signed_out">Sesión cerrada</string>
+    <string name="settings_event_published">Colección publicada</string>
+    <string name="settings_event_private">Colección privada</string>
+    <string name="settings_event_resynced">Colección pública resincronizada</string>
 
     <!-- Pantalla Plantas -->
     <string name="plants_change_view">Cambiar vista</string>
