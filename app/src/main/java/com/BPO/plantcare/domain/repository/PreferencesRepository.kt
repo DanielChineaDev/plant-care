@@ -12,4 +12,6 @@ interface PreferencesRepository {
     suspend fun setWeatherAware(enabled: Boolean)
     suspend fun setLocation(latitude: Double?, longitude: Double?, updatedAt: Long?)
     suspend fun setSeasonalAdjustEnabled(enabled: Boolean)
+    suspend fun setThemePalette(palette: String)
+    suspend fun setDynamicColor(enabled: Boolean)
 }

@@ -53,6 +53,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun PlantCareTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    palette: AppPalette = AppPalette.Green,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -61,8 +62,7 @@ fun PlantCareTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> appColorScheme(palette, darkTheme)
     }
 
     MaterialTheme(
@@ -71,3 +71,26 @@ fun PlantCareTheme(
         content = content
     )
 }
+
+/**
+ * Construye el esquema de color final aplicando la familia "primary" de la
+ * paleta elegida sobre el esquema base (que aporta los neutros/superficies).
+ */
+private fun appColorScheme(palette: AppPalette, dark: Boolean) =
+    if (dark) {
+        val c = palette.dark
+        DarkColorScheme.copy(
+            primary = c.primary,
+            onPrimary = c.onPrimary,
+            primaryContainer = c.primaryContainer,
+            onPrimaryContainer = c.onPrimaryContainer,
+        )
+    } else {
+        val c = palette.light
+        LightColorScheme.copy(
+            primary = c.primary,
+            onPrimary = c.onPrimary,
+            primaryContainer = c.primaryContainer,
+            onPrimaryContainer = c.onPrimaryContainer,
+        )
+    }

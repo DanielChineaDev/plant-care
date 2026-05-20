@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.BPO.plantcare.domain.model.UserSettings
 import com.BPO.plantcare.domain.repository.PreferencesRepository
@@ -34,6 +35,8 @@ class PreferencesRepositoryImpl @Inject constructor(
             longitude = prefs[Keys.LONGITUDE],
             locationUpdatedAt = prefs[Keys.LOCATION_UPDATED_AT],
             seasonalAdjustEnabled = prefs[Keys.SEASONAL_ADJUST] ?: true,
+            themePalette = prefs[Keys.THEME_PALETTE] ?: "green",
+            dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: false,
         )
     }
 
@@ -73,6 +76,14 @@ class PreferencesRepositoryImpl @Inject constructor(
         context.dataStore.edit { it[Keys.SEASONAL_ADJUST] = enabled }
     }
 
+    override suspend fun setThemePalette(palette: String) {
+        context.dataStore.edit { it[Keys.THEME_PALETTE] = palette }
+    }
+
+    override suspend fun setDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.DYNAMIC_COLOR] = enabled }
+    }
+
     private object Keys {
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
@@ -84,5 +95,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         val LONGITUDE = doublePreferencesKey("longitude")
         val LOCATION_UPDATED_AT = longPreferencesKey("location_updated_at")
         val SEASONAL_ADJUST = booleanPreferencesKey("seasonal_adjust")
+        val THEME_PALETTE = stringPreferencesKey("theme_palette")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     }
 }

@@ -49,6 +49,7 @@ import com.BPO.plantcare.ui.navigation.Routes
 import com.BPO.plantcare.ui.navigation.TopLevelDestination
 import com.BPO.plantcare.ui.screens.auth.AuthScreen
 import com.BPO.plantcare.ui.theme.PlantCareTheme
+import com.BPO.plantcare.ui.theme.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -65,8 +66,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
             val isExpanded = widthSizeClass == WindowWidthSizeClass.Expanded
+            val themeViewModel: ThemeViewModel = hiltViewModel()
+            val theme by themeViewModel.theme.collectAsStateWithLifecycle()
             CompositionLocalProvider(LocalIsExpandedScreen provides isExpanded) {
-                PlantCareTheme {
+                PlantCareTheme(
+                    palette = theme.palette,
+                    dynamicColor = theme.dynamicColor,
+                ) {
                     PlantCareRoot(
                         pendingChatUid = pendingChatUid,
                         onDeepLinkConsumed = { pendingChatUid = null },

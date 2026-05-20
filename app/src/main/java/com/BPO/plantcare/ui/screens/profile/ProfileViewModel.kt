@@ -86,6 +86,14 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch { preferences.setSeasonalAdjustEnabled(enabled) }
     }
 
+    fun setThemePalette(palette: String) {
+        viewModelScope.launch { preferences.setThemePalette(palette) }
+    }
+
+    fun setDynamicColor(enabled: Boolean) {
+        viewModelScope.launch { preferences.setDynamicColor(enabled) }
+    }
+
     fun refreshLocation() {
         viewModelScope.launch {
             val loc = locationProvider.getLastKnownLocation()

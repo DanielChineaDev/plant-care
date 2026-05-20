@@ -1,5 +1,8 @@
 package com.BPO.plantcare.ui.screens.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +56,8 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -121,6 +127,12 @@ fun ProfileScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            ThemeCard(
+                settings = settings,
+                onSelectPalette = viewModel::setThemePalette,
+                onToggleDynamic = viewModel::setDynamicColor,
+            )
+
             NotificationsCard(
                 settings = settings,
                 onToggle = viewModel::setNotificationsEnabled,
@@ -166,6 +178,104 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.size(16.dp))
         }
+    }
+}
+
+@Composable
+private fun ThemeCard(
+    settings: com.BPO.plantcare.domain.model.UserSettings,
+    onSelectPalette: (String) -> Unit,
+    onToggleDynamic: (Boolean) -> Unit,
+) {
+    val selected = com.BPO.plantcare.ui.theme.AppPalette.fromKey(settings.themePalette)
+    val supportsDynamic = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Palette,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Tema",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Text(
+                text = "Elige la paleta de color de la app.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            Spacer(modifier = Modifier.size(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                com.BPO.plantcare.ui.theme.AppPalette.entries.forEach { palette ->
+                    PaletteSwatch(
+                        palette = palette,
+                        selected = palette == selected && !settings.dynamicColor,
+                        enabled = !settings.dynamicColor,
+                        onClick = { onSelectPalette(palette.key) },
+                    )
+                }
+            }
+            if (supportsDynamic) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Color dinamico (Material You)", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = "Usa los colores de tu fondo de pantalla (Android 12+).",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = settings.dynamicColor, onCheckedChange = onToggleDynamic)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PaletteSwatch(
+    palette: com.BPO.plantcare.ui.theme.AppPalette,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(enabled = enabled, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.4f),
+    ) {
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(palette.swatch)
+                .then(
+                    if (selected) Modifier.border(
+                        width = 3.dp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                    ) else Modifier
+                ),
+        )
+        Text(
+            text = palette.label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            modifier = Modifier.padding(top = 4.dp),
+        )
     }
 }
 

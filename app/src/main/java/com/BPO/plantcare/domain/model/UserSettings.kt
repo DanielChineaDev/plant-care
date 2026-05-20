@@ -16,6 +16,10 @@ data class UserSettings(
      * needsWatering y status; el intervalo guardado en Plant no cambia.
      */
     val seasonalAdjustEnabled: Boolean = true,
+    /** Clave de la paleta de color elegida (ver AppPalette). "green" por defecto. */
+    val themePalette: String = "green",
+    /** Si esta activo y el dispositivo lo soporta, usa Material You (Android 12+). */
+    val dynamicColor: Boolean = false,
 ) {
     /** True si las notificaciones deben suprimirse ahora por estar de viaje. */
     fun isCurrentlyOnTrip(now: Long = System.currentTimeMillis()): Boolean {
