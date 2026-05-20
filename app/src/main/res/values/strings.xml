@@ -58,4 +58,23 @@
     <string name="watering_today">Hoy</string>
     <string name="watering_in_days">En %d días</string>
     <string name="watering_overdue">Retraso %d d</string>
+
+    <plurals name="members_count">
+        <item quantity="one">%d miembro</item>
+        <item quantity="other">%d miembros</item>
+    </plurals>
+    <string name="join">Unirme</string>
+
+    <!-- Pantalla Inicio -->
+    <string name="home_search">Buscar</string>
+    <string name="feed_tab_for_you">Para ti</string>
+    <string name="feed_tab_recent">Recientes</string>
+    <string name="feed_tab_top">Mejor valoradas</string>
+    <string name="home_join_community_title">Únete a una comunidad</string>
+    <string name="home_join_community_subtitle">Sigue temas que te interesen para llenar tu inicio.</string>
+    <string name="home_no_communities">No hay comunidades disponibles todavía.</string>
+    <string name="home_see_all_communities">Ver todas las comunidades</string>
+    <string name="home_empty_feed">Tus comunidades aún no tienen publicaciones</string>
+    <string name="home_recent_plants">Plantas recientes</string>
+    <string name="home_no_plants">Aún no has añadido ninguna planta</string>
 </resources>

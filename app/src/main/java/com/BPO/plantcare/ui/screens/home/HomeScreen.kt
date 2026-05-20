@@ -46,12 +46,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.ui.components.FeedPostCard
@@ -93,15 +96,15 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inicio") },
+                title = { Text(stringResource(R.string.nav_home)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu))
                     }
                 },
                 actions = {
                     IconButton(onClick = onGlobalSearchClick) {
-                        Icon(Icons.Outlined.Search, contentDescription = "Buscar")
+                        Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.home_search))
                     }
                     com.BPO.plantcare.ui.components.NotificationsActionButton(
                         onClick = onNotificationsClick,
@@ -179,7 +182,7 @@ fun HomeScreen(
             // bar para esa accion.
             item {
                 Text(
-                    text = "Plantas recientes",
+                    text = stringResource(R.string.home_recent_plants),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 8.dp),
@@ -207,17 +210,17 @@ private fun FeedTabRow(
         FilterChip(
             selected = tab == FeedTab.ForYou,
             onClick = { onTabChange(FeedTab.ForYou) },
-            label = { Text("Para ti") },
+            label = { Text(stringResource(R.string.feed_tab_for_you)) },
         )
         FilterChip(
             selected = tab == FeedTab.Recent,
             onClick = { onTabChange(FeedTab.Recent) },
-            label = { Text("Recientes") },
+            label = { Text(stringResource(R.string.feed_tab_recent)) },
         )
         FilterChip(
             selected = tab == FeedTab.Top,
             onClick = { onTabChange(FeedTab.Top) },
-            label = { Text("Mejor valoradas") },
+            label = { Text(stringResource(R.string.feed_tab_top)) },
         )
     }
 }
@@ -241,12 +244,12 @@ private fun SuggestedCommunitiesCard(
                 Spacer(modifier = Modifier.size(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Unete a una comunidad",
+                        text = stringResource(R.string.home_join_community_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = "Sigue temas que te interesen para llenar tu inicio.",
+                        text = stringResource(R.string.home_join_community_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -273,7 +276,11 @@ private fun SuggestedCommunitiesCard(
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
-                            text = "${community.memberCount} miembros",
+                            text = pluralStringResource(
+                                R.plurals.members_count,
+                                community.memberCount.toInt(),
+                                community.memberCount,
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -281,13 +288,13 @@ private fun SuggestedCommunitiesCard(
                     Button(
                         onClick = { onJoin(community.id) },
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    ) { Text("Unirme") }
+                    ) { Text(stringResource(R.string.join)) }
                 }
             }
 
             if (communities.isEmpty()) {
                 Text(
-                    text = "No hay comunidades disponibles todavia.",
+                    text = stringResource(R.string.home_no_communities),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -295,7 +302,7 @@ private fun SuggestedCommunitiesCard(
 
             Spacer(modifier = Modifier.size(8.dp))
             TextButton(onClick = onSeeAll, modifier = Modifier.fillMaxWidth()) {
-                Text("Ver todas las comunidades")
+                Text(stringResource(R.string.home_see_all_communities))
             }
         }
     }
@@ -319,7 +326,7 @@ private fun EmptyFeedCard() {
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = "Tus comunidades aun no tienen publicaciones",
+                text = stringResource(R.string.home_empty_feed),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -413,7 +420,7 @@ private fun EmptyRecentCard() {
                 modifier = Modifier.size(40.dp),
             )
             Text(
-                text = "Aun no has anadido ninguna planta",
+                text = stringResource(R.string.home_no_plants),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
