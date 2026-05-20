@@ -39,6 +39,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.BPO.plantcare.R
 
 /**
  * Bottom nav custom de 5 slots:
@@ -120,6 +121,7 @@ private fun NavSlot(
 ) {
     val tint = if (selected) MaterialTheme.colorScheme.primary
     else MaterialTheme.colorScheme.onSurfaceVariant
+    val label = androidx.compose.ui.res.stringResource(destination.labelRes)
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -137,12 +139,12 @@ private fun NavSlot(
         ) {
             Icon(
                 imageVector = destination.icon,
-                contentDescription = destination.label,
+                contentDescription = label,
                 tint = tint,
             )
         }
         Text(
-            text = destination.label,
+            text = label,
             style = MaterialTheme.typography.labelSmall,
             color = tint,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
@@ -173,7 +175,7 @@ private fun IdentifyFab(onClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.CameraAlt,
-                contentDescription = "Identificar planta",
+                contentDescription = androidx.compose.ui.res.stringResource(R.string.identify_plant),
                 modifier = Modifier.size(30.dp),
             )
         }

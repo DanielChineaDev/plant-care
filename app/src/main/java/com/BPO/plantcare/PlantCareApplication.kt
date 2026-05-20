@@ -1,6 +1,7 @@
 package com.BPO.plantcare
 
 import android.app.Application
+import android.content.Context
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import coil3.ImageLoader
@@ -29,6 +30,10 @@ class PlantCareApplication : Application(), Configuration.Provider, SingletonIma
     @Inject lateinit var reminderManager: WateringReminderManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(com.BPO.plantcare.core.locale.LocaleHelper.wrap(base))
+    }
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()

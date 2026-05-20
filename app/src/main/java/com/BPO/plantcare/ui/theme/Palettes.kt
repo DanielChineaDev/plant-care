@@ -1,6 +1,8 @@
 package com.BPO.plantcare.ui.theme
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.BPO.plantcare.R
 
 /**
  * Paletas de color seleccionables por el usuario. Cada una define la familia
@@ -9,7 +11,7 @@ import androidx.compose.ui.graphics.Color
  */
 enum class AppPalette(
     val key: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     /** Color de muestra para el selector. */
     val swatch: Color,
     val light: PaletteColors,
@@ -17,7 +19,7 @@ enum class AppPalette(
 ) {
     Green(
         key = "green",
-        label = "Verde",
+        labelRes = R.string.palette_green,
         swatch = Color(0xFF2E7D32),
         light = PaletteColors(
             primary = Color(0xFF2E7D32),
@@ -34,7 +36,7 @@ enum class AppPalette(
     ),
     Ochre(
         key = "ochre",
-        label = "Ocre",
+        labelRes = R.string.palette_ochre,
         swatch = Color(0xFFB07A2E),
         light = PaletteColors(
             primary = Color(0xFF9A6A1F),
@@ -51,7 +53,7 @@ enum class AppPalette(
     ),
     Lavender(
         key = "lavender",
-        label = "Lavanda",
+        labelRes = R.string.palette_lavender,
         swatch = Color(0xFF7E57C2),
         light = PaletteColors(
             primary = Color(0xFF6A4BB0),
@@ -68,7 +70,7 @@ enum class AppPalette(
     ),
     Ocean(
         key = "ocean",
-        label = "Océano",
+        labelRes = R.string.palette_ocean,
         swatch = Color(0xFF0277BD),
         light = PaletteColors(
             primary = Color(0xFF02669E),
@@ -85,7 +87,7 @@ enum class AppPalette(
     ),
     Rose(
         key = "rose",
-        label = "Rosa",
+        labelRes = R.string.palette_rose,
         swatch = Color(0xFFC2185B),
         light = PaletteColors(
             primary = Color(0xFFB01453),

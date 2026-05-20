@@ -1,11 +1,13 @@
 package com.BPO.plantcare.ui.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.BPO.plantcare.R
 
 /**
  * Destinos del bottom nav (4 pestanas + 1 FAB central).
@@ -17,11 +19,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
  */
 enum class TopLevelDestination(
     val route: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
 ) {
-    Home(route = "home", label = "Inicio", icon = Icons.Outlined.Home),
-    MyPlants(route = "my_plants", label = "Plantas", icon = Icons.Outlined.Spa),
-    Search(route = "search", label = "Buscar", icon = Icons.Outlined.Search),
-    Messages(route = "messages", label = "Mensajes", icon = Icons.Outlined.ChatBubbleOutline),
+    Home(route = "home", labelRes = R.string.nav_home, icon = Icons.Outlined.Home),
+    MyPlants(route = "my_plants", labelRes = R.string.nav_plants, icon = Icons.Outlined.Spa),
+    Search(route = "search", labelRes = R.string.nav_search, icon = Icons.Outlined.Search),
+    Messages(
+        route = "messages",
+        labelRes = R.string.nav_messages,
+        icon = Icons.Outlined.ChatBubbleOutline,
+    ),
 }

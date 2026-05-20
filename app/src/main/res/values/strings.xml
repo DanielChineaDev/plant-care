@@ -1,4 +1,28 @@
 <resources>
     <string name="app_name">Plant Care</string>
     <string name="widget_description">Riegos pendientes de hoy</string>
+
+    <!-- Navegacion (bottom bar) -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_plants">Plantas</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_messages">Mensajes</string>
+    <string name="identify_plant">Identificar planta</string>
+
+    <!-- Ajustes: tema -->
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_desc">Elige la paleta de color de la app.</string>
+    <string name="settings_dynamic_color">Color dinámico (Material You)</string>
+    <string name="settings_dynamic_color_desc">Usa los colores de tu fondo de pantalla (Android 12+).</string>
+
+    <!-- Ajustes: idioma -->
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_desc">Elige el idioma de la app. Se reiniciará la pantalla al cambiarlo.</string>
+
+    <!-- Paletas -->
+    <string name="palette_green">Verde</string>
+    <string name="palette_ochre">Ocre</string>
+    <string name="palette_lavender">Lavanda</string>
+    <string name="palette_ocean">Océano</string>
+    <string name="palette_rose">Rosa</string>
 </resources>

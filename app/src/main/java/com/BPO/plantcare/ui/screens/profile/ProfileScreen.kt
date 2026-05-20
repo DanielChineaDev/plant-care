@@ -18,6 +18,7 @@ import android.Manifest
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.LocationOn
@@ -58,10 +59,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.repository.AuthState
 import java.text.DateFormat
 import java.util.Date
@@ -133,6 +136,8 @@ fun ProfileScreen(
                 onToggleDynamic = viewModel::setDynamicColor,
             )
 
+            LanguageCard()
+
             NotificationsCard(
                 settings = settings,
                 onToggle = viewModel::setNotificationsEnabled,
@@ -182,6 +187,53 @@ fun ProfileScreen(
 }
 
 @Composable
+private fun LanguageCard() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val current = com.BPO.plantcare.core.locale.LocaleHelper.getLanguage(context)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Language,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(R.string.settings_language_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Text(
+                text = stringResource(R.string.settings_language_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.BPO.plantcare.core.locale.LocaleHelper.SUPPORTED.forEach { (code, label) ->
+                    androidx.compose.material3.FilterChip(
+                        selected = code == current,
+                        onClick = {
+                            if (code != current) {
+                                com.BPO.plantcare.core.locale.LocaleHelper.setLanguage(context, code)
+                                (context as? android.app.Activity)?.recreate()
+                            }
+                        },
+                        label = { Text(label) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ThemeCard(
     settings: com.BPO.plantcare.domain.model.UserSettings,
     onSelectPalette: (String) -> Unit,
@@ -202,13 +254,13 @@ private fun ThemeCard(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Tema",
+                    text = stringResource(R.string.settings_theme_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
             }
             Text(
-                text = "Elige la paleta de color de la app.",
+                text = stringResource(R.string.settings_theme_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
@@ -230,9 +282,12 @@ private fun ThemeCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Color dinamico (Material You)", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "Usa los colores de tu fondo de pantalla (Android 12+).",
+                            text = stringResource(R.string.settings_dynamic_color),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_dynamic_color_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -271,7 +326,7 @@ private fun PaletteSwatch(
                 ),
         )
         Text(
-            text = palette.label,
+            text = stringResource(palette.labelRes),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             modifier = Modifier.padding(top = 4.dp),

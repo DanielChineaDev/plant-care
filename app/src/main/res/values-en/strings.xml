@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Plant Care</string>
+    <string name="widget_description">Today\'s pending waterings</string>
+
+    <!-- Navigation (bottom bar) -->
+    <string name="nav_home">Home</string>
+    <string name="nav_plants">Plants</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_messages">Messages</string>
+    <string name="identify_plant">Identify plant</string>
+
+    <!-- Settings: theme -->
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_desc">Choose the app color palette.</string>
+    <string name="settings_dynamic_color">Dynamic color (Material You)</string>
+    <string name="settings_dynamic_color_desc">Use colors from your wallpaper (Android 12+).</string>
+
+    <!-- Settings: language -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_desc">Choose the app language. The screen will restart when changed.</string>
+
+    <!-- Palettes -->
+    <string name="palette_green">Green</string>
+    <string name="palette_ochre">Ochre</string>
+    <string name="palette_lavender">Lavender</string>
+    <string name="palette_ocean">Ocean</string>
+    <string name="palette_rose">Rose</string>
+</resources>

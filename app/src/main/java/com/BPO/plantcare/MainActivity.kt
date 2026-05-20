@@ -1,5 +1,6 @@
 package com.BPO.plantcare
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -57,6 +58,12 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private var pendingChatUid by mutableStateOf<String?>(null)
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(
+            com.BPO.plantcare.core.locale.LocaleHelper.wrap(newBase),
+        )
+    }
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
