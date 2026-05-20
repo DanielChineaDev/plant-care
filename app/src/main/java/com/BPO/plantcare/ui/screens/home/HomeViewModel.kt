@@ -56,14 +56,38 @@ class HomeViewModel @Inject constructor(
     private val _sort = MutableStateFlow(FeedSort.Recent)
     val sort: StateFlow<FeedSort> = _sort.asStateFlow()
 
-    private val joinedCommunities: StateFlow<List<Community>> =
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private val allCommunities: StateFlow<List<Community>> =
         communityRepository.observeCommunities()
-            .map { list -> list.filter { it.isMember } }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = emptyList(),
             )
+
+    private val joinedCommunities: StateFlow<List<Community>> = allCommunities
+        .map { list -> list.filter { it.isMember } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
+
+    /** Hasta 5 comunidades NO unidas, ordenadas por miembros, para el
+     * empty state "Unete a...". */
+    val suggestedCommunities: StateFlow<List<Community>> = allCommunities
+        .map { list ->
+            list.filter { !it.isMember }
+                .sortedByDescending { it.memberCount }
+                .take(5)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
+        )
 
     private val aggregatedPosts: StateFlow<List<FeedItem>> = joinedCommunities
         // Solo reconstruimos los N listeners si cambia el SET de comunidades
@@ -128,6 +152,23 @@ class HomeViewModel @Inject constructor(
 
     fun toggleLike(communityId: String, postId: String) {
         viewModelScope.launch { communityRepository.toggleLike(communityId, postId) }
+    }
+
+    fun joinCommunity(communityId: String) {
+        viewModelScope.launch { communityRepository.joinCommunity(communityId) }
+    }
+
+    /**
+     * Pull-to-refresh. El feed ya es real-time via snapshotListener, asi
+     * que esto es sobre todo feedback: mostramos el spinner un instante
+     * mientras Firestore confirma. Si hay cambios pendientes, llegan solos.
+     */
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            kotlinx.coroutines.delay(800)
+            _isRefreshing.value = false
+        }
     }
 
     companion object {

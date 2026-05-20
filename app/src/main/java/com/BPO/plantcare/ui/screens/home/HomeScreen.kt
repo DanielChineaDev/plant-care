@@ -2,6 +2,7 @@ package com.BPO.plantcare.ui.screens.home
 
 import android.Manifest
 import android.os.Build
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,9 +48,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.ui.components.FeedPostCard
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -82,6 +87,8 @@ fun HomeScreen(
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val hasJoined by viewModel.hasJoinedCommunities.collectAsStateWithLifecycle()
     val feedLoading by viewModel.feedLoading.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val suggested by viewModel.suggestedCommunities.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -103,10 +110,15 @@ fun HomeScreen(
             )
         },
     ) { padding ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = viewModel::refresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = padding.calculateTopPadding()),
+        ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
             // Padding bottom dentro del contentPadding para que los posts
             // puedan scrollearse pegados al bottom bar (sin hueco blanco).
             contentPadding = PaddingValues(
@@ -126,7 +138,12 @@ fun HomeScreen(
 
             if (!hasJoined) {
                 item {
-                    JoinCommunitiesPromptCard(onCommunitiesClick = onCommunitiesClick)
+                    SuggestedCommunitiesCard(
+                        communities = suggested,
+                        onJoin = viewModel::joinCommunity,
+                        onSeeAll = onCommunitiesClick,
+                        onCommunityClick = { /* abrir feed comunidad no aplica aqui */ },
+                    )
                 }
             } else if (feedLoading && feed.isEmpty()) {
                 // Shimmer placeholders mientras llega la primera emision
@@ -172,6 +189,7 @@ fun HomeScreen(
                 }
             }
         }
+        }
     }
 }
 
@@ -196,33 +214,79 @@ private fun SortFilterRow(
 }
 
 @Composable
-private fun JoinCommunitiesPromptCard(onCommunitiesClick: () -> Unit) {
+private fun SuggestedCommunitiesCard(
+    communities: List<Community>,
+    onJoin: (String) -> Unit,
+    onSeeAll: () -> Unit,
+    onCommunityClick: (String) -> Unit,
+) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Outlined.Groups,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(40.dp),
+                    modifier = Modifier.size(32.dp),
                 )
-                Spacer(modifier = Modifier.size(12.dp))
-                Column {
+                Spacer(modifier = Modifier.size(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aun no sigues ninguna comunidad",
+                        text = "Unete a una comunidad",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = "Unete a una para empezar a ver publicaciones en tu inicio.",
+                        text = "Sigue temas que te interesen para llenar tu inicio.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
             Spacer(modifier = Modifier.size(12.dp))
-            Button(onClick = onCommunitiesClick, modifier = Modifier.fillMaxWidth()) {
-                Text("Explorar comunidades")
+
+            communities.forEach { community ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onCommunityClick(community.id) }
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = community.emoji, fontSize = 24.sp)
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = community.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = "${community.memberCount} miembros",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Button(
+                        onClick = { onJoin(community.id) },
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    ) { Text("Unirme") }
+                }
+            }
+
+            if (communities.isEmpty()) {
+                Text(
+                    text = "No hay comunidades disponibles todavia.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Spacer(modifier = Modifier.size(8.dp))
+            TextButton(onClick = onSeeAll, modifier = Modifier.fillMaxWidth()) {
+                Text("Ver todas las comunidades")
             }
         }
     }
