@@ -31,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -57,6 +59,7 @@ fun PlantCareBottomBar(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+    val haptic = LocalHapticFeedback.current
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -82,17 +85,26 @@ fun PlantCareBottomBar(
                     selected = backStackEntry?.destination?.hierarchy
                         ?.any { it.route == dest.route } == true,
                     showBadgeDot = badgeFor(dest, counts),
-                    onClick = { navigateTo(navController, currentRoute, dest) },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateTo(navController, currentRoute, dest)
+                    },
                 )
             }
-            IdentifyFab(onClick = onIdentifyClick)
+            IdentifyFab(onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onIdentifyClick()
+            })
             destinations.drop(2).forEach { dest ->
                 NavSlot(
                     destination = dest,
                     selected = backStackEntry?.destination?.hierarchy
                         ?.any { it.route == dest.route } == true,
                     showBadgeDot = badgeFor(dest, counts),
-                    onClick = { navigateTo(navController, currentRoute, dest) },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateTo(navController, currentRoute, dest)
+                    },
                 )
             }
         }

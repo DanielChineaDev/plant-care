@@ -165,6 +165,7 @@ fun HomeScreen(
                         post = item.post,
                         communityName = item.community.name,
                         communityEmoji = item.community.emoji,
+                        modifier = Modifier.animateItem(),
                         onClick = { onPostClick(item.community.id, item.post.id) },
                         onAuthorClick = onAuthorClick,
                         onLikeClick = { viewModel.toggleLike(item.community.id, item.post.id) },

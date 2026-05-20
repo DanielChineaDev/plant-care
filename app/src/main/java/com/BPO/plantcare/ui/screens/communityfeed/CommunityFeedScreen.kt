@@ -74,8 +74,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -337,6 +339,7 @@ private fun PostsTab(
                     post = post,
                     canInteract = canInteract,
                     isAdmin = isAdmin,
+                    modifier = Modifier.animateItem(),
                     onClick = { onPostClick(post) },
                     onAuthorClick = { onAuthorClick(post.authorUid) },
                     onAuthorNameClick = { onAuthorNameClick(post.authorUid) },
@@ -376,13 +379,15 @@ private fun PostCard(
     post: CommunityPost,
     canInteract: Boolean,
     isAdmin: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onAuthorClick: () -> Unit,
     onAuthorNameClick: () -> Unit,
     onLikeClick: () -> Unit,
     onToggleFeatured: () -> Unit,
 ) {
-    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    val haptic = LocalHapticFeedback.current
+    ElevatedCard(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (post.authorPhoto != null) {
@@ -473,7 +478,10 @@ private fun PostCard(
             Spacer(modifier = Modifier.size(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = onLikeClick,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLikeClick()
+                    },
                     enabled = canInteract,
                     modifier = Modifier.size(36.dp),
                 ) {

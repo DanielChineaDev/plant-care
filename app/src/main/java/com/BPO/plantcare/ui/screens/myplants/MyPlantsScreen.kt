@@ -55,7 +55,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,6 +90,12 @@ fun MyPlantsScreen(
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val selectionMode by viewModel.selectionMode.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+    val haptic = LocalHapticFeedback.current
+    // Riega + feedback haptico sutil.
+    val waterWithHaptic: (Long) -> Unit = { id ->
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        viewModel.onWatered(id)
+    }
 
     Scaffold(
         topBar = {
@@ -168,7 +176,7 @@ fun MyPlantsScreen(
                             else onPlantClick(plant.id)
                         },
                         onLongClick = { viewModel.startSelection(it.id) },
-                        onWaterClick = { viewModel.onWatered(it.id) },
+                        onWaterClick = { waterWithHaptic(it.id) },
                     )
                 } else {
                     LazyVerticalGrid(
@@ -183,12 +191,13 @@ fun MyPlantsScreen(
                                 plant = plant,
                                 selected = plant.id in selectedIds,
                                 selectionMode = selectionMode,
+                                modifier = Modifier.animateItem(),
                                 onClick = {
                                     if (selectionMode) viewModel.toggleSelected(plant.id)
                                     else onPlantClick(plant.id)
                                 },
                                 onLongClick = { viewModel.startSelection(plant.id) },
-                                onWaterClick = { viewModel.onWatered(plant.id) },
+                                onWaterClick = { waterWithHaptic(plant.id) },
                             )
                         }
                     }
@@ -290,6 +299,7 @@ private fun PlantsList(
                         plant = plant,
                         selected = plant.id in selectedIds,
                         selectionMode = selectionMode,
+                        modifier = Modifier.animateItem(),
                         onClick = { onClick(plant) },
                         onLongClick = { onLongClick(plant) },
                         onWaterClick = { onWaterClick(plant) },
@@ -302,6 +312,7 @@ private fun PlantsList(
                     plant = plant,
                     selected = plant.id in selectedIds,
                     selectionMode = selectionMode,
+                    modifier = Modifier.animateItem(),
                     onClick = { onClick(plant) },
                     onLongClick = { onLongClick(plant) },
                     onWaterClick = { onWaterClick(plant) },
@@ -317,13 +328,14 @@ private fun PlantListItem(
     plant: Plant,
     selected: Boolean,
     selectionMode: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onWaterClick: () -> Unit,
 ) {
     val status = plant.status()
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         colors = CardDefaults.cardColors(
@@ -493,13 +505,14 @@ private fun PlantCard(
     plant: Plant,
     selected: Boolean = false,
     selectionMode: Boolean = false,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
     onWaterClick: () -> Unit,
 ) {
     val status = plant.status()
     ElevatedCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
