@@ -58,6 +58,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.status
@@ -108,10 +111,10 @@ fun MyPlantsScreen(
                 )
             } else {
                 TopAppBar(
-                    title = { Text("Plantas") },
+                    title = { Text(stringResource(R.string.nav_plants)) },
                     navigationIcon = {
                         IconButton(onClick = onOpenDrawer) {
-                            Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                            Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu))
                         }
                     },
                     actions = {
@@ -120,7 +123,7 @@ fun MyPlantsScreen(
                             Icon(
                                 imageVector = if (viewMode == PlantsViewMode.Grid)
                                     Icons.Outlined.ViewList else Icons.Outlined.GridView,
-                                contentDescription = "Cambiar vista",
+                                contentDescription = stringResource(R.string.plants_change_view),
                             )
                         }
                         // Ordenar
@@ -216,20 +219,26 @@ private fun SelectionTopBar(
     onDeleteAll: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text("$count seleccionada${if (count == 1) "" else "s"}") },
+        title = { Text(pluralStringResource(R.plurals.plants_selected_count, count, count)) },
         navigationIcon = {
             IconButton(onClick = onClose) {
-                Icon(Icons.Outlined.Clear, contentDescription = "Cancelar seleccion")
+                Icon(
+                    Icons.Outlined.Clear,
+                    contentDescription = stringResource(R.string.plants_selection_cancel),
+                )
             }
         },
         actions = {
             IconButton(onClick = onWaterAll) {
-                Icon(Icons.Outlined.WaterDrop, contentDescription = "Regar seleccionadas")
+                Icon(
+                    Icons.Outlined.WaterDrop,
+                    contentDescription = stringResource(R.string.plants_selection_water),
+                )
             }
             IconButton(onClick = onDeleteAll) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
-                    contentDescription = "Borrar seleccionadas",
+                    contentDescription = stringResource(R.string.plants_selection_delete),
                     tint = androidx.compose.ui.graphics.Color(0xFFE53935),
                 )
             }
@@ -243,7 +252,7 @@ private fun SortMenu(current: PlantsSort, onSelect: (PlantsSort) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Outlined.Sort, contentDescription = "Ordenar")
+            Icon(Icons.Outlined.Sort, contentDescription = stringResource(R.string.plants_sort))
         }
         androidx.compose.material3.DropdownMenu(
             expanded = expanded,
@@ -391,7 +400,7 @@ private fun PlantListItem(
                 IconButton(onClick = onWaterClick) {
                     Icon(
                         Icons.Outlined.WaterDrop,
-                        contentDescription = "Regar",
+                        contentDescription = stringResource(R.string.water),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -408,12 +417,12 @@ private fun PlantsSearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Busca en tu coleccion") },
+        placeholder = { Text(stringResource(R.string.plants_search_placeholder)) },
         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                    Icon(Icons.Outlined.Clear, contentDescription = stringResource(R.string.clear))
                 }
             }
         },
@@ -439,28 +448,28 @@ private fun PlantsFilterRow(
         FilterChip(
             selected = selected == PlantsFilter.All,
             onClick = { onSelect(PlantsFilter.All) },
-            label = { Text("Todas") },
+            label = { Text(stringResource(R.string.filter_all)) },
         )
         FilterChip(
             selected = selected == PlantsFilter.NeedsAttention,
             onClick = { onSelect(PlantsFilter.NeedsAttention) },
-            label = { Text("Necesitan atencion") },
+            label = { Text(stringResource(R.string.filter_needs_attention)) },
         )
         FilterChip(
             selected = selected == PlantsFilter.Healthy,
             onClick = { onSelect(PlantsFilter.Healthy) },
-            label = { Text("Sanas") },
+            label = { Text(stringResource(R.string.filter_healthy)) },
         )
         FilterChip(
             selected = selected == PlantsFilter.NotWatered,
             onClick = { onSelect(PlantsFilter.NotWatered) },
-            label = { Text("Sin regar aun") },
+            label = { Text(stringResource(R.string.filter_not_watered)) },
         )
         // Toggle agrupar por habitacion.
         FilterChip(
             selected = groupByRoom,
             onClick = onToggleGroup,
-            label = { Text("Por ubicacion") },
+            label = { Text(stringResource(R.string.filter_by_room)) },
             leadingIcon = {
                 Icon(Icons.Outlined.Place, contentDescription = null, modifier = Modifier.size(18.dp))
             },
@@ -485,12 +494,12 @@ private fun NoResultsState(modifier: Modifier = Modifier) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = "Sin resultados",
+            text = stringResource(R.string.no_results_title),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 12.dp),
         )
         Text(
-            text = "Prueba con otro nombre o cambia el filtro.",
+            text = stringResource(R.string.no_results_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -589,7 +598,7 @@ private fun PlantCard(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.WaterDrop,
-                            contentDescription = "Marcar como regada",
+                            contentDescription = stringResource(R.string.mark_as_watered),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp),
                         )
@@ -642,12 +651,12 @@ private fun EmptyState(onIdentifyClick: () -> Unit, modifier: Modifier = Modifie
             tint = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = "Aún no tienes plantas",
+            text = stringResource(R.string.plants_empty_title),
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(top = 16.dp),
         )
         Text(
-            text = "Identifica una planta y añadela a tu colección para empezar.",
+            text = stringResource(R.string.plants_empty_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -659,22 +668,23 @@ private fun EmptyState(onIdentifyClick: () -> Unit, modifier: Modifier = Modifie
         ) {
             Icon(imageVector = Icons.Outlined.CameraAlt, contentDescription = null)
             androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(8.dp))
-            Text("Identificar mi primera planta")
+            Text(stringResource(R.string.plants_empty_cta))
         }
     }
 }
 
 private const val MS_PER_DAY = 24L * 60L * 60L * 1000L
 
+@Composable
 private fun wateringHint(plant: Plant): String {
-    val last = plant.lastWateredAt ?: return "Sin regar aún"
+    val last = plant.lastWateredAt ?: return stringResource(R.string.watering_never)
     val now = System.currentTimeMillis()
     val daysSince = ((now - last) / MS_PER_DAY).toInt()
     val daysUntil = plant.wateringIntervalDays - daysSince
     return when {
-        daysUntil > 1 -> "En $daysUntil días"
-        daysUntil == 1 -> "Mañana"
-        daysUntil == 0 -> "Hoy"
-        else -> "Retraso ${max(0, -daysUntil)} d"
+        daysUntil > 1 -> stringResource(R.string.watering_in_days, daysUntil)
+        daysUntil == 1 -> stringResource(R.string.watering_tomorrow)
+        daysUntil == 0 -> stringResource(R.string.watering_today)
+        else -> stringResource(R.string.watering_overdue, max(0, -daysUntil))
     }
 }

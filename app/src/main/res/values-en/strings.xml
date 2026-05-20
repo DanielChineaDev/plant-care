@@ -25,4 +25,37 @@
     <string name="palette_lavender">Lavender</string>
     <string name="palette_ocean">Ocean</string>
     <string name="palette_rose">Rose</string>
+
+    <!-- Common -->
+    <string name="menu">Menu</string>
+    <string name="clear">Clear</string>
+
+    <!-- Plants screen -->
+    <string name="plants_change_view">Change view</string>
+    <string name="plants_sort">Sort</string>
+    <string name="plants_search_placeholder">Search your collection</string>
+    <string name="plants_selection_cancel">Cancel selection</string>
+    <string name="plants_selection_water">Water selected</string>
+    <string name="plants_selection_delete">Delete selected</string>
+    <plurals name="plants_selected_count">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <string name="filter_all">All</string>
+    <string name="filter_needs_attention">Needs attention</string>
+    <string name="filter_healthy">Healthy</string>
+    <string name="filter_not_watered">Not watered yet</string>
+    <string name="filter_by_room">By location</string>
+    <string name="plants_empty_title">You have no plants yet</string>
+    <string name="plants_empty_subtitle">Identify a plant and add it to your collection to get started.</string>
+    <string name="plants_empty_cta">Identify my first plant</string>
+    <string name="no_results_title">No results</string>
+    <string name="no_results_subtitle">Try another name or change the filter.</string>
+    <string name="water">Water</string>
+    <string name="mark_as_watered">Mark as watered</string>
+    <string name="watering_never">Not watered yet</string>
+    <string name="watering_tomorrow">Tomorrow</string>
+    <string name="watering_today">Today</string>
+    <string name="watering_in_days">In %d days</string>
+    <string name="watering_overdue">%d d overdue</string>
 </resources>

@@ -25,4 +25,37 @@
     <string name="palette_lavender">Lavanda</string>
     <string name="palette_ocean">Océano</string>
     <string name="palette_rose">Rosa</string>
+
+    <!-- Comun -->
+    <string name="menu">Menú</string>
+    <string name="clear">Limpiar</string>
+
+    <!-- Pantalla Plantas -->
+    <string name="plants_change_view">Cambiar vista</string>
+    <string name="plants_sort">Ordenar</string>
+    <string name="plants_search_placeholder">Busca en tu colección</string>
+    <string name="plants_selection_cancel">Cancelar selección</string>
+    <string name="plants_selection_water">Regar seleccionadas</string>
+    <string name="plants_selection_delete">Borrar seleccionadas</string>
+    <plurals name="plants_selected_count">
+        <item quantity="one">%d seleccionada</item>
+        <item quantity="other">%d seleccionadas</item>
+    </plurals>
+    <string name="filter_all">Todas</string>
+    <string name="filter_needs_attention">Necesitan atención</string>
+    <string name="filter_healthy">Sanas</string>
+    <string name="filter_not_watered">Sin regar aún</string>
+    <string name="filter_by_room">Por ubicación</string>
+    <string name="plants_empty_title">Aún no tienes plantas</string>
+    <string name="plants_empty_subtitle">Identifica una planta y añádela a tu colección para empezar.</string>
+    <string name="plants_empty_cta">Identificar mi primera planta</string>
+    <string name="no_results_title">Sin resultados</string>
+    <string name="no_results_subtitle">Prueba con otro nombre o cambia el filtro.</string>
+    <string name="water">Regar</string>
+    <string name="mark_as_watered">Marcar como regada</string>
+    <string name="watering_never">Sin regar aún</string>
+    <string name="watering_tomorrow">Mañana</string>
+    <string name="watering_today">Hoy</string>
+    <string name="watering_in_days">En %d días</string>
+    <string name="watering_overdue">Retraso %d d</string>
 </resources>
