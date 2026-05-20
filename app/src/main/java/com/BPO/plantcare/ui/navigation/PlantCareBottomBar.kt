@@ -174,10 +174,18 @@ private fun navigateTo(
     destination: TopLevelDestination,
 ) {
     if (currentRoute == destination.route) return
+    // Grafo plano: todas las pantallas comparten Home como start destination.
+    // Por eso NO usamos saveState/restoreState: en un grafo plano la pila
+    // que se hace popUp queda guardada bajo la clave del start destination y
+    // restoreState la vuelve a restaurar, dejandote en la pantalla anterior
+    // (p. ej. Comunidades) en vez de en el tab pulsado.
+    //
+    // En su lugar limpiamos la pila hasta la raiz (sin incluirla) y navegamos
+    // al destino: estemos donde estemos (detalle, comunidades, etc.) el tab
+    // siempre nos lleva a su seccion.
     navController.navigate(destination.route) {
-        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+        popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
         launchSingleTop = true
-        restoreState = true
     }
 }
 

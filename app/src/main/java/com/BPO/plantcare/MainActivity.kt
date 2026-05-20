@@ -143,15 +143,17 @@ private fun PlantCareApp(
             PlantCareDrawerContent(
                 onNavigate = { route ->
                     scope.launch { drawerState.close() }
-                    // Para destinos top-level usamos el patron save/restore.
+                    // Grafo plano: para destinos top-level limpiamos la pila
+                    // hasta la raiz (sin save/restore, que en un grafo plano
+                    // restauraria la pantalla anterior). Asi el destino del
+                    // drawer siempre nos lleva a su seccion.
                     val isTopLevel = TopLevelDestination.entries.any { it.route == route }
                     if (isTopLevel) {
                         navController.navigate(route) {
                             popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+                                inclusive = false
                             }
                             launchSingleTop = true
-                            restoreState = true
                         }
                     } else {
                         navController.navigate(route) { launchSingleTop = true }
