@@ -1,5 +1,6 @@
 package com.BPO.plantcare.ui.screens.myplants
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +26,6 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material.icons.outlined.WaterDrop
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -92,7 +91,11 @@ fun MyPlantsScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding()),
+        ) {
             PlantsSearchBar(
                 query = filters.query,
                 onQueryChange = viewModel::onQueryChange,
@@ -114,7 +117,12 @@ fun MyPlantsScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = padding.calculateBottomPadding() + 16.dp,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -310,19 +318,20 @@ private fun StatusBadge(status: PlantStatus, modifier: Modifier = Modifier) {
         PlantStatus.Thirsty -> StatusThirsty
         PlantStatus.NotWatered -> MaterialTheme.colorScheme.primary
     }
+    // Pildora custom (no AssistChip): Box con background y clip ambos en
+    // el mismo shape. Antes el AssistChip tenia su border interno + clip
+    // externo dejaba un contorno con un "pixel" que se veia recortado.
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .padding(0.dp),
+            .background(color.copy(alpha = 0.95f))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
-        AssistChip(
-            onClick = {},
-            enabled = false,
-            label = { Text("${status.emoji} ${status.label}") },
-            colors = AssistChipDefaults.assistChipColors(
-                disabledContainerColor = color.copy(alpha = 0.9f),
-                disabledLabelColor = Color.White,
-            ),
+        Text(
+            text = "${status.emoji} ${status.label}",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }

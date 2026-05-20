@@ -111,9 +111,14 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
+                .padding(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 24.dp,
+                    bottom = padding.calculateBottomPadding() + 24.dp,
+                ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             NotificationsCard(

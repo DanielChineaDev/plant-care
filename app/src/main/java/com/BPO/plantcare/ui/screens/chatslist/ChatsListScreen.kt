@@ -82,8 +82,15 @@ fun ChatsListScreen(
             return@Scaffold
         }
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding()),
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                end = 12.dp,
+                top = 12.dp,
+                bottom = padding.calculateBottomPadding() + 12.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(conversations, key = { it.id }) { conv ->

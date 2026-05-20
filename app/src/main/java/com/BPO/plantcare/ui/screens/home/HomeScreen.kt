@@ -106,8 +106,15 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                .padding(top = padding.calculateTopPadding()),
+            // Padding bottom dentro del contentPadding para que los posts
+            // puedan scrollearse pegados al bottom bar (sin hueco blanco).
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = padding.calculateBottomPadding() + 12.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {

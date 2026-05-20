@@ -133,8 +133,13 @@ fun CommunitiesListScreen(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(vertical = 12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding()),
+            contentPadding = PaddingValues(
+                top = 12.dp,
+                bottom = padding.calculateBottomPadding() + 12.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // Buscador de comunidades: filtra por nombre/descripcion.

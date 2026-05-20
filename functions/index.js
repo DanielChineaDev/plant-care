@@ -32,6 +32,125 @@ const messaging = admin.messaging();
 
 const REGION = "europe-west1";
 
+// Catalogo de comunidades semilla con descripciones tematicas ricas.
+// Compartido por seedCommunities (crea) y updateCommunityDescriptions
+// (actualiza solo la descripcion de las existentes).
+const COMMUNITY_SEEDS = [
+  {
+    name: "Suculentas y cactus",
+    emoji: "🌵",
+    description: "El club de las plantas que aguantan de todo. Comparte tus " +
+      "echeverias, haworthias, aloes y cactus, resuelve dudas sobre riego " +
+      "por inmersion, sustratos drenantes, etiolado por falta de luz y " +
+      "como sacar hijuelos. Ideal si empiezas: son las plantas mas " +
+      "agradecidas.",
+  },
+  {
+    name: "Orquidiarios",
+    emoji: "🌸",
+    description: "Para enamorados de las orquideas. Phalaenopsis, cymbidium, " +
+      "dendrobium y mas: hablamos de refloracion, raices aereas, riego por " +
+      "inmersion, corteza vs musgo y como recuperar una orquidea que parece " +
+      "muerta. Sube fotos de tus varas en flor.",
+  },
+  {
+    name: "Bonsais",
+    emoji: "🌳",
+    description: "El arte de cultivar arboles en miniatura. Tecnicas de poda, " +
+      "alambrado, pinzado y trasplante; especies para principiantes (ficus, " +
+      "olmo chino) y para expertos. Comparte la evolucion de tus arboles a " +
+      "lo largo de las estaciones.",
+  },
+  {
+    name: "Huerto urbano",
+    emoji: "🥬",
+    description: "Cultiva tu propia comida en balcones, terrazas y alfeizares. " +
+      "Tomateras en maceta, lechugas, fresas, pimientos y hierbas. Hablamos " +
+      "de calendario de siembra, compost casero, polinizacion manual y como " +
+      "aprovechar poco espacio al maximo.",
+  },
+  {
+    name: "Plantas de interior",
+    emoji: "🪴",
+    description: "Convierte tu casa en una jungla. Pothos, monsteras, ficus, " +
+      "calatheas, potos y filodendros. Resolvemos hojas amarillas, falta de " +
+      "humedad, ubicacion segun la luz de cada ventana y como mantenerlas " +
+      "vivas en invierno con la calefaccion.",
+  },
+  {
+    name: "Aromaticas y medicinales",
+    emoji: "🌿",
+    description: "Albahaca, menta, romero, lavanda, tomillo, aloe vera... " +
+      "Plantas que se comen, se huelen y se usan. Comparte recetas, infusiones, " +
+      "como secar y conservar hierbas y trucos para que tu albahaca no se " +
+      "espigue en cuanto llega el calor.",
+  },
+  {
+    name: "Plagas y enfermedades",
+    emoji: "🪲",
+    description: "SOS para tus plantas. Sube una foto del problema y la " +
+      "comunidad te ayuda a identificar cochinilla, arana roja, mosca blanca, " +
+      "oidio, mildiu o pudricion de raiz. Remedios caseros y ecologicos, " +
+      "jabon potasico, aceite de neem y prevencion.",
+  },
+  {
+    name: "Acuaponia e hidroponia",
+    emoji: "💧",
+    description: "Cultivo sin tierra. Sistemas NFT, DWC, mechas y aeroponia; " +
+      "control de pH y EC, soluciones nutritivas, iluminacion LED y " +
+      "acuaponia combinando peces y plantas. Para los que disfrutan tanto la " +
+      "jardineria como cacharrear con sistemas.",
+  },
+  {
+    name: "Jardin exterior",
+    emoji: "🌻",
+    description: "Todo lo que vive a la intemperie: parterres, setos, rosales, " +
+      "girasoles, arbustos y flores de temporada. Diseno de jardin, plantas " +
+      "segun el clima, cesped, riego automatico y como tener color todo el " +
+      "ano. Comparte tu rincon verde.",
+  },
+  {
+    name: "Propagacion y esquejes",
+    emoji: "🌱",
+    description: "Multiplica tus plantas gratis. Esquejes de tallo y hoja, " +
+      "acodo aereo, division de mata, germinacion de semillas y enraizado en " +
+      "agua vs sustrato. Comparte tus exitos (y fracasos) e intercambia " +
+      "esquejes con otros miembros.",
+  },
+];
+
+// ============================================================================
+// Actualiza SOLO la descripcion de las comunidades semilla existentes
+// (match por nameLower). No crea nuevas. Util para refrescar textos sin
+// tocar memberCount ni otros campos.
+// ============================================================================
+exports.updateCommunityDescriptions = onRequest(
+  {region: REGION, timeoutSeconds: 120},
+  async (req, res) => {
+    try {
+      let updated = 0;
+      let notFound = 0;
+      for (const seed of COMMUNITY_SEEDS) {
+        const nameLower = seed.name.toLowerCase();
+        const snap = await db.collection("communities")
+          .where("nameLower", "==", nameLower)
+          .limit(1)
+          .get();
+        if (snap.empty) {
+          notFound++;
+          continue;
+        }
+        await snap.docs[0].ref.update({description: seed.description});
+        updated++;
+      }
+      res.status(200).json({ok: true, updated, notFound});
+    } catch (err) {
+      logger.error("updateCommunityDescriptions fallo", err);
+      res.status(500).json({ok: false, error: String(err)});
+    }
+  },
+);
+
 // ============================================================================
 // Chat 1-a-1: notificacion push y deep link al chat.
 // ============================================================================
@@ -237,28 +356,7 @@ exports.seedCommunities = onRequest(
   {region: REGION, timeoutSeconds: 120},
   async (req, res) => {
     try {
-      const seeds = [
-        {name: "Suculentas y cactus", emoji: "🌵",
-          description: "Todo sobre suculentas, cactus y sus cuidados."},
-        {name: "Orquidiarios", emoji: "🌸",
-          description: "Aficionados a las orquideas: flores, sustratos y trasplantes."},
-        {name: "Bonsais", emoji: "🌳",
-          description: "Tecnicas de cultivo, poda y alambrado de bonsais."},
-        {name: "Huerto urbano", emoji: "🥬",
-          description: "Cultivar verduras y hierbas en balcones y terrazas."},
-        {name: "Plantas de interior", emoji: "🪴",
-          description: "Pothos, monsteras, ficus y todo lo que vive bajo techo."},
-        {name: "Aromaticas y medicinales", emoji: "🌿",
-          description: "Albahaca, menta, lavanda, romero: usos y cuidados."},
-        {name: "Plagas y enfermedades", emoji: "🪲",
-          description: "Identifica y trata cochinilla, oidio, arana roja, etc."},
-        {name: "Acuaponia e hidroponia", emoji: "💧",
-          description: "Cultivo sin tierra: nutrientes, pH y sistemas DWC/NFT."},
-        {name: "Jardin exterior", emoji: "🌻",
-          description: "Plantas de jardin, parterres y flores de temporada."},
-        {name: "Propagacion y esquejes", emoji: "🌱",
-          description: "Trucos para multiplicar tus plantas: esquejes, acodos, semillas."},
-      ];
+      const seeds = COMMUNITY_SEEDS;
 
       let created = 0;
       let skipped = 0;

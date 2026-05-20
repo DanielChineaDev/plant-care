@@ -82,7 +82,15 @@ fun SearchScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        // Aplicamos solo el padding TOP del Scaffold; el bottom lo metemos
+        // dentro del contentPadding del LazyVerticalGrid para que los
+        // items puedan scrollearse hasta el borde del bottom bar (sin
+        // dejar hueco blanco).
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding()),
+        ) {
             SearchBar(
                 query = filters.query,
                 onQueryChange = viewModel::onQueryChange,
@@ -99,7 +107,12 @@ fun SearchScreen(
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
+                    contentPadding = PaddingValues(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 12.dp,
+                        bottom = padding.calculateBottomPadding() + 12.dp,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize(),
