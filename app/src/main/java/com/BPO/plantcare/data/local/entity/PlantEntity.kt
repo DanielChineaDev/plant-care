@@ -19,6 +19,8 @@ data class PlantEntity(
     val wateringIntervalDays: Int,
     val notes: String?,
     val isOutdoor: Boolean? = null,
+    /** Ubicacion/habitacion donde esta la planta (salon, cocina...). */
+    val room: String? = null,
 )
 
 fun PlantEntity.toDomain(): Plant = Plant(
@@ -35,6 +37,7 @@ fun PlantEntity.toDomain(): Plant = Plant(
     wateringIntervalDays = wateringIntervalDays,
     notes = notes,
     isOutdoor = isOutdoor,
+    room = room,
 )
 
 fun Plant.toEntity(): PlantEntity = PlantEntity(
@@ -51,4 +54,5 @@ fun Plant.toEntity(): PlantEntity = PlantEntity(
     wateringIntervalDays = wateringIntervalDays,
     notes = notes,
     isOutdoor = isOutdoor,
+    room = room,
 )

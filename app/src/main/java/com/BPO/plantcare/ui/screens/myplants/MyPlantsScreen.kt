@@ -1,6 +1,7 @@
 package com.BPO.plantcare.ui.screens.myplants
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -20,11 +22,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Sort
 import androidx.compose.material.icons.outlined.Spa
+import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +48,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,23 +83,46 @@ fun MyPlantsScreen(
     viewModel: MyPlantsViewModel = hiltViewModel(),
 ) {
     val plants by viewModel.plants.collectAsStateWithLifecycle()
+    val grouped by viewModel.groupedPlants.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
+    val selectionMode by viewModel.selectionMode.collectAsStateWithLifecycle()
+    val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Plantas") },
-                navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Outlined.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    com.BPO.plantcare.ui.components.NotificationsActionButton(
-                        onClick = onNotificationsClick,
-                    )
-                },
-            )
+            if (selectionMode) {
+                SelectionTopBar(
+                    count = selectedIds.size,
+                    onClose = viewModel::clearSelection,
+                    onWaterAll = viewModel::waterSelected,
+                    onDeleteAll = viewModel::deleteSelected,
+                )
+            } else {
+                TopAppBar(
+                    title = { Text("Plantas") },
+                    navigationIcon = {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Outlined.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        // Toggle lista/grid
+                        IconButton(onClick = viewModel::toggleViewMode) {
+                            Icon(
+                                imageVector = if (viewMode == PlantsViewMode.Grid)
+                                    Icons.Outlined.ViewList else Icons.Outlined.GridView,
+                                contentDescription = "Cambiar vista",
+                            )
+                        }
+                        // Ordenar
+                        SortMenu(current = filters.sort, onSelect = viewModel::setSort)
+                        com.BPO.plantcare.ui.components.NotificationsActionButton(
+                            onClick = onNotificationsClick,
+                        )
+                    },
+                )
+            }
         },
     ) { padding ->
         Column(
@@ -102,7 +136,9 @@ fun MyPlantsScreen(
             )
             PlantsFilterRow(
                 selected = filters.filter,
+                groupByRoom = filters.groupByRoom,
                 onSelect = viewModel::setFilter,
+                onToggleGroup = viewModel::toggleGroupByRoom,
             )
             if (plants.isEmpty()) {
                 if (filters.query.isBlank() && filters.filter == PlantsFilter.All) {
@@ -114,25 +150,238 @@ fun MyPlantsScreen(
                     NoResultsState(modifier = Modifier)
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = padding.calculateBottomPadding() + 16.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(plants, key = { it.id }) { plant ->
-                        PlantCard(
-                            plant = plant,
-                            onClick = { onPlantClick(plant.id) },
-                            onWaterClick = { viewModel.onWatered(plant.id) },
-                        )
+                val contentPad = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = padding.calculateBottomPadding() + 16.dp,
+                )
+                if (viewMode == PlantsViewMode.List || filters.groupByRoom) {
+                    PlantsList(
+                        plants = plants,
+                        grouped = if (filters.groupByRoom) grouped else null,
+                        selectionMode = selectionMode,
+                        selectedIds = selectedIds,
+                        contentPadding = contentPad,
+                        onClick = { plant ->
+                            if (selectionMode) viewModel.toggleSelected(plant.id)
+                            else onPlantClick(plant.id)
+                        },
+                        onLongClick = { viewModel.startSelection(it.id) },
+                        onWaterClick = { viewModel.onWatered(it.id) },
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = contentPad,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(plants, key = { it.id }) { plant ->
+                            PlantCard(
+                                plant = plant,
+                                selected = plant.id in selectedIds,
+                                selectionMode = selectionMode,
+                                onClick = {
+                                    if (selectionMode) viewModel.toggleSelected(plant.id)
+                                    else onPlantClick(plant.id)
+                                },
+                                onLongClick = { viewModel.startSelection(plant.id) },
+                                onWaterClick = { viewModel.onWatered(plant.id) },
+                            )
+                        }
                     }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectionTopBar(
+    count: Int,
+    onClose: () -> Unit,
+    onWaterAll: () -> Unit,
+    onDeleteAll: () -> Unit,
+) {
+    TopAppBar(
+        title = { Text("$count seleccionada${if (count == 1) "" else "s"}") },
+        navigationIcon = {
+            IconButton(onClick = onClose) {
+                Icon(Icons.Outlined.Clear, contentDescription = "Cancelar seleccion")
+            }
+        },
+        actions = {
+            IconButton(onClick = onWaterAll) {
+                Icon(Icons.Outlined.WaterDrop, contentDescription = "Regar seleccionadas")
+            }
+            IconButton(onClick = onDeleteAll) {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = "Borrar seleccionadas",
+                    tint = androidx.compose.ui.graphics.Color(0xFFE53935),
+                )
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortMenu(current: PlantsSort, onSelect: (PlantsSort) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Outlined.Sort, contentDescription = "Ordenar")
+        }
+        androidx.compose.material3.DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            PlantsSort.entries.forEach { sort ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(sort.label) },
+                    onClick = {
+                        onSelect(sort)
+                        expanded = false
+                    },
+                    trailingIcon = {
+                        if (sort == current) {
+                            Icon(Icons.Outlined.Check, contentDescription = null)
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlantsList(
+    plants: List<Plant>,
+    grouped: Map<String, List<Plant>>?,
+    selectionMode: Boolean,
+    selectedIds: Set<Long>,
+    contentPadding: PaddingValues,
+    onClick: (Plant) -> Unit,
+    onLongClick: (Plant) -> Unit,
+    onWaterClick: (Plant) -> Unit,
+) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (grouped != null) {
+            grouped.forEach { (room, roomPlants) ->
+                item(key = "header_$room") {
+                    Text(
+                        text = room,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+                    )
+                }
+                items(roomPlants, key = { it.id }) { plant ->
+                    PlantListItem(
+                        plant = plant,
+                        selected = plant.id in selectedIds,
+                        selectionMode = selectionMode,
+                        onClick = { onClick(plant) },
+                        onLongClick = { onLongClick(plant) },
+                        onWaterClick = { onWaterClick(plant) },
+                    )
+                }
+            }
+        } else {
+            items(plants, key = { it.id }) { plant ->
+                PlantListItem(
+                    plant = plant,
+                    selected = plant.id in selectedIds,
+                    selectionMode = selectionMode,
+                    onClick = { onClick(plant) },
+                    onLongClick = { onLongClick(plant) },
+                    onWaterClick = { onWaterClick(plant) },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun PlantListItem(
+    plant: Plant,
+    selected: Boolean,
+    selectionMode: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onWaterClick: () -> Unit,
+) {
+    val status = plant.status()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surface,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                val img = plant.userPhotoPath ?: plant.referenceImageUrl
+                if (img != null) {
+                    AsyncImage(
+                        model = if (plant.userPhotoPath != null) File(plant.userPhotoPath) else img,
+                        contentDescription = plant.displayName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(Icons.Outlined.LocalFlorist, contentDescription = null) }
+                }
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = plant.displayName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "${status.emoji} ${status.label}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (selectionMode) {
+                androidx.compose.material3.Checkbox(checked = selected, onCheckedChange = { onClick() })
+            } else {
+                IconButton(onClick = onWaterClick) {
+                    Icon(
+                        Icons.Outlined.WaterDrop,
+                        contentDescription = "Regar",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }
@@ -162,7 +411,12 @@ private fun PlantsSearchBar(query: String, onQueryChange: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlantsFilterRow(selected: PlantsFilter, onSelect: (PlantsFilter) -> Unit) {
+private fun PlantsFilterRow(
+    selected: PlantsFilter,
+    groupByRoom: Boolean,
+    onSelect: (PlantsFilter) -> Unit,
+    onToggleGroup: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,6 +443,15 @@ private fun PlantsFilterRow(selected: PlantsFilter, onSelect: (PlantsFilter) -> 
             selected = selected == PlantsFilter.NotWatered,
             onClick = { onSelect(PlantsFilter.NotWatered) },
             label = { Text("Sin regar aun") },
+        )
+        // Toggle agrupar por habitacion.
+        FilterChip(
+            selected = groupByRoom,
+            onClick = onToggleGroup,
+            label = { Text("Por ubicacion") },
+            leadingIcon = {
+                Icon(Icons.Outlined.Place, contentDescription = null, modifier = Modifier.size(18.dp))
+            },
         )
         Spacer(modifier = Modifier.size(4.dp))
     }
@@ -224,13 +487,27 @@ private fun NoResultsState(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-private fun PlantCard(plant: Plant, onClick: () -> Unit, onWaterClick: () -> Unit) {
+private fun PlantCard(
+    plant: Plant,
+    selected: Boolean = false,
+    selectionMode: Boolean = false,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
+    onWaterClick: () -> Unit,
+) {
     val status = plant.status()
     ElevatedCard(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        colors = if (selected) {
+            CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            )
+        } else CardDefaults.elevatedCardColors(),
     ) {
         Column {
             Box(

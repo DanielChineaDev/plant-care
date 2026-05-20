@@ -114,6 +114,7 @@ fun PlantDetailScreen(
     val wikiAggregate by viewModel.wikiAggregate.collectAsStateWithLifecycle()
     val isAdmin by viewModel.isAdmin.collectAsStateWithLifecycle()
     var showWikiDialog by remember { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
     val photos by viewModel.photos.collectAsStateWithLifecycle()
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -207,57 +208,89 @@ fun PlantDetailScreen(
         ) {
             HeroImage(current, onChangePhotoClick = { showChangePhotoSheet = true })
             TitleSection(current)
-            WateringCard(
-                plant = current,
-                onMarkWatered = viewModel::onMarkWatered,
-                onIntervalChange = viewModel::onIntervalChange,
-            )
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            ) {
-                PlantTasksCard(
-                    tasks = tasks,
-                    plantAddedAt = current.addedAt,
-                    onToggle = viewModel::onToggleTask,
-                    onMarkDone = viewModel::onMarkTaskDone,
-                    onUpdateInterval = viewModel::onUpdateTaskInterval,
-                )
+
+            val tabs = listOf("Cuidados", "Diario", "Historial", "Notas")
+            androidx.compose.material3.TabRow(selectedTabIndex = selectedTab) {
+                tabs.forEachIndexed { index, title ->
+                    androidx.compose.material3.Tab(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        text = { Text(title) },
+                    )
+                }
             }
-            careGuide?.let { match ->
-                CareGuideCard(
-                    guide = match.guide,
-                    genusApproximation = (match as? GuideMatch.Genus)?.genusName,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
+
+            when (selectedTab) {
+                0 -> { // Cuidados
+                    WateringCard(
+                        plant = current,
+                        onMarkWatered = viewModel::onMarkWatered,
+                        onIntervalChange = viewModel::onIntervalChange,
+                    )
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        PlantTasksCard(
+                            tasks = tasks,
+                            plantAddedAt = current.addedAt,
+                            onToggle = viewModel::onToggleTask,
+                            onMarkDone = viewModel::onMarkTaskDone,
+                            onUpdateInterval = viewModel::onUpdateTaskInterval,
+                        )
+                    }
+                    careGuide?.let { match ->
+                        CareGuideCard(
+                            guide = match.guide,
+                            genusApproximation = (match as? GuideMatch.Genus)?.genusName,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        )
+                    }
+                    TaxonomyCard(current)
+                    CareWikiCard(
+                        aggregate = wikiAggregate,
+                        contributions = wikiContributions,
+                        canContribute = true,
+                        onAddClick = { showWikiDialog = true },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        isAdmin = isAdmin,
+                        onApproveToggle = viewModel::toggleWikiApproval,
+                    )
+                    WikipediaCard(
+                        wikipedia,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
+                1 -> { // Diario
+                    DiaryCard(
+                        photos = photos,
+                        onAddPhoto = viewModel::onAddDiaryPhoto,
+                        onDeletePhoto = viewModel::onDeleteDiaryPhoto,
+                        onPhotoClick = { photoId ->
+                            plant?.id?.let { onPhotoClick(it, photoId) }
+                        },
+                    )
+                }
+                2 -> { // Historial
+                    WateringHistoryChart(
+                        history = history,
+                        suggestedIntervalDays = current.wateringIntervalDays,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                    HistoryCard(
+                        history = history,
+                        onDeleteLog = { log -> viewModel.onDeleteWateringLog(log) },
+                    )
+                }
+                3 -> { // Notas
+                    NotesAndRoomCard(
+                        notes = current.notes.orEmpty(),
+                        room = current.room.orEmpty(),
+                        onNotesChange = viewModel::onNotesChange,
+                        onRoomChange = viewModel::onRoomChange,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
             }
-            DiaryCard(
-                photos = photos,
-                onAddPhoto = viewModel::onAddDiaryPhoto,
-                onDeletePhoto = viewModel::onDeleteDiaryPhoto,
-                onPhotoClick = { photoId ->
-                    plant?.id?.let { onPhotoClick(it, photoId) }
-                },
-            )
-            WateringHistoryChart(
-                history = history,
-                suggestedIntervalDays = current.wateringIntervalDays,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-            HistoryCard(
-                history = history,
-                onDeleteLog = { log -> viewModel.onDeleteWateringLog(log) },
-            )
-            TaxonomyCard(current)
-            CareWikiCard(
-                aggregate = wikiAggregate,
-                contributions = wikiContributions,
-                canContribute = true,
-                onAddClick = { showWikiDialog = true },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                isAdmin = isAdmin,
-                onApproveToggle = viewModel::toggleWikiApproval,
-            )
-            WikipediaCard(wikipedia, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -717,6 +750,87 @@ private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (WateringLog) -
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Tab "Notas": una nota libre tipo sticky note (se guarda al perder foco /
+ * cada vez que el texto cambia con debounce implicito del repo) y el campo
+ * de ubicacion/habitacion.
+ */
+@Composable
+private fun NotesAndRoomCard(
+    notes: String,
+    room: String,
+    onNotesChange: (String) -> Unit,
+    onRoomChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var notesText by rememberSaveable(notes) { mutableStateOf(notes) }
+    var roomText by rememberSaveable(room) { mutableStateOf(room) }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Ubicacion
+        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Ubicacion",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = "En que habitacion esta. Sirve para agrupar tus plantas.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = roomText,
+                    onValueChange = { roomText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    placeholder = { Text("Salon, Cocina, Oficina...") },
+                    trailingIcon = {
+                        if (roomText != room) {
+                            TextButton(onClick = { onRoomChange(roomText) }) { Text("Guardar") }
+                        }
+                    },
+                )
+            }
+        }
+
+        // Notas estilo sticky note
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
+                containerColor = androidx.compose.ui.graphics.Color(0xFFFFF59D), // amarillo post-it
+            ),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Mis notas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = androidx.compose.ui.graphics.Color(0xFF5D4037),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = notesText,
+                    onValueChange = { notesText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 4,
+                    maxLines = 10,
+                    placeholder = { Text("Apunta lo que quieras: cuando floreció, dónde la compraste, trucos...") },
+                )
+                if (notesText != notes) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { onNotesChange(notesText) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Guardar nota") }
+                }
             }
         }
     }

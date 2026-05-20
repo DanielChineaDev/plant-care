@@ -199,6 +199,20 @@ class PlantDetailViewModel @Inject constructor(
         }
     }
 
+    fun onNotesChange(notes: String) {
+        val current = plant.value ?: return
+        viewModelScope.launch {
+            updatePlant(current.copy(notes = notes.ifBlank { null }))
+        }
+    }
+
+    fun onRoomChange(room: String) {
+        val current = plant.value ?: return
+        viewModelScope.launch {
+            updatePlant(current.copy(room = room.ifBlank { null }))
+        }
+    }
+
     fun onMarkWatered() {
         viewModelScope.launch { markWatered(plantId) }
     }

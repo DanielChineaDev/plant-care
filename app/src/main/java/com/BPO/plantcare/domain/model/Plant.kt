@@ -14,6 +14,8 @@ data class Plant(
     val wateringIntervalDays: Int,
     val notes: String?,
     val isOutdoor: Boolean? = null,
+    /** Ubicacion/habitacion de la planta (ej. "Salon", "Cocina"). */
+    val room: String? = null,
 ) {
     val displayName: String
         get() = nickname?.takeIf { it.isNotBlank() }
@@ -55,4 +57,13 @@ fun Plant.needsWatering(now: Long = System.currentTimeMillis()): Boolean {
     val reference = lastWateredAt ?: addedAt
     val intervalMs = wateringIntervalDays.toLong() * 24L * 60L * 60L * 1000L
     return (now - reference) >= intervalMs
+}
+
+/**
+ * Timestamp del proximo riego previsto: ultimo riego (o alta si nunca se
+ * rego) + intervalo. Usado para ordenar "por proximo riego".
+ */
+fun Plant.nextWateringAt(): Long {
+    val reference = lastWateredAt ?: addedAt
+    return reference + wateringIntervalDays.toLong() * 24L * 60L * 60L * 1000L
 }
