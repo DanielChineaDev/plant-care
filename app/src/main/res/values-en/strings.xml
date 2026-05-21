@@ -315,4 +315,37 @@
     <string name="sort_alphabetical">A-Z</string>
     <string name="sort_next_watering">Next watering</string>
     <string name="sort_status">Status</string>
+
+    <!-- Care difficulty -->
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+    <string name="difficulty_expert">Extreme</string>
+    <string name="difficulty_pro">Professional</string>
+    <!-- Light level -->
+    <string name="light_low">Low light</string>
+    <string name="light_medium">Medium light</string>
+    <string name="light_indirect_bright">Bright indirect light</string>
+    <string name="light_direct">Direct sun (a few hours)</string>
+    <string name="light_full_sun">Full sun</string>
+    <!-- Humidity -->
+    <string name="humidity_low">Dry air</string>
+    <string name="humidity_medium">Medium humidity</string>
+    <string name="humidity_medium_high">Medium-high humidity</string>
+    <string name="humidity_high">High humidity</string>
+
+    <!-- Care card -->
+    <string name="care_title">Care</string>
+    <string name="care_light">Light</string>
+    <string name="care_humidity">Humidity</string>
+    <string name="care_watering">Watering</string>
+    <string name="care_every_days">Every %d days</string>
+    <string name="care_substrate">Substrate</string>
+    <string name="care_fertilizing">Fertilizing</string>
+    <string name="care_repotting">Repotting</string>
+    <string name="care_fun_fact">✨ Did you know…</string>
+    <string name="care_indoor_outdoor">Indoor / outdoor</string>
+    <string name="care_toxic">⚠ Toxic to pets</string>
+    <string name="care_genus_title">Approximate data for genus %s</string>
+    <string name="care_genus_desc">Your species isn\'t in the catalog yet. This care is for %s, a close relative. It may vary slightly.</string>
 </resources>

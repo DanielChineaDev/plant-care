@@ -122,7 +122,7 @@ private fun ReadingCard(lux: Float?, level: LightLevel?) {
             )
             level?.let {
                 Text(
-                    text = it.label,
+                    text = androidx.compose.ui.res.stringResource(it.labelRes),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(top = 4.dp),
@@ -189,7 +189,7 @@ private fun CandidateRow(guide: PlantCareGuide) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "${guide.light.label} · ${guide.difficulty.label}",
+                        text = "${androidx.compose.ui.res.stringResource(guide.light.labelRes)} · ${androidx.compose.ui.res.stringResource(guide.difficulty.labelRes)}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

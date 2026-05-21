@@ -315,4 +315,37 @@
     <string name="sort_alphabetical">A-Z</string>
     <string name="sort_next_watering">Próximo riego</string>
     <string name="sort_status">Estado</string>
+
+    <!-- Dificultad de cuidado -->
+    <string name="difficulty_easy">Fácil</string>
+    <string name="difficulty_medium">Media</string>
+    <string name="difficulty_hard">Difícil</string>
+    <string name="difficulty_expert">Extrema</string>
+    <string name="difficulty_pro">Profesional</string>
+    <!-- Nivel de luz -->
+    <string name="light_low">Poca luz</string>
+    <string name="light_medium">Luz media</string>
+    <string name="light_indirect_bright">Luz indirecta brillante</string>
+    <string name="light_direct">Sol directo (algunas horas)</string>
+    <string name="light_full_sun">Pleno sol</string>
+    <!-- Humedad -->
+    <string name="humidity_low">Ambiente seco</string>
+    <string name="humidity_medium">Humedad media</string>
+    <string name="humidity_medium_high">Humedad media-alta</string>
+    <string name="humidity_high">Humedad alta</string>
+
+    <!-- Tarjeta de cuidados -->
+    <string name="care_title">Cuidados</string>
+    <string name="care_light">Luz</string>
+    <string name="care_humidity">Humedad</string>
+    <string name="care_watering">Riego</string>
+    <string name="care_every_days">Cada %d días</string>
+    <string name="care_substrate">Sustrato</string>
+    <string name="care_fertilizing">Abono</string>
+    <string name="care_repotting">Trasplante</string>
+    <string name="care_fun_fact">✨ Sabías que…</string>
+    <string name="care_indoor_outdoor">Interior / exterior</string>
+    <string name="care_toxic">⚠ Tóxica para mascotas</string>
+    <string name="care_genus_title">Datos aproximados del género %s</string>
+    <string name="care_genus_desc">Tu especie aún no está en el catálogo. Estos cuidados son los de %s, una pariente cercana. Pueden variar ligeramente.</string>
 </resources>

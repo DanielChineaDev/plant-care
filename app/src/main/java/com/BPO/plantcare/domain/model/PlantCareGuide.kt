@@ -1,31 +1,33 @@
 package com.BPO.plantcare.domain.model
 
+import androidx.annotation.StringRes
+import com.BPO.plantcare.R
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class CareDifficulty(val label: String) {
-    EASY("Fácil"),
-    MEDIUM("Media"),
-    HARD("Difícil"),
-    EXPERT("Extrema"),
-    PRO("Profesional"),
+enum class CareDifficulty(@StringRes val labelRes: Int) {
+    EASY(R.string.difficulty_easy),
+    MEDIUM(R.string.difficulty_medium),
+    HARD(R.string.difficulty_hard),
+    EXPERT(R.string.difficulty_expert),
+    PRO(R.string.difficulty_pro),
 }
 
 @Serializable
-enum class LightLevel(val label: String) {
-    LOW("Poca luz"),
-    MEDIUM("Luz media"),
-    INDIRECT_BRIGHT("Luz indirecta brillante"),
-    DIRECT("Sol directo (algunas horas)"),
-    FULL_SUN("Pleno sol"),
+enum class LightLevel(@StringRes val labelRes: Int) {
+    LOW(R.string.light_low),
+    MEDIUM(R.string.light_medium),
+    INDIRECT_BRIGHT(R.string.light_indirect_bright),
+    DIRECT(R.string.light_direct),
+    FULL_SUN(R.string.light_full_sun),
 }
 
 @Serializable
-enum class HumidityLevel(val label: String) {
-    LOW("Ambiente seco"),
-    MEDIUM("Humedad media"),
-    MEDIUM_HIGH("Humedad media-alta"),
-    HIGH("Humedad alta"),
+enum class HumidityLevel(@StringRes val labelRes: Int) {
+    LOW(R.string.humidity_low),
+    MEDIUM(R.string.humidity_medium),
+    MEDIUM_HIGH(R.string.humidity_medium_high),
+    HIGH(R.string.humidity_high),
 }
 
 @Serializable

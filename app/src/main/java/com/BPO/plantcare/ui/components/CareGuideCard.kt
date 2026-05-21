@@ -29,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.CareDifficulty
 import com.BPO.plantcare.domain.model.PlantCareGuide
 import com.BPO.plantcare.ui.theme.StatusHealthy
@@ -46,7 +48,7 @@ fun CareGuideCard(
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Cuidados",
+                text = stringResource(R.string.care_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -70,12 +72,12 @@ fun CareGuideCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            CareRow(icon = Icons.Outlined.WbSunny, label = "Luz", value = guide.light.label)
-            CareRow(icon = Icons.Outlined.InvertColors, label = "Humedad", value = guide.humidity.label)
+            CareRow(icon = Icons.Outlined.WbSunny, label = stringResource(R.string.care_light), value = stringResource(guide.light.labelRes))
+            CareRow(icon = Icons.Outlined.InvertColors, label = stringResource(R.string.care_humidity), value = stringResource(guide.humidity.labelRes))
             CareRow(
                 icon = Icons.Outlined.WaterDrop,
-                label = "Riego",
-                value = "Cada ${guide.wateringIntervalDays} dias",
+                label = stringResource(R.string.care_watering),
+                value = stringResource(R.string.care_every_days, guide.wateringIntervalDays),
             )
             guide.wateringNotes?.let {
                 Text(
@@ -85,9 +87,9 @@ fun CareGuideCard(
                     modifier = Modifier.padding(start = 32.dp, top = 2.dp, bottom = 6.dp),
                 )
             }
-            CareRow(icon = Icons.Outlined.Yard, label = "Sustrato", value = guide.substrate)
-            CareRow(icon = Icons.Outlined.Eco, label = "Abono", value = guide.fertilizing)
-            CareRow(icon = Icons.Outlined.Cached, label = "Trasplante", value = guide.repotting)
+            CareRow(icon = Icons.Outlined.Yard, label = stringResource(R.string.care_substrate), value = guide.substrate)
+            CareRow(icon = Icons.Outlined.Eco, label = stringResource(R.string.care_fertilizing), value = guide.fertilizing)
+            CareRow(icon = Icons.Outlined.Cached, label = stringResource(R.string.care_repotting), value = guide.repotting)
 
             guide.funFact?.let { fact ->
                 Spacer(modifier = Modifier.height(12.dp))
@@ -99,7 +101,7 @@ fun CareGuideCard(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "✨ Sabías que...",
+                            text = stringResource(R.string.care_fun_fact),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                             fontWeight = FontWeight.SemiBold,
@@ -129,7 +131,7 @@ fun DifficultyChip(difficulty: CareDifficulty) {
     AssistChip(
         onClick = {},
         enabled = false,
-        label = { Text(difficulty.label) },
+        label = { Text(stringResource(difficulty.labelRes)) },
         colors = AssistChipDefaults.assistChipColors(
             disabledContainerColor = color.copy(alpha = 0.9f),
             disabledLabelColor = Color.White,
@@ -140,9 +142,9 @@ fun DifficultyChip(difficulty: CareDifficulty) {
 @Composable
 fun LocationChip(indoor: Boolean, outdoor: Boolean) {
     val label = when {
-        indoor && outdoor -> "Interior / exterior"
-        indoor -> "Interior"
-        outdoor -> "Exterior"
+        indoor && outdoor -> stringResource(R.string.care_indoor_outdoor)
+        indoor -> stringResource(R.string.search_indoor)
+        outdoor -> stringResource(R.string.search_outdoor)
         else -> return
     }
     AssistChip(
@@ -161,7 +163,7 @@ fun ToxicChip() {
     AssistChip(
         onClick = {},
         enabled = false,
-        label = { Text("⚠ Tóxica para mascotas") },
+        label = { Text(stringResource(R.string.care_toxic)) },
         colors = AssistChipDefaults.assistChipColors(
             disabledContainerColor = StatusThirsty.copy(alpha = 0.15f),
             disabledLabelColor = StatusThirsty,
@@ -179,14 +181,13 @@ private fun GenusApproximationBanner(genus: String, referenceSpecies: String) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
-                text = "Datos aproximados del genero ${genus.replaceFirstChar { it.titlecase() }}",
+                text = stringResource(R.string.care_genus_title, genus.replaceFirstChar { it.titlecase() }),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Tu especie aun no esta en el catalogo. Estos cuidados son los de " +
-                        "$referenceSpecies, una pariente cercana. Pueden variar ligeramente.",
+                text = stringResource(R.string.care_genus_desc, referenceSpecies),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                 modifier = Modifier.padding(top = 4.dp),

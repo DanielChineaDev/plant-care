@@ -195,7 +195,7 @@ private fun FiltersRow(
                 FilterChip(
                     selected = filters.difficulty == d,
                     onClick = { onDifficultyToggle(d) },
-                    label = { Text(d.label) },
+                    label = { Text(stringResource(d.labelRes)) },
                 )
             }
         }
@@ -211,7 +211,7 @@ private fun FiltersRow(
                 FilterChip(
                     selected = filters.light == l,
                     onClick = { onLightToggle(l) },
-                    label = { Text(l.label) },
+                    label = { Text(stringResource(l.labelRes)) },
                     colors = FilterChipDefaults.filterChipColors(),
                 )
             }
@@ -280,7 +280,7 @@ private fun CatalogCard(
                 )
                 Spacer(modifier = Modifier.size(4.dp))
                 Text(
-                    text = "${guide.difficulty.label} · ${guide.light.label}",
+                    text = "${stringResource(guide.difficulty.labelRes)} · ${stringResource(guide.light.labelRes)}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
