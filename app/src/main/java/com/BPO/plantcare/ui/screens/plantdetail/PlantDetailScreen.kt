@@ -72,6 +72,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.GuideMatch
 import com.BPO.plantcare.domain.model.Plant
@@ -147,8 +149,8 @@ fun PlantDetailScreen(
                 PlantDetailEvent.Deleted -> onBack()
                 is PlantDetailEvent.WateringLogDeleted -> {
                     val result = snackbarHostState.showSnackbar(
-                        message = "Riego eliminado",
-                        actionLabel = "Deshacer",
+                        message = context.getString(R.string.pd_watering_log_deleted),
+                        actionLabel = context.getString(R.string.pd_undo),
                         duration = SnackbarDuration.Short,
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -165,7 +167,7 @@ fun PlantDetailScreen(
                 title = { Text(plant?.displayName.orEmpty()) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -177,14 +179,14 @@ fun PlantDetailScreen(
                                 )
                             },
                         ) {
-                            Icon(Icons.Outlined.Share, contentDescription = "Compartir")
+                            Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.pd_share))
                         }
                     }
                     IconButton(onClick = { showEditDialog = true }) {
-                        Icon(Icons.Outlined.Edit, contentDescription = "Editar alias")
+                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.pd_edit_alias))
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Outlined.Delete, contentDescription = "Eliminar planta")
+                        Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.pd_delete_plant))
                     }
                 },
             )
@@ -209,7 +211,12 @@ fun PlantDetailScreen(
             HeroImage(current, onChangePhotoClick = { showChangePhotoSheet = true })
             TitleSection(current)
 
-            val tabs = listOf("Cuidados", "Diario", "Historial", "Notas")
+            val tabs = listOf(
+                stringResource(R.string.pd_tab_care),
+                stringResource(R.string.pd_tab_diary),
+                stringResource(R.string.pd_tab_history),
+                stringResource(R.string.pd_tab_notes),
+            )
             androidx.compose.material3.TabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->
                     androidx.compose.material3.Tab(
@@ -319,8 +326,8 @@ fun PlantDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar planta") },
-            text = { Text("Esta accion no se puede deshacer.") },
+            title = { Text(stringResource(R.string.pd_delete_title)) },
+            text = { Text(stringResource(R.string.pd_delete_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -330,10 +337,10 @@ fun PlantDetailScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                     ),
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.cancel)) }
             },
         )
     }
@@ -375,7 +382,7 @@ private fun ChangePhotoSheet(
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text(
-                text = "Cambiar foto de la planta",
+                text = stringResource(R.string.pd_change_photo_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 12.dp),
@@ -386,7 +393,7 @@ private fun ChangePhotoSheet(
             ) {
                 Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Sacar una foto")
+                Text(stringResource(R.string.pd_take_photo))
             }
             Spacer(modifier = Modifier.height(8.dp))
             androidx.compose.material3.OutlinedButton(
@@ -395,7 +402,7 @@ private fun ChangePhotoSheet(
             ) {
                 Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Elegir de la galeria")
+                Text(stringResource(R.string.pd_choose_gallery))
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -434,7 +441,7 @@ private fun HeroImage(plant: Plant, onChangePhotoClick: () -> Unit) {
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
-            Icon(Icons.Outlined.CameraAlt, contentDescription = "Cambiar foto")
+            Icon(Icons.Outlined.CameraAlt, contentDescription = stringResource(R.string.pd_change_photo))
         }
     }
 }
@@ -482,21 +489,21 @@ private fun WateringCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Riego",
+                text = stringResource(R.string.pd_watering),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Ultimo riego: ${formatDate(plant.lastWateredAt)}", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.pd_last_watering, formatDate(plant.lastWateredAt)), style = MaterialTheme.typography.bodyMedium)
             Text(
-                text = "Proximo riego: ${nextWateringHint(plant)}",
+                text = stringResource(R.string.pd_next_watering, nextWateringHint(plant)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Cada", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.pd_every), style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.width(8.dp))
                 FilledTonalIconButton(
                     onClick = { onIntervalChange(plant.wateringIntervalDays - 1) },
@@ -518,7 +525,7 @@ private fun WateringCard(
             Button(onClick = onMarkWatered, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.WaterDrop, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Marcar como regada")
+                Text(stringResource(R.string.mark_as_watered))
             }
         }
     }
@@ -534,10 +541,10 @@ private fun TaxonomyCard(plant: Plant) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Taxonomia", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.pd_taxonomy), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(8.dp))
-            plant.family?.let { Text("Familia: $it", style = MaterialTheme.typography.bodyMedium) }
-            plant.genus?.let { Text("Genero: $it", style = MaterialTheme.typography.bodyMedium) }
+            plant.family?.let { Text(stringResource(R.string.pd_family, it), style = MaterialTheme.typography.bodyMedium) }
+            plant.genus?.let { Text(stringResource(R.string.pd_genus, it), style = MaterialTheme.typography.bodyMedium) }
         }
     }
 }
@@ -566,13 +573,13 @@ private fun DiaryCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Diario fotografico",
+                text = stringResource(R.string.pd_diary),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             if (photos.isEmpty()) {
                 Text(
-                    text = "Anade fotos cada cierto tiempo para ver el crecimiento de tu planta.",
+                    text = stringResource(R.string.pd_diary_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
@@ -611,13 +618,13 @@ private fun DiaryCard(
                                     ) {
                                         Icon(
                                             Icons.Outlined.AddAPhoto,
-                                            contentDescription = "Anadir foto",
+                                            contentDescription = stringResource(R.string.pd_add_photo),
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(28.dp),
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            "Anadir",
+                                            stringResource(R.string.pd_add),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                         )
@@ -666,7 +673,7 @@ private fun DiaryThumbnail(
             ) {
                 Icon(
                     Icons.Outlined.Delete,
-                    contentDescription = "Eliminar foto",
+                    contentDescription = stringResource(R.string.pd_delete_photo),
                     tint = Color.White,
                     modifier = Modifier
                         .size(20.dp)
@@ -698,12 +705,12 @@ private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (WateringLog) -
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Historial de riegos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.pd_history), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(8.dp))
 
             if (history.isEmpty()) {
                 Text(
-                    text = "Aun no has registrado ningun riego.",
+                    text = stringResource(R.string.pd_no_history),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -736,7 +743,7 @@ private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (WateringLog) -
                     IconButton(onClick = { onDeleteLog(log) }) {
                         Icon(
                             Icons.Outlined.Delete,
-                            contentDescription = "Eliminar riego",
+                            contentDescription = stringResource(R.string.pd_delete_watering),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp),
                         )
@@ -776,12 +783,12 @@ private fun NotesAndRoomCard(
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Ubicacion",
+                    text = stringResource(R.string.pd_location),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "En que habitacion esta. Sirve para agrupar tus plantas.",
+                    text = stringResource(R.string.pd_location_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -791,10 +798,10 @@ private fun NotesAndRoomCard(
                     onValueChange = { roomText = it },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    placeholder = { Text("Salon, Cocina, Oficina...") },
+                    placeholder = { Text(stringResource(R.string.pd_location_hint)) },
                     trailingIcon = {
                         if (roomText != room) {
-                            TextButton(onClick = { onRoomChange(roomText) }) { Text("Guardar") }
+                            TextButton(onClick = { onRoomChange(roomText) }) { Text(stringResource(R.string.save)) }
                         }
                     },
                 )
@@ -810,7 +817,7 @@ private fun NotesAndRoomCard(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Mis notas",
+                    text = stringResource(R.string.pd_my_notes),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = androidx.compose.ui.graphics.Color(0xFF5D4037),
@@ -822,14 +829,14 @@ private fun NotesAndRoomCard(
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 4,
                     maxLines = 10,
-                    placeholder = { Text("Apunta lo que quieras: cuando floreció, dónde la compraste, trucos...") },
+                    placeholder = { Text(stringResource(R.string.pd_notes_hint)) },
                 )
                 if (notesText != notes) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = { onNotesChange(notesText) },
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Guardar nota") }
+                    ) { Text(stringResource(R.string.pd_save_note)) }
                 }
             }
         }
@@ -841,17 +848,17 @@ private fun EditNicknameDialog(current: String, onConfirm: (String) -> Unit, onD
     var text by rememberSaveable { mutableStateOf(current) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Editar alias") },
+        title = { Text(stringResource(R.string.pd_edit_alias)) },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                label = { Text("Como la llamas") },
+                label = { Text(stringResource(R.string.pd_alias_hint)) },
                 singleLine = true,
             )
         },
-        confirmButton = { Button(onClick = { onConfirm(text) }) { Text("Guardar") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        confirmButton = { Button(onClick = { onConfirm(text) }) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 
@@ -865,32 +872,35 @@ private fun statusColor(status: PlantStatus): Color = when (status) {
     PlantStatus.NotWatered -> Color(0xFF2E7D32)
 }
 
+@Composable
 private fun formatDate(timestamp: Long?): String {
-    if (timestamp == null) return "Sin regar aun"
+    if (timestamp == null) return stringResource(R.string.watering_never)
     val df = DateFormat.getDateInstance(DateFormat.MEDIUM)
     return df.format(Date(timestamp))
 }
 
+@Composable
 private fun nextWateringHint(plant: Plant): String {
-    val last = plant.lastWateredAt ?: return "cuando la riegues por primera vez"
+    val last = plant.lastWateredAt ?: return stringResource(R.string.pd_next_never)
     val now = System.currentTimeMillis()
     val daysSince = ((now - last) / MS_PER_DAY).toInt()
     val daysUntil = plant.wateringIntervalDays - daysSince
     return when {
-        daysUntil > 1 -> "en $daysUntil dias"
-        daysUntil == 1 -> "manana"
-        daysUntil == 0 -> "hoy"
-        else -> "atrasado ${-daysUntil} d"
+        daysUntil > 1 -> stringResource(R.string.pd_next_in_days, daysUntil)
+        daysUntil == 1 -> stringResource(R.string.pd_next_tomorrow)
+        daysUntil == 0 -> stringResource(R.string.pd_next_today)
+        else -> stringResource(R.string.pd_next_overdue, -daysUntil)
     }
 }
 
+@Composable
 private fun relativeAgo(timestamp: Long): String {
     val days = ((System.currentTimeMillis() - timestamp) / MS_PER_DAY).toInt()
     return when {
-        days < 1 -> "Hoy"
-        days == 1 -> "Ayer"
-        days < 7 -> "Hace $days dias"
-        days < 30 -> "Hace ${days / 7} semanas"
-        else -> "Hace ${days / 30} meses"
+        days < 1 -> stringResource(R.string.time_today)
+        days == 1 -> stringResource(R.string.time_yesterday)
+        days < 7 -> stringResource(R.string.time_days_ago_full, days)
+        days < 30 -> stringResource(R.string.time_weeks_ago, days / 7)
+        else -> stringResource(R.string.time_months_ago, days / 30)
     }
 }
