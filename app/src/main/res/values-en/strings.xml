@@ -383,4 +383,26 @@
     <string name="post_comments_count">Comments (%d)</string>
     <string name="post_no_comments">No comments yet.</string>
     <string name="post_comment_placeholder">Write a comment</string>
+
+    <!-- Catalog / add plant -->
+    <string name="plant_added">%s added to My plants</string>
+    <string name="add_to_my_plants">Add to my plants</string>
+    <string name="catalog_not_found">Species not found in the catalog.</string>
+    <string name="catalog_other_names">Other names: %s</string>
+
+    <!-- Identify plant -->
+    <string name="identify_choose_gallery">Choose from gallery</string>
+    <string name="identify_capture">Take photo</string>
+    <string name="identify_photo_captured">Captured photo</string>
+    <string name="identify_action">Identify</string>
+    <string name="identify_retake">Retake photo</string>
+    <string name="identify_loading">Identifying plant…</string>
+    <string name="identify_try_again">Try again</string>
+    <string name="identify_perm_rationale">We need camera access to identify your plants.</string>
+    <string name="identify_perm_denied">Grant camera permission to start identifying plants.</string>
+    <string name="identify_perm_allow">Allow camera</string>
+    <string name="identify_results">Results</string>
+    <string name="identify_view_detail">View details</string>
+    <string name="add_short">Add</string>
+    <string name="identify_family">Family: %s</string>
 </resources>

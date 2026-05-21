@@ -54,11 +54,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Comment
 import com.BPO.plantcare.domain.model.CommunityPost
 import com.BPO.plantcare.ui.components.MarkdownText
@@ -80,16 +83,17 @@ fun PostDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var commentText by rememberSaveable { mutableStateOf("") }
     var showReportDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                is PostDetailEvent.Error -> event.message.ifBlank { "Error" }
+                is PostDetailEvent.Error -> event.message.ifBlank { context.getString(R.string.error_generic) }
                 PostDetailEvent.CommentPosted -> {
                     commentText = ""
-                    "Comentario publicado"
+                    context.getString(R.string.post_comment_posted)
                 }
-                PostDetailEvent.Reported -> "Gracias, hemos recibido tu reporte"
+                PostDetailEvent.Reported -> context.getString(R.string.post_reported_thanks)
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -97,7 +101,7 @@ fun PostDetailScreen(
 
     if (showReportDialog) {
         ReportDialog(
-            title = "Reportar publicacion",
+            title = stringResource(R.string.post_report_title),
             onConfirm = { reason, notes ->
                 viewModel.reportPost(reason, notes)
                 showReportDialog = false
@@ -109,16 +113,16 @@ fun PostDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Publicación") },
+                title = { Text(stringResource(R.string.post_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (isSignedIn) {
                         IconButton(onClick = { showReportDialog = true }) {
-                            Icon(Icons.Outlined.Flag, contentDescription = "Reportar")
+                            Icon(Icons.Outlined.Flag, contentDescription = stringResource(R.string.post_report_action))
                         }
                     }
                 },
@@ -159,7 +163,7 @@ fun PostDetailScreen(
             }
             item {
                 Text(
-                    text = "Comentarios (${current.commentCount})",
+                    text = stringResource(R.string.post_comments_count, current.commentCount.toInt()),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -167,7 +171,7 @@ fun PostDetailScreen(
             if (comments.isEmpty()) {
                 item {
                     Text(
-                        text = "Aun no hay comentarios.",
+                        text = stringResource(R.string.post_no_comments),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -225,7 +229,7 @@ private fun PostHeader(
                         .clickable(onClick = onAuthorNameClick),
                 ) {
                     Text(
-                        text = post.authorName.ifBlank { "Anonimo" },
+                        text = post.authorName.ifBlank { stringResource(R.string.community_user) },
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -329,7 +333,7 @@ private fun CommentRow(comment: Comment, isMine: Boolean, onDelete: () -> Unit) 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = comment.authorName.ifBlank { "Anonimo" },
+                        text = comment.authorName.ifBlank { stringResource(R.string.community_user) },
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
@@ -347,7 +351,7 @@ private fun CommentRow(comment: Comment, isMine: Boolean, onDelete: () -> Unit) 
                 IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
                     Icon(
                         Icons.Outlined.Delete,
-                        contentDescription = "Borrar",
+                        contentDescription = stringResource(R.string.delete),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp),
                     )
@@ -370,7 +374,7 @@ private fun CommentInput(value: String, onChange: (String) -> Unit, onSend: () -
         OutlinedTextField(
             value = value,
             onValueChange = onChange,
-            placeholder = { Text("Escribe un comentario") },
+            placeholder = { Text(stringResource(R.string.post_comment_placeholder)) },
             modifier = Modifier.weight(1f),
             maxLines = 4,
         )
@@ -379,21 +383,22 @@ private fun CommentInput(value: String, onChange: (String) -> Unit, onSend: () -
             onClick = onSend,
             enabled = value.isNotBlank(),
         ) {
-            Icon(Icons.Outlined.Send, contentDescription = "Enviar")
+            Icon(Icons.Outlined.Send, contentDescription = stringResource(R.string.chat_send))
         }
     }
 }
 
 private const val MS_PER_MIN = 60_000L
 
+@Composable
 private fun relativeTime(timestamp: Long): String {
-    if (timestamp <= 0) return "ahora"
+    if (timestamp <= 0) return stringResource(R.string.time_now)
     val diff = System.currentTimeMillis() - timestamp
     val minutes = diff / MS_PER_MIN
     return when {
-        minutes < 1 -> "ahora"
-        minutes < 60 -> "hace $minutes min"
-        minutes < 60 * 24 -> "hace ${minutes / 60} h"
-        else -> "hace ${minutes / (60 * 24)} d"
+        minutes < 1 -> stringResource(R.string.time_now)
+        minutes < 60 -> stringResource(R.string.time_min, minutes.toInt())
+        minutes < 60 * 24 -> stringResource(R.string.time_hours, (minutes / 60).toInt())
+        else -> stringResource(R.string.time_days, (minutes / (60 * 24)).toInt())
     }
 }

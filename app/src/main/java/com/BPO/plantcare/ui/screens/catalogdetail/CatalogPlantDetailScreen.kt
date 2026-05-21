@@ -34,6 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.ui.components.CareGuideCard
 import com.BPO.plantcare.ui.components.WikipediaCard
 import com.BPO.plantcare.ui.screens.common.WikipediaUiState
@@ -54,11 +57,13 @@ fun CatalogPlantDetailScreen(
     val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle()
     val guide = viewModel.guide
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                is CatalogDetailEvent.Added -> "${event.displayName} añadida a Mis plantas"
+                is CatalogDetailEvent.Added ->
+                    context.getString(R.string.plant_added, event.displayName)
                 is CatalogDetailEvent.Failed -> event.message
             }
             snackbarHostState.showSnackbar(msg)
@@ -73,7 +78,7 @@ fun CatalogPlantDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -86,7 +91,7 @@ fun CatalogPlantDetailScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Especie no encontrada en el catalogo.",
+                    text = stringResource(R.string.catalog_not_found),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -117,7 +122,7 @@ fun CatalogPlantDetailScreen(
                 if (guide.commonNames.size > 1) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Otros nombres: ${guide.commonNames.drop(1).joinToString(", ")}",
+                        text = stringResource(R.string.catalog_other_names, guide.commonNames.drop(1).joinToString(", ")),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -142,7 +147,7 @@ fun CatalogPlantDetailScreen(
             ) {
                 Icon(Icons.Outlined.Add, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Añadir a mis plantas")
+                Text(stringResource(R.string.add_to_my_plants))
             }
 
             Spacer(modifier = Modifier.height(16.dp))

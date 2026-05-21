@@ -383,4 +383,26 @@
     <string name="post_comments_count">Comentarios (%d)</string>
     <string name="post_no_comments">Aún no hay comentarios.</string>
     <string name="post_comment_placeholder">Escribe un comentario</string>
+
+    <!-- Catalogo / anadir planta -->
+    <string name="plant_added">%s añadida a Mis plantas</string>
+    <string name="add_to_my_plants">Añadir a mis plantas</string>
+    <string name="catalog_not_found">Especie no encontrada en el catálogo.</string>
+    <string name="catalog_other_names">Otros nombres: %s</string>
+
+    <!-- Identificar planta -->
+    <string name="identify_choose_gallery">Elegir de galería</string>
+    <string name="identify_capture">Capturar foto</string>
+    <string name="identify_photo_captured">Foto capturada</string>
+    <string name="identify_action">Identificar</string>
+    <string name="identify_retake">Repetir foto</string>
+    <string name="identify_loading">Identificando planta…</string>
+    <string name="identify_try_again">Probar de nuevo</string>
+    <string name="identify_perm_rationale">Necesitamos acceso a la cámara para identificar tus plantas.</string>
+    <string name="identify_perm_denied">Concede el permiso de cámara para empezar a identificar plantas.</string>
+    <string name="identify_perm_allow">Permitir cámara</string>
+    <string name="identify_results">Resultados</string>
+    <string name="identify_view_detail">Ver detalle</string>
+    <string name="add_short">Añadir</string>
+    <string name="identify_family">Familia: %s</string>
 </resources>
