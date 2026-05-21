@@ -66,9 +66,13 @@ service cloud.firestore {
         allow read, write: if isMe(userId);
       }
       // Espejo en la nube de las plantas del usuario (sync multi-dispositivo).
-      // Privado: solo el dueno lee/escribe.
+      // Privado: solo el dueno lee/escribe. Incluye la subcoleccion `photos`
+      // (metadatos del diario fotografico con su URL en Storage).
       match /plants/{plantId} {
         allow read, write: if isMe(userId);
+        match /photos/{photoId} {
+          allow read, write: if isMe(userId);
+        }
       }
       match /postLikes/{postId} {
         allow read, write: if isMe(userId);

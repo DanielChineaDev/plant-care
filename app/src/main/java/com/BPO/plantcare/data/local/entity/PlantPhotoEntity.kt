@@ -24,6 +24,7 @@ data class PlantPhotoEntity(
     val path: String,
     val timestamp: Long,
     val note: String?,
+    val remoteUrl: String? = null,
 )
 
 fun PlantPhotoEntity.toDomain(): PlantPhoto = PlantPhoto(
@@ -32,6 +33,7 @@ fun PlantPhotoEntity.toDomain(): PlantPhoto = PlantPhoto(
     path = path,
     timestamp = timestamp,
     note = note,
+    remoteUrl = remoteUrl,
 )
 
 fun PlantPhoto.toEntity(): PlantPhotoEntity = PlantPhotoEntity(
@@ -40,4 +42,5 @@ fun PlantPhoto.toEntity(): PlantPhotoEntity = PlantPhotoEntity(
     path = path,
     timestamp = timestamp,
     note = note,
+    remoteUrl = remoteUrl,
 )

@@ -87,6 +87,8 @@ import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantPhoto
 import com.BPO.plantcare.domain.model.PlantStatus
 import com.BPO.plantcare.domain.model.WateringLog
+import com.BPO.plantcare.domain.model.imageModel
+import com.BPO.plantcare.domain.model.photoModel
 import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.components.AddCareWikiContributionDialog
 import com.BPO.plantcare.ui.components.CareGuideCard
@@ -411,7 +413,7 @@ private fun ChangePhotoSheet(
 
 @Composable
 private fun HeroImage(plant: Plant, onChangePhotoClick: () -> Unit) {
-    val model = plant.userPhotoPath?.let { File(it) } ?: plant.referenceImageUrl
+    val model = plant.photoModel()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -657,7 +659,7 @@ private fun DiaryThumbnail(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(modifier = Modifier.size(100.dp)) {
             AsyncImage(
-                model = File(photo.path),
+                model = photo.imageModel(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

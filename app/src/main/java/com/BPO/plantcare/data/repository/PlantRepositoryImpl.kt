@@ -21,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 class PlantRepositoryImpl @Inject constructor(
@@ -39,7 +40,25 @@ class PlantRepositoryImpl @Inject constructor(
 
     private fun pushUpsert(plant: Plant) {
         val uid = firebaseAuth.currentUser?.uid ?: return
-        syncScope.launch { runCatching { cloud.upsert(uid, plant) } }
+        syncScope.launch {
+            runCatching {
+                var toSync = plant
+                // Si hay una foto local que aun no se ha subido a la nube, la
+                // subimos y guardamos su URL (en local y en la nube) para que
+                // sobreviva al cambio de dispositivo.
+                val localPhoto = plant.userPhotoPath
+                    ?.let { File(it) }
+                    ?.takeIf { it.exists() }
+                if (localPhoto != null && plant.userPhotoUrl == null) {
+                    val url = cloud.uploadMainPhoto(uid, plant.id, localPhoto)
+                    toSync = plant.copy(userPhotoUrl = url)
+                    plantDao.getById(plant.id)?.let {
+                        plantDao.update(it.copy(userPhotoUrl = url))
+                    }
+                }
+                cloud.upsert(uid, toSync)
+            }
+        }
     }
 
     private fun pushDelete(plantId: Long) {
@@ -61,8 +80,13 @@ class PlantRepositoryImpl @Inject constructor(
     }
 
     override suspend fun update(plant: Plant) {
-        plantDao.update(plant.toEntity())
-        pushUpsert(plant)
+        // Si cambia la foto local, invalidamos la URL en la nube para que
+        // pushUpsert vuelva a subir la nueva.
+        val existing = plantDao.getById(plant.id)?.toDomain()
+        val photoChanged = existing?.userPhotoPath != plant.userPhotoPath
+        val toSave = if (photoChanged) plant.copy(userPhotoUrl = null) else plant
+        plantDao.update(toSave.toEntity())
+        pushUpsert(toSave)
         refreshWidget()
     }
 

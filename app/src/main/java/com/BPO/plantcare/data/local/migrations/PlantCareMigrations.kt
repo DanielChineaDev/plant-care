@@ -107,10 +107,24 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+/**
+ * v6 -> v7: fotos en la nube. Anade:
+ *  - `userPhotoUrl` a plants: URL en Storage de la foto principal del usuario.
+ *  - `remoteUrl` a plant_photos: URL en Storage de cada foto de la galeria.
+ * Permiten recuperar las fotos al cambiar de dispositivo.
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `plants` ADD COLUMN `userPhotoUrl` TEXT")
+        db.execSQL("ALTER TABLE `plant_photos` ADD COLUMN `remoteUrl` TEXT")
+    }
+}
+
 val ALL_MIGRATIONS = arrayOf(
     MIGRATION_1_2,
     MIGRATION_2_3,
     MIGRATION_3_4,
     MIGRATION_4_5,
     MIGRATION_5_6,
+    MIGRATION_6_7,
 )

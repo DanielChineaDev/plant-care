@@ -9,6 +9,12 @@ data class Plant(
     val genus: String?,
     val referenceImageUrl: String?,
     val userPhotoPath: String?,
+    /**
+     * URL de la foto del usuario subida a Firebase Storage. Permite recuperar
+     * la foto al cambiar de dispositivo, cuando [userPhotoPath] (ruta local)
+     * ya no existe.
+     */
+    val userPhotoUrl: String? = null,
     val addedAt: Long,
     val lastWateredAt: Long?,
     val wateringIntervalDays: Int,
@@ -22,6 +28,16 @@ data class Plant(
             ?: commonName?.takeIf { it.isNotBlank() }
             ?: scientificName
 }
+
+/**
+ * Modelo de imagen preferido para mostrar la planta: el archivo local si
+ * existe, si no la URL en la nube (otro dispositivo), y por ultimo la imagen
+ * de referencia del catalogo. Apto para pasar a Coil (acepta File o String).
+ */
+fun Plant.photoModel(): Any? =
+    userPhotoPath?.let { java.io.File(it) }?.takeIf { it.exists() }
+        ?: userPhotoUrl
+        ?: referenceImageUrl
 
 enum class PlantStatus(
     val emoji: String,

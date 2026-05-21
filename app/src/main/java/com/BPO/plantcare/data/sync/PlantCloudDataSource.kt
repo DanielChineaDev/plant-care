@@ -1,22 +1,26 @@
 package com.BPO.plantcare.data.sync
 
+import android.net.Uri
 import com.BPO.plantcare.domain.model.Plant
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Espejo en la nube de las plantas del usuario: users/{uid}/plants/{plantId}.
  * El id del documento es el id (Long) de Room, para que el espejo y la copia
- * local compartan identidad. Las fotos locales (userPhotoPath) se guardan tal
- * cual pero no se garantizan entre dispositivos; al no existir el fichero, la
- * UI cae al referenceImageUrl.
+ * local compartan identidad. La foto principal del usuario se sube a Storage
+ * (users/{uid}/plants/{plantId}/main.jpg) y su URL se guarda en `userPhotoUrl`,
+ * de modo que sobrevive al cambio de dispositivo.
  */
 @Singleton
 class PlantCloudDataSource @Inject constructor(
     private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage,
 ) {
     private fun plantsRef(uid: String) =
         firestore.collection(USERS).document(uid).collection(PLANTS)
@@ -25,8 +29,30 @@ class PlantCloudDataSource @Inject constructor(
         plantsRef(uid).document(plant.id.toString()).set(plant.toMap()).await()
     }
 
+    /**
+     * Sube la foto principal local a Storage y devuelve su URL de descarga.
+     * Lanza si falla (el caller decide si ignora el error).
+     */
+    suspend fun uploadMainPhoto(uid: String, plantId: Long, file: File): String {
+        val ref = storage.reference.child("$USERS/$uid/$PLANTS/$plantId/main.jpg")
+        ref.putFile(Uri.fromFile(file)).await()
+        return ref.downloadUrl.await().toString()
+    }
+
     suspend fun delete(uid: String, plantId: Long) {
         plantsRef(uid).document(plantId.toString()).delete().await()
+        // Borra cualquier foto de esta planta en Storage (best-effort).
+        runCatching {
+            storage.reference.child("$USERS/$uid/$PLANTS/$plantId").listAll().await()
+                .let { result ->
+                    result.items.forEach { runCatching { it.delete().await() } }
+                    result.prefixes.forEach { prefix ->
+                        runCatching {
+                            prefix.listAll().await().items.forEach { it.delete().await() }
+                        }
+                    }
+                }
+        }
     }
 
     suspend fun fetchAll(uid: String): List<Plant> =
@@ -41,6 +67,7 @@ class PlantCloudDataSource @Inject constructor(
         "genus" to genus,
         "referenceImageUrl" to referenceImageUrl,
         "userPhotoPath" to userPhotoPath,
+        "userPhotoUrl" to userPhotoUrl,
         "addedAt" to addedAt,
         "lastWateredAt" to lastWateredAt,
         "wateringIntervalDays" to wateringIntervalDays.toLong(),
@@ -61,6 +88,7 @@ class PlantCloudDataSource @Inject constructor(
             genus = getString("genus"),
             referenceImageUrl = getString("referenceImageUrl"),
             userPhotoPath = getString("userPhotoPath"),
+            userPhotoUrl = getString("userPhotoUrl"),
             addedAt = getLong("addedAt") ?: System.currentTimeMillis(),
             lastWateredAt = getLong("lastWateredAt"),
             wateringIntervalDays = (getLong("wateringIntervalDays") ?: 7L).toInt(),

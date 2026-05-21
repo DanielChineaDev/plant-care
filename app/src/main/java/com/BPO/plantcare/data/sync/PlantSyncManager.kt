@@ -2,6 +2,7 @@ package com.BPO.plantcare.data.sync
 
 import android.content.Context
 import com.BPO.plantcare.data.local.dao.PlantDao
+import com.BPO.plantcare.data.local.dao.PlantPhotoDao
 import com.BPO.plantcare.data.local.entity.toDomain
 import com.BPO.plantcare.data.local.entity.toEntity
 import com.BPO.plantcare.domain.repository.AuthRepository
@@ -26,15 +27,18 @@ import javax.inject.Singleton
  *        plantas, manda la nube (reemplaza local); si no, sube lo local.
  *      * Cambio de cuenta: limpia local y baja las plantas de la cuenta nueva.
  *
- * Nota: por ahora SOLO se sincronizan las plantas (no historial de riego,
- * fotos ni tareas). Es suficiente para que la coleccion sobreviva al cambio
- * de cuenta/dispositivo.
+ * Ademas de las plantas, baja los metadatos de la galeria de fotos de cada
+ * planta (con su URL en Storage) para que el diario fotografico sobreviva al
+ * cambio de cuenta/dispositivo. No se sincroniza el historial de riego ni las
+ * tareas.
  */
 @Singleton
 class PlantSyncManager @Inject constructor(
     @ApplicationContext context: Context,
     private val plantDao: PlantDao,
+    private val plantPhotoDao: PlantPhotoDao,
     private val cloud: PlantCloudDataSource,
+    private val photoCloud: PlantPhotoCloudDataSource,
 ) {
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     @Volatile private var started = false
@@ -73,6 +77,18 @@ class PlantSyncManager @Inject constructor(
                 // Cambio de cuenta.
                 plantDao.deleteAll()
                 cloudPlants.forEach { plantDao.insert(it.toEntity()) }
+            }
+        }
+        // Baja la galeria de fotos: para cada planta de la nube, inserta los
+        // metadatos de fotos que no existan ya en local (la imagen se carga
+        // por URL desde Storage; no se descarga el fichero).
+        val plantsToSync = plantDao.getAll().map { it.id }.toSet()
+        for (plantId in plantsToSync) {
+            runCatching {
+                val localIds = plantPhotoDao.getForPlant(plantId).map { it.id }.toSet()
+                photoCloud.fetchForPlant(uid, plantId)
+                    .filter { it.id !in localIds }
+                    .forEach { plantPhotoDao.insert(it.toEntity()) }
             }
         }
         prefs.edit().putString(KEY_LAST_UID, uid).apply()

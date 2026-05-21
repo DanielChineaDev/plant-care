@@ -71,11 +71,11 @@ import coil3.compose.AsyncImage
 import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PlantStatus
+import com.BPO.plantcare.domain.model.photoModel
 import com.BPO.plantcare.domain.model.status
 import com.BPO.plantcare.ui.theme.StatusHealthy
 import com.BPO.plantcare.ui.theme.StatusThirsty
 import com.BPO.plantcare.ui.theme.StatusWarning
-import java.io.File
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -362,10 +362,10 @@ private fun PlantListItem(
                     .clip(RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center,
             ) {
-                val img = plant.userPhotoPath ?: plant.referenceImageUrl
+                val img = plant.photoModel()
                 if (img != null) {
                     AsyncImage(
-                        model = if (plant.userPhotoPath != null) File(plant.userPhotoPath) else img,
+                        model = img,
                         contentDescription = plant.displayName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
@@ -538,7 +538,7 @@ private fun PlantCard(
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center,
             ) {
-                val model = plant.userPhotoPath?.let { File(it) } ?: plant.referenceImageUrl
+                val model = plant.photoModel()
                 if (model != null) {
                     AsyncImage(
                         model = model,

@@ -41,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.PlantPhoto
-import java.io.File
+import com.BPO.plantcare.domain.model.imageModel
 import java.text.DateFormat
 import java.util.Date
 
@@ -146,7 +146,7 @@ private fun ZoomableImage(photo: PlantPhoto) {
         contentAlignment = Alignment.Center,
     ) {
         AsyncImage(
-            model = File(photo.path),
+            model = photo.imageModel(),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier

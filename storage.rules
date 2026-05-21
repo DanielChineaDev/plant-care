@@ -56,8 +56,21 @@ service firebase.storage {
              && request.resource.contentType.matches('image/.*')));
     }
 
+    // Fotos privadas de las plantas del usuario.
+    // Path: users/{uid}/plants/{plantId}/main.jpg (foto principal)
+    //   y   users/{uid}/plants/{plantId}/photos/{fileName} (galeria/diario)
+    // Solo el dueno lee y escribe las suyas. Max 10 MB, content-type imagen.
+    match /users/{uid}/plants/{plantId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && (request.resource == null ||
+            (request.resource.size < 10 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*')));
+    }
+
     // Por defecto: nada accesible. Se ira abriendo a medida que metamos
-    // mas features (avatares custom, fotos privadas de plantas, etc.).
+    // mas features.
     match /{allPaths=**} {
       allow read, write: if false;
     }

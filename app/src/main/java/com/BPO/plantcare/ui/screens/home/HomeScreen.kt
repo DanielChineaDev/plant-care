@@ -57,11 +57,11 @@ import coil3.compose.AsyncImage
 import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.Plant
+import com.BPO.plantcare.domain.model.photoModel
 import com.BPO.plantcare.ui.components.FeedPostCard
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
-import java.io.File
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -360,7 +360,7 @@ private fun RecentPlantTile(plant: Plant, onClick: () -> Unit) {
                     .height(110.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                val model = plant.userPhotoPath?.let { File(it) } ?: plant.referenceImageUrl
+                val model = plant.photoModel()
                 if (model != null) {
                     AsyncImage(
                         model = model,
