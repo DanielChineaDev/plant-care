@@ -248,4 +248,59 @@
     <string name="auth_terms_login">By continuing you agree that we store the minimum data needed for the app to work.</string>
     <string name="auth_terms_register">By creating an account you agree that we store your email and public name.</string>
     <string name="auth_reset_sent">We\'ve sent you an email to reset your password</string>
+
+    <!-- My profile -->
+    <string name="profile_title">My profile</string>
+    <string name="profile_private_notice">Your collection is marked as private. Turn on the switch in Settings → My collection so others can see your plants.</string>
+    <string name="profile_public_plants_count">%d plants in your public collection</string>
+    <string name="profile_empty_public">You haven\'t published any plants yet. Resync them from Settings.</string>
+    <string name="profile_empty_private">Private collection: add plants and publish the collection to see them here.</string>
+    <string name="profile_karma">Karma: %d</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_stats">Stats</string>
+    <string name="stat_plants">Plants</string>
+    <string name="stat_posts">Posts</string>
+    <string name="stat_comments">Comments</string>
+    <string name="stat_waterings">Waterings</string>
+    <string name="stat_streak">Streak (d)</string>
+    <string name="stat_days_here">Days here</string>
+    <string name="profile_achievements">Achievements (%1$d/%2$d)</string>
+    <string name="achievement_unlocked_on">Unlocked on %s</string>
+    <string name="achievement_unlocked">Unlocked!</string>
+    <string name="achievement_locked">Not unlocked yet</string>
+    <string name="profile_select_plant">Select a plant to see its details</string>
+
+    <!-- Edit profile -->
+    <string name="edit_profile_name_saved">Name updated</string>
+    <string name="edit_profile_photo_saved">Photo updated</string>
+    <string name="edit_profile_password_changed">Password updated</string>
+    <string name="edit_profile_details_saved">Profile updated</string>
+    <string name="edit_profile_avatar">Avatar</string>
+    <string name="edit_profile_change_photo">Change photo</string>
+    <string name="edit_profile_name_hint">What\'s your name</string>
+    <string name="edit_profile_save_name">Save name</string>
+    <string name="edit_profile_about_you">About you</string>
+    <string name="edit_profile_bio">Bio</string>
+    <string name="edit_profile_bio_hint">Tell us something about you</string>
+    <string name="edit_profile_location">Location (optional)</string>
+    <string name="edit_profile_location_hint">e.g. Madrid</string>
+    <string name="edit_profile_favorites">Favorite plants</string>
+    <string name="edit_profile_favorites_hint">Comma-separated: Monstera, Pothos</string>
+    <string name="edit_profile_save_profile">Save profile</string>
+    <string name="edit_profile_badges_public">Public badges</string>
+    <string name="edit_profile_badges_public_desc">Let other users see your achievements on your profile.</string>
+    <string name="edit_profile_change_password">Change password</string>
+    <string name="edit_profile_password_help">If you signed in with Google you don\'t need a password. If you set one, you\'ll also be able to sign in with email + password.</string>
+    <string name="edit_profile_new_password">New password</string>
+    <string name="edit_profile_confirm_password">Confirm password</string>
+    <string name="edit_profile_password_mismatch">Passwords don\'t match</string>
+
+    <!-- Public profile -->
+    <string name="public_profile_title">Profile</string>
+    <string name="public_profile_send_message">Send message</string>
+    <string name="public_profile_plants_count">%d plants in their collection</string>
+    <string name="public_profile_no_plants">They haven\'t published any plants yet.</string>
+    <string name="public_profile_private_title">Private collection</string>
+    <string name="public_profile_private_desc">This user hasn\'t made their plant collection public.</string>
+    <string name="public_profile_achievements">Achievements (%d)</string>
 </resources>

@@ -248,4 +248,59 @@
     <string name="auth_terms_login">Al continuar aceptas que guardemos los datos mínimos necesarios para que la app funcione.</string>
     <string name="auth_terms_register">Al crear una cuenta aceptas que guardemos tu email y nombre público.</string>
     <string name="auth_reset_sent">Te hemos enviado un email para restablecer la contraseña</string>
+
+    <!-- Mi perfil -->
+    <string name="profile_title">Mi perfil</string>
+    <string name="profile_private_notice">Tu colección está marcada como privada. Activa el switch en Configuración → Mi colección para que otros vean tus plantas.</string>
+    <string name="profile_public_plants_count">%d plantas en tu colección pública</string>
+    <string name="profile_empty_public">Aún no tienes plantas publicadas. Resincronízalas desde Configuración.</string>
+    <string name="profile_empty_private">Colección privada: añade plantas y publica la colección para verlas aquí.</string>
+    <string name="profile_karma">Karma: %d</string>
+    <string name="profile_edit">Editar perfil</string>
+    <string name="profile_stats">Estadísticas</string>
+    <string name="stat_plants">Plantas</string>
+    <string name="stat_posts">Posts</string>
+    <string name="stat_comments">Comentarios</string>
+    <string name="stat_waterings">Riegos</string>
+    <string name="stat_streak">Racha (d)</string>
+    <string name="stat_days_here">Días aquí</string>
+    <string name="profile_achievements">Logros (%1$d/%2$d)</string>
+    <string name="achievement_unlocked_on">Conseguido el %s</string>
+    <string name="achievement_unlocked">¡Conseguido!</string>
+    <string name="achievement_locked">Aún no conseguido</string>
+    <string name="profile_select_plant">Selecciona una planta para ver su ficha</string>
+
+    <!-- Editar perfil -->
+    <string name="edit_profile_name_saved">Nombre actualizado</string>
+    <string name="edit_profile_photo_saved">Foto actualizada</string>
+    <string name="edit_profile_password_changed">Contraseña actualizada</string>
+    <string name="edit_profile_details_saved">Perfil actualizado</string>
+    <string name="edit_profile_avatar">Avatar</string>
+    <string name="edit_profile_change_photo">Cambiar foto</string>
+    <string name="edit_profile_name_hint">Cómo te llamas</string>
+    <string name="edit_profile_save_name">Guardar nombre</string>
+    <string name="edit_profile_about_you">Sobre ti</string>
+    <string name="edit_profile_bio">Biografía</string>
+    <string name="edit_profile_bio_hint">Cuéntanos algo sobre ti</string>
+    <string name="edit_profile_location">Localización (opcional)</string>
+    <string name="edit_profile_location_hint">Ej. Madrid</string>
+    <string name="edit_profile_favorites">Plantas favoritas</string>
+    <string name="edit_profile_favorites_hint">Separadas por comas: Monstera, Pothos</string>
+    <string name="edit_profile_save_profile">Guardar perfil</string>
+    <string name="edit_profile_badges_public">Insignias públicas</string>
+    <string name="edit_profile_badges_public_desc">Permite que otros usuarios vean tus logros en tu perfil.</string>
+    <string name="edit_profile_change_password">Cambiar contraseña</string>
+    <string name="edit_profile_password_help">Si te logueaste con Google no hace falta tener contraseña. Si la cambias, podrás entrar también con email + contraseña.</string>
+    <string name="edit_profile_new_password">Nueva contraseña</string>
+    <string name="edit_profile_confirm_password">Confirmar contraseña</string>
+    <string name="edit_profile_password_mismatch">Las contraseñas no coinciden</string>
+
+    <!-- Perfil publico -->
+    <string name="public_profile_title">Perfil</string>
+    <string name="public_profile_send_message">Enviar mensaje</string>
+    <string name="public_profile_plants_count">%d plantas en su colección</string>
+    <string name="public_profile_no_plants">Aún no ha publicado ninguna planta.</string>
+    <string name="public_profile_private_title">Colección privada</string>
+    <string name="public_profile_private_desc">Este usuario no ha hecho pública su colección de plantas.</string>
+    <string name="public_profile_achievements">Logros (%d)</string>
 </resources>

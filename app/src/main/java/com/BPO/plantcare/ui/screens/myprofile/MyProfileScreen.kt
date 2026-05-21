@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Achievement
 import com.BPO.plantcare.domain.model.ProfileStats
 import com.BPO.plantcare.domain.model.PublicPlant
@@ -86,10 +88,10 @@ fun MyProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi perfil") },
+                title = { Text(stringResource(R.string.profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -127,7 +129,7 @@ fun MyProfileScreen(
                         Spacer(modifier = Modifier.size(12.dp))
                         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                text = "Tu coleccion esta marcada como privada. Activa el switch en Configuracion -> Mi coleccion para que otros vean tus plantas.",
+                                text = stringResource(R.string.profile_private_notice),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(16.dp),
@@ -136,7 +138,7 @@ fun MyProfileScreen(
                     }
                     Spacer(modifier = Modifier.size(12.dp))
                     Text(
-                        text = "${plants.size} plantas en tu coleccion publica",
+                        text = stringResource(R.string.profile_public_plants_count, plants.size),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -146,9 +148,9 @@ fun MyProfileScreen(
                 item(span = { GridItemSpan(2) }) {
                     Text(
                         text = if (current.isCollectionPublic)
-                            "Aun no tienes plantas publicadas. Resincronizalas desde Configuracion."
+                            stringResource(R.string.profile_empty_public)
                         else
-                            "Coleccion privada: anade plantas y publica la coleccion para verlas aqui.",
+                            stringResource(R.string.profile_empty_private),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -187,8 +189,11 @@ private fun AchievementDialog(achievement: Achievement, onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.size(8.dp))
                 if (achievement.unlocked) {
                     val dateText = if (achievement.unlockedAt > 0)
-                        "Conseguido el ${dateFmt.format(java.util.Date(achievement.unlockedAt))}"
-                    else "¡Conseguido!"
+                        stringResource(
+                            R.string.achievement_unlocked_on,
+                            dateFmt.format(java.util.Date(achievement.unlockedAt)),
+                        )
+                    else stringResource(R.string.achievement_unlocked)
                     Text(
                         text = dateText,
                         style = MaterialTheme.typography.labelMedium,
@@ -196,7 +201,7 @@ private fun AchievementDialog(achievement: Achievement, onDismiss: () -> Unit) {
                     )
                 } else {
                     Text(
-                        text = "Aún no conseguido",
+                        text = stringResource(R.string.achievement_locked),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -204,7 +209,7 @@ private fun AchievementDialog(achievement: Achievement, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cerrar") }
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
         },
     )
 }
@@ -232,7 +237,7 @@ private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
                 )
             }
             Text(
-                text = profile.displayName ?: "Usuario",
+                text = profile.displayName ?: stringResource(R.string.user_default),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 8.dp),
@@ -286,7 +291,7 @@ private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
                 }
             }
             Text(
-                text = "Karma: ${profile.karma.coerceAtLeast(0)}",
+                text = stringResource(R.string.profile_karma, profile.karma.coerceAtLeast(0)),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = 8.dp),
@@ -298,7 +303,7 @@ private fun ProfileHeader(profile: UserProfile, onEditClick: () -> Unit) {
             ) {
                 Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Editar perfil")
+                Text(stringResource(R.string.profile_edit))
             }
         }
     }
@@ -309,21 +314,21 @@ private fun StatsCard(stats: ProfileStats) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Estadisticas",
+                text = stringResource(R.string.profile_stats),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.size(12.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                StatTile("🪴", stats.plantCount.toString(), "Plantas", Modifier.weight(1f))
-                StatTile("✍️", stats.postCount.toString(), "Posts", Modifier.weight(1f))
-                StatTile("💬", stats.commentCount.toString(), "Comentarios", Modifier.weight(1f))
+                StatTile("🪴", stats.plantCount.toString(), stringResource(R.string.stat_plants), Modifier.weight(1f))
+                StatTile("✍️", stats.postCount.toString(), stringResource(R.string.stat_posts), Modifier.weight(1f))
+                StatTile("💬", stats.commentCount.toString(), stringResource(R.string.stat_comments), Modifier.weight(1f))
             }
             Spacer(modifier = Modifier.size(12.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                StatTile("💧", stats.totalWaterings.toString(), "Riegos", Modifier.weight(1f))
-                StatTile("🔥", stats.wateringStreak.toString(), "Racha (d)", Modifier.weight(1f))
-                StatTile("📅", stats.memberSinceDays.toString(), "Dias aqui", Modifier.weight(1f))
+                StatTile("💧", stats.totalWaterings.toString(), stringResource(R.string.stat_waterings), Modifier.weight(1f))
+                StatTile("🔥", stats.wateringStreak.toString(), stringResource(R.string.stat_streak), Modifier.weight(1f))
+                StatTile("📅", stats.memberSinceDays.toString(), stringResource(R.string.stat_days_here), Modifier.weight(1f))
             }
         }
     }
@@ -359,7 +364,7 @@ private fun AchievementsSection(
     val unlocked = achievements.count { it.unlocked }
     Column {
         Text(
-            text = "Logros ($unlocked/${achievements.size})",
+            text = stringResource(R.string.profile_achievements, unlocked, achievements.size),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )

@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 
 /**
@@ -107,14 +109,14 @@ fun EditProfileScreen(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                EditProfileEvent.NameSaved -> "Nombre actualizado"
-                EditProfileEvent.PhotoSaved -> "Foto actualizada"
+                EditProfileEvent.NameSaved -> context.getString(R.string.edit_profile_name_saved)
+                EditProfileEvent.PhotoSaved -> context.getString(R.string.edit_profile_photo_saved)
                 EditProfileEvent.PasswordChanged -> {
                     password = ""
                     confirmPassword = ""
-                    "Contrasena actualizada"
+                    context.getString(R.string.edit_profile_password_changed)
                 }
-                EditProfileEvent.DetailsSaved -> "Perfil actualizado"
+                EditProfileEvent.DetailsSaved -> context.getString(R.string.edit_profile_details_saved)
                 is EditProfileEvent.Error -> event.message
             }
             snackbarHostState.showSnackbar(msg)
@@ -124,10 +126,10 @@ fun EditProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editar perfil") },
+                title = { Text(stringResource(R.string.profile_edit)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -218,7 +220,7 @@ private fun AvatarCard(
                 if (photoUrl != null) {
                     AsyncImage(
                         model = photoUrl,
-                        contentDescription = "Avatar",
+                        contentDescription = stringResource(R.string.edit_profile_avatar),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.size(120.dp).clip(CircleShape),
                     )
@@ -238,7 +240,7 @@ private fun AvatarCard(
             Button(onClick = onPickPhoto, enabled = !uploading) {
                 Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Cambiar foto")
+                Text(stringResource(R.string.edit_profile_change_photo))
             }
         }
     }
@@ -257,7 +259,7 @@ private fun NameCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Nombre",
+                text = stringResource(R.string.field_name),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -268,7 +270,7 @@ private fun NameCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
-                label = { Text("Como te llamas") },
+                label = { Text(stringResource(R.string.edit_profile_name_hint)) },
             )
             Spacer(modifier = Modifier.size(8.dp))
             Button(
@@ -282,7 +284,7 @@ private fun NameCard(
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp,
                     )
-                } else Text("Guardar nombre")
+                } else Text(stringResource(R.string.edit_profile_save_name))
             }
         }
     }
@@ -300,12 +302,12 @@ private fun BadgesVisibilityCard(isPublic: Boolean, onToggle: (Boolean) -> Unit)
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Insignias publicas",
+                    text = stringResource(R.string.edit_profile_badges_public),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "Permite que otros usuarios vean tus logros en tu perfil.",
+                    text = stringResource(R.string.edit_profile_badges_public_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -332,7 +334,7 @@ private fun DetailsCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Sobre ti",
+                text = stringResource(R.string.edit_profile_about_you),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -341,8 +343,8 @@ private fun DetailsCard(
                 value = bio,
                 onValueChange = { if (it.length <= 160) onBioChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Biografia") },
-                placeholder = { Text("Cuentanos algo sobre ti") },
+                label = { Text(stringResource(R.string.edit_profile_bio)) },
+                placeholder = { Text(stringResource(R.string.edit_profile_bio_hint)) },
                 minLines = 2,
                 maxLines = 4,
                 supportingText = { Text("${bio.length}/160") },
@@ -353,16 +355,16 @@ private fun DetailsCard(
                 onValueChange = onLocationChange,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                label = { Text("Localizacion (opcional)") },
-                placeholder = { Text("Ej. Madrid") },
+                label = { Text(stringResource(R.string.edit_profile_location)) },
+                placeholder = { Text(stringResource(R.string.edit_profile_location_hint)) },
             )
             Spacer(modifier = Modifier.size(8.dp))
             OutlinedTextField(
                 value = favorites,
                 onValueChange = onFavoritesChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Plantas favoritas") },
-                placeholder = { Text("Separadas por comas: Monstera, Pothos") },
+                label = { Text(stringResource(R.string.edit_profile_favorites)) },
+                placeholder = { Text(stringResource(R.string.edit_profile_favorites_hint)) },
                 minLines = 1,
                 maxLines = 3,
             )
@@ -378,7 +380,7 @@ private fun DetailsCard(
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp,
                     )
-                } else Text("Guardar perfil")
+                } else Text(stringResource(R.string.edit_profile_save_profile))
             }
         }
     }
@@ -402,13 +404,13 @@ private fun PasswordCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Cambiar contrasena",
+                text = stringResource(R.string.edit_profile_change_password),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.size(4.dp))
             Text(
-                text = "Si te logueaste con Google no hace falta tener contrasena. Si la cambias, podras entrar tambien con email + contrasena.",
+                text = stringResource(R.string.edit_profile_password_help),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -419,7 +421,7 @@ private fun PasswordCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
-                label = { Text("Nueva contrasena") },
+                label = { Text(stringResource(R.string.edit_profile_new_password)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -442,12 +444,12 @@ private fun PasswordCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
-                label = { Text("Confirmar contrasena") },
+                label = { Text(stringResource(R.string.edit_profile_confirm_password)) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
                 isError = mismatch,
                 supportingText = {
-                    if (mismatch) Text("Las contrasenas no coinciden")
+                    if (mismatch) Text(stringResource(R.string.edit_profile_password_mismatch))
                 },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -465,7 +467,7 @@ private fun PasswordCard(
                         color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp,
                     )
-                } else Text("Cambiar contrasena")
+                } else Text(stringResource(R.string.edit_profile_change_password))
             }
         }
     }

@@ -91,7 +91,7 @@ private fun EmptyDetailPane(modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = "Selecciona una planta para ver su ficha",
+                text = androidx.compose.ui.res.stringResource(com.BPO.plantcare.R.string.profile_select_plant),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

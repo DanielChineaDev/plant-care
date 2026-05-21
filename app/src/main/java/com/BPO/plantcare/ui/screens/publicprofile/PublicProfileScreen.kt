@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.PublicPlant
 import com.BPO.plantcare.domain.model.UserProfile
 
@@ -66,10 +68,10 @@ fun PublicProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(profile?.displayName ?: "Perfil") },
+                title = { Text(profile?.displayName ?: stringResource(R.string.public_profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -131,13 +133,13 @@ private fun ProfileHeader(
                 )
             }
             Text(
-                text = profile.displayName ?: "Usuario",
+                text = profile.displayName ?: stringResource(R.string.user_default),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 8.dp),
             )
             Text(
-                text = "Karma: ${profile.karma.coerceAtLeast(0)}",
+                text = stringResource(R.string.profile_karma, profile.karma.coerceAtLeast(0)),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -145,7 +147,7 @@ private fun ProfileHeader(
             Button(onClick = onMessageClick) {
                 Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Enviar mensaje")
+                Text(stringResource(R.string.public_profile_send_message))
             }
         }
     }
@@ -175,7 +177,7 @@ private fun ProfileWithPlants(
                 }
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(
-                    text = "${plants.size} plantas en su coleccion",
+                    text = stringResource(R.string.public_profile_plants_count, plants.size),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -184,7 +186,7 @@ private fun ProfileWithPlants(
         if (plants.isEmpty()) {
             item(span = { GridItemSpan(2) }) {
                 Text(
-                    text = "Aun no ha publicado ninguna planta.",
+                    text = stringResource(R.string.public_profile_no_plants),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -251,7 +253,7 @@ private fun PublicPlantCard(plant: PublicPlant) {
 private fun BadgesRow(achievements: List<com.BPO.plantcare.domain.model.Achievement>) {
     Column {
         Text(
-            text = "Logros (${achievements.size})",
+            text = stringResource(R.string.public_profile_achievements, achievements.size),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )
@@ -317,13 +319,13 @@ private fun PrivateProfile(
                     modifier = Modifier.size(48.dp),
                 )
                 Text(
-                    text = "Coleccion privada",
+                    text = stringResource(R.string.public_profile_private_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 8.dp),
                 )
                 Text(
-                    text = "Este usuario no ha hecho publica su coleccion de plantas.",
+                    text = stringResource(R.string.public_profile_private_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
