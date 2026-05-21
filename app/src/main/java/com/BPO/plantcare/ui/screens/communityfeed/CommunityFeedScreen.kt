@@ -78,6 +78,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,6 +86,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.domain.model.CommunityMember
@@ -117,12 +119,14 @@ fun CommunityFeedScreen(
     var showCreatePost by remember { mutableStateOf(false) }
     var showEditCommunity by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(0) }
+    val errorGeneric = stringResource(R.string.error_generic)
+    val postPublished = stringResource(R.string.community_post_published)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                is FeedEvent.Error -> event.message.ifBlank { "Error" }
-                FeedEvent.PostCreated -> "Publicado"
+                is FeedEvent.Error -> event.message.ifBlank { errorGeneric }
+                FeedEvent.PostCreated -> postPublished
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -134,13 +138,13 @@ fun CommunityFeedScreen(
                 title = { Text(community?.name.orEmpty()) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (isAdmin && community != null) {
                         IconButton(onClick = { showEditCommunity = true }) {
-                            Icon(Icons.Outlined.Edit, contentDescription = "Editar comunidad")
+                            Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.community_edit))
                         }
                     }
                 },
@@ -150,7 +154,7 @@ fun CommunityFeedScreen(
         floatingActionButton = {
             if (selectedTab == 0 && isSignedIn && community?.isMember == true) {
                 FloatingActionButton(onClick = { showCreatePost = true }) {
-                    Icon(Icons.Outlined.Add, contentDescription = "Nuevo post")
+                    Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.community_new_post))
                 }
             }
         },
@@ -171,7 +175,11 @@ fun CommunityFeedScreen(
                 onJoinToggle = viewModel::toggleMembership,
             )
             TabRow(selectedTabIndex = selectedTab) {
-                listOf("Publicaciones", "Miembros", "Sobre").forEachIndexed { index, title ->
+                listOf(
+                    stringResource(R.string.community_tab_posts),
+                    stringResource(R.string.community_tab_members),
+                    stringResource(R.string.community_tab_about),
+                ).forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
@@ -281,7 +289,7 @@ private fun CoverHero(
                     color = Color.White,
                 )
                 Text(
-                    text = "${community.memberCount} miembros",
+                    text = stringResource(R.string.community_members_count, community.memberCount.toInt()),
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.White.copy(alpha = 0.85f),
                 )
@@ -294,9 +302,9 @@ private fun CoverHero(
                             contentColor = Color.White,
                         ),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.White),
-                    ) { Text("Salir") }
+                    ) { Text(stringResource(R.string.leave_action)) }
                 } else {
-                    Button(onClick = onJoinToggle) { Text("Unirme") }
+                    Button(onClick = onJoinToggle) { Text(stringResource(R.string.join_action)) }
                 }
             }
         }
@@ -361,14 +369,14 @@ private fun TagFilterRow(
             FilterChip(
                 selected = selected == null,
                 onClick = { onSelect(null) },
-                label = { Text("Todas") },
+                label = { Text(stringResource(R.string.community_tag_all)) },
             )
         }
         items(PostTag.entries.toList()) { tag ->
             FilterChip(
                 selected = selected == tag,
                 onClick = { onSelect(if (selected == tag) null else tag) },
-                label = { Text("${tag.emoji} ${tag.label}") },
+                label = { Text("${tag.emoji} ${stringResource(tag.labelRes)}") },
             )
         }
     }
@@ -418,7 +426,7 @@ private fun PostCard(
                         .clickable(onClick = onAuthorNameClick),
                 ) {
                     Text(
-                        text = post.authorName.ifBlank { "Anonimo" },
+                        text = post.authorName.ifBlank { stringResource(R.string.community_user) },
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -431,7 +439,7 @@ private fun PostCard(
                 if (post.featured) {
                     Icon(
                         imageVector = Icons.Filled.Star,
-                        contentDescription = "Destacado",
+                        contentDescription = stringResource(R.string.community_featured),
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(20.dp),
                     )
@@ -441,8 +449,8 @@ private fun PostCard(
                         Icon(
                             imageVector = if (post.featured) Icons.Filled.Star
                             else Icons.Outlined.StarBorder,
-                            contentDescription = if (post.featured) "Quitar destacado"
-                            else "Destacar",
+                            contentDescription = if (post.featured) stringResource(R.string.community_unfeature)
+                            else stringResource(R.string.community_feature),
                             tint = Color(0xFFFFC107),
                         )
                     }
@@ -452,7 +460,7 @@ private fun PostCard(
                 Spacer(modifier = Modifier.size(8.dp))
                 AssistChip(
                     onClick = {},
-                    label = { Text("${post.tag.emoji} ${post.tag.label}") },
+                    label = { Text("${post.tag.emoji} ${stringResource(post.tag.labelRes)}") },
                     colors = AssistChipDefaults.assistChipColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -488,7 +496,8 @@ private fun PostCard(
                     Icon(
                         imageVector = if (post.isLikedByMe) Icons.Filled.Favorite
                         else Icons.Outlined.FavoriteBorder,
-                        contentDescription = if (post.isLikedByMe) "Quitar like" else "Like",
+                        contentDescription = if (post.isLikedByMe) stringResource(R.string.community_unlike)
+                        else stringResource(R.string.community_like),
                         tint = if (post.isLikedByMe) Color(LIKE_RED)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -526,7 +535,7 @@ private fun MembersTab(
     if (members.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Aun no hay miembros",
+                text = stringResource(R.string.community_no_members),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -565,13 +574,13 @@ private fun MembersTab(
                     Spacer(modifier = Modifier.size(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = member.name.ifBlank { "Usuario" },
+                            text = member.name.ifBlank { stringResource(R.string.user_default) },
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                         )
                         if (member.isCreator) {
                             Text(
-                                text = "Fundador",
+                                text = stringResource(R.string.community_founder),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                             )
@@ -581,7 +590,7 @@ private fun MembersTab(
                         IconButton(onClick = { onKick(member.uid) }) {
                             Icon(
                                 imageVector = Icons.Outlined.PersonRemove,
-                                contentDescription = "Expulsar",
+                                contentDescription = stringResource(R.string.community_expel),
                                 tint = Color(LIKE_RED),
                             )
                         }
@@ -603,20 +612,20 @@ private fun AboutTab(community: Community) {
     ) {
         if (community.description.isNotBlank()) {
             Text(
-                text = "Descripcion",
+                text = stringResource(R.string.community_about_description),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(text = community.description, style = MaterialTheme.typography.bodyMedium)
         }
         Text(
-            text = "${community.memberCount} miembros",
+            text = stringResource(R.string.community_members_count, community.memberCount.toInt()),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (community.createdAt > 0) {
             Text(
-                text = "Creada el ${dateFmt.format(Date(community.createdAt))}",
+                text = stringResource(R.string.community_created_on, dateFmt.format(Date(community.createdAt))),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -632,16 +641,16 @@ private fun EmptyFeed(isSignedIn: Boolean, isMember: Boolean, filtered: Boolean)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = if (filtered) "Sin publicaciones con esa etiqueta"
-                else "Aun no hay publicaciones",
+                text = if (filtered) stringResource(R.string.feed_empty_filtered_title)
+                else stringResource(R.string.feed_empty_title),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
             val sub = when {
-                filtered -> "Prueba con otra etiqueta o quita el filtro."
-                !isSignedIn -> "Inicia sesion para escribir el primer post."
-                !isMember -> "Unete a la comunidad para publicar."
-                else -> "Pulsa el boton + para escribir el primer post."
+                filtered -> stringResource(R.string.feed_empty_filtered_sub)
+                !isSignedIn -> stringResource(R.string.feed_empty_signin)
+                !isMember -> stringResource(R.string.feed_empty_join)
+                else -> stringResource(R.string.feed_empty_first)
             }
             Text(
                 text = sub,
@@ -690,12 +699,12 @@ private fun CreatePostDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nuevo post") },
+        title = { Text(stringResource(R.string.community_new_post)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Convertir en encuesta",
+                        text = stringResource(R.string.post_make_poll),
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -707,18 +716,23 @@ private fun CreatePostDialog(
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text(if (pollMode) "Pregunta" else "Que quieres contar?") },
+                    label = {
+                        Text(
+                            if (pollMode) stringResource(R.string.post_question)
+                            else stringResource(R.string.post_what),
+                        )
+                    },
                     minLines = if (pollMode) 1 else 3,
                     maxLines = 6,
                 )
                 // Selector de etiqueta/categoria.
-                Text(text = "Etiqueta", style = MaterialTheme.typography.labelLarge)
+                Text(text = stringResource(R.string.post_tag), style = MaterialTheme.typography.labelLarge)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     item {
                         FilterChip(
                             selected = selectedTag == null,
                             onClick = { selectedTag = null },
-                            label = { Text("Ninguna") },
+                            label = { Text(stringResource(R.string.post_tag_none)) },
                         )
                     }
                     items(PostTag.entries.toList()) { tag ->
@@ -727,12 +741,12 @@ private fun CreatePostDialog(
                             onClick = {
                                 selectedTag = if (selectedTag == tag) null else tag
                             },
-                            label = { Text("${tag.emoji} ${tag.label}") },
+                            label = { Text("${tag.emoji} ${stringResource(tag.labelRes)}") },
                         )
                     }
                 }
                 if (pollMode) {
-                    Text(text = "Opciones", style = MaterialTheme.typography.labelLarge)
+                    Text(text = stringResource(R.string.post_options), style = MaterialTheme.typography.labelLarge)
                     pollOptionsState.forEachIndexed { index, opt ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -741,20 +755,20 @@ private fun CreatePostDialog(
                             OutlinedTextField(
                                 value = opt,
                                 onValueChange = { pollOptionsState[index] = it.take(80) },
-                                label = { Text("Opcion ${index + 1}") },
+                                label = { Text(stringResource(R.string.post_option_n, index + 1)) },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f),
                             )
                             if (pollOptionsState.size > 2) {
                                 IconButton(onClick = { pollOptionsState.removeAt(index) }) {
-                                    Icon(Icons.Outlined.Close, contentDescription = "Quitar opcion")
+                                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.post_remove_option))
                                 }
                             }
                         }
                     }
                     if (pollOptionsState.size < 4) {
                         TextButton(onClick = { pollOptionsState.add("") }) {
-                            Text("+ Anadir opcion")
+                            Text(stringResource(R.string.post_add_option))
                         }
                     }
                 }
@@ -778,7 +792,7 @@ private fun CreatePostDialog(
                         ) {
                             Icon(
                                 Icons.Outlined.Close,
-                                contentDescription = "Quitar foto",
+                                contentDescription = stringResource(R.string.remove_photo),
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
                         }
@@ -804,7 +818,7 @@ private fun CreatePostDialog(
                         ) {
                             Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
                             Spacer(modifier = Modifier.size(6.dp))
-                            Text("Camara")
+                            Text(stringResource(R.string.camera))
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
@@ -818,7 +832,7 @@ private fun CreatePostDialog(
                         ) {
                             Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
                             Spacer(modifier = Modifier.size(6.dp))
-                            Text("Galeria")
+                            Text(stringResource(R.string.gallery))
                         }
                     }
                 }
@@ -836,9 +850,9 @@ private fun CreatePostDialog(
                     } else null
                     onConfirm(text, if (pollMode) null else photoFile, options, selectedTag)
                 },
-            ) { Text("Publicar") }
+            ) { Text(stringResource(R.string.publish)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 
@@ -861,7 +875,7 @@ private fun EditCommunityDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Editar comunidad") },
+        title = { Text(stringResource(R.string.community_edit)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(
@@ -896,7 +910,7 @@ private fun EditCommunityDialog(
                         else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Outlined.Image, contentDescription = null)
                             Text(
-                                text = "Tocar para cambiar portada",
+                                text = stringResource(R.string.change_cover),
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
@@ -905,13 +919,13 @@ private fun EditCommunityDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.field_name)) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripcion") },
+                    label = { Text(stringResource(R.string.field_description)) },
                     minLines = 2,
                     maxLines = 5,
                 )
@@ -921,9 +935,9 @@ private fun EditCommunityDialog(
             Button(
                 enabled = name.isNotBlank(),
                 onClick = { onConfirm(name.trim(), description.trim(), photoFile) },
-            ) { Text("Guardar") }
+            ) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
 

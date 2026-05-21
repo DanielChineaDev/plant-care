@@ -60,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.Community
 import com.BPO.plantcare.ui.components.FeedPostCard
@@ -91,12 +93,14 @@ fun CommunitiesListScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showCreate by remember { mutableStateOf(false) }
+    val errorGeneric = stringResource(R.string.error_generic)
+    val communityCreatedMsg = stringResource(R.string.community_created)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val msg = when (event) {
-                is CommunitiesEvent.Error -> event.message.ifBlank { "Error" }
-                is CommunitiesEvent.CommunityCreated -> "Comunidad creada"
+                is CommunitiesEvent.Error -> event.message.ifBlank { errorGeneric }
+                is CommunitiesEvent.CommunityCreated -> communityCreatedMsg
             }
             snackbarHostState.showSnackbar(msg)
         }
@@ -105,10 +109,10 @@ fun CommunitiesListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Comunidades") },
+                title = { Text(stringResource(R.string.drawer_communities)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -123,7 +127,7 @@ fun CommunitiesListScreen(
             // Solo admins ven el boton de crear comunidad.
             if (isSignedIn && isAdmin) {
                 FloatingActionButton(onClick = { showCreate = true }) {
-                    Icon(Icons.Outlined.Add, contentDescription = "Crear comunidad")
+                    Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.communities_create))
                 }
             }
         },
@@ -156,7 +160,7 @@ fun CommunitiesListScreen(
             if (trending.isNotEmpty() && searchQuery.isBlank()) {
                 item {
                     SectionTitle(
-                        text = "🔥 Trending ahora",
+                        text = stringResource(R.string.communities_trending),
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
@@ -178,7 +182,7 @@ fun CommunitiesListScreen(
             if (popular.isNotEmpty()) {
                 item {
                     SectionTitle(
-                        text = "Comunidades populares",
+                        text = stringResource(R.string.communities_popular),
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
@@ -202,7 +206,7 @@ fun CommunitiesListScreen(
             if (others.isNotEmpty()) {
                 item {
                     SectionTitle(
-                        text = "Otras comunidades",
+                        text = stringResource(R.string.communities_others),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     )
                 }
@@ -221,7 +225,7 @@ fun CommunitiesListScreen(
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
                     SectionTitle(
-                        text = "Publicaciones destacadas",
+                        text = stringResource(R.string.communities_featured),
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
@@ -279,11 +283,11 @@ private fun CommunitiesSearchBar(
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Outlined.Close, contentDescription = "Limpiar")
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.clear))
                 }
             }
         },
-        placeholder = { Text("Buscar comunidades") },
+        placeholder = { Text(stringResource(R.string.communities_search)) },
     )
 }
 
@@ -391,7 +395,7 @@ private fun PopularCommunityCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${community.memberCount} miembros",
+                    text = stringResource(R.string.community_members_count, community.memberCount.toInt()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -417,12 +421,12 @@ private fun PopularCommunityCard(
                                 width = 1.dp,
                                 color = androidx.compose.ui.graphics.Color(0xFFE53935),
                             ),
-                        ) { Text("Salir") }
+                        ) { Text(stringResource(R.string.leave_action)) }
                     } else {
                         Button(
                             onClick = onJoinToggle,
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("Unirme") }
+                        ) { Text(stringResource(R.string.join_action)) }
                     }
                 }
             }
@@ -470,7 +474,7 @@ private fun CommunityRow(
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "${community.memberCount} miembros",
+                    text = stringResource(R.string.community_members_count, community.memberCount.toInt()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -486,9 +490,9 @@ private fun CommunityRow(
                             width = 1.dp,
                             color = androidx.compose.ui.graphics.Color(0xFFE53935),
                         ),
-                    ) { Text("Salir") }
+                    ) { Text(stringResource(R.string.leave_action)) }
                 } else {
-                    Button(onClick = onJoinToggle) { Text("Unirme") }
+                    Button(onClick = onJoinToggle) { Text(stringResource(R.string.join_action)) }
                 }
             }
         }
@@ -509,12 +513,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             tint = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = "Aun no hay comunidades",
+            text = stringResource(R.string.communities_empty_title),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 12.dp),
         )
         Text(
-            text = "Crea la primera con el boton +.",
+            text = stringResource(R.string.communities_empty_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -542,7 +546,7 @@ private fun CreateCommunityDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nueva comunidad") },
+        title = { Text(stringResource(R.string.create_community_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Tile clickable para elegir foto: muestra preview o
@@ -566,7 +570,7 @@ private fun CreateCommunityDialog(
                     if (current != null) {
                         AsyncImage(
                             model = current,
-                            contentDescription = "Portada",
+                            contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -578,7 +582,7 @@ private fun CreateCommunityDialog(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
-                                text = "Tocar para anadir portada",
+                                text = stringResource(R.string.create_community_add_cover),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -589,19 +593,19 @@ private fun CreateCommunityDialog(
                 OutlinedTextField(
                     value = emoji,
                     onValueChange = { if (it.length <= 2) emoji = it },
-                    label = { Text("Emoji") },
+                    label = { Text(stringResource(R.string.field_emoji)) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.field_name)) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripcion") },
+                    label = { Text(stringResource(R.string.field_description)) },
                     minLines = 2,
                     maxLines = 4,
                 )
@@ -618,10 +622,10 @@ private fun CreateCommunityDialog(
                         photoFile,
                     )
                 },
-            ) { Text("Crear") }
+            ) { Text(stringResource(R.string.create)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }

@@ -164,4 +164,72 @@
     <string name="search_clear_filters">Clear filters</string>
     <string name="search_empty_filters">No results with the current filters</string>
     <string name="search_no_results">No results for \"%s\"</string>
+
+    <!-- Social common -->
+    <string name="join_action">Join</string>
+    <string name="leave_action">Leave</string>
+    <string name="error_generic">Error</string>
+    <string name="field_name">Name</string>
+    <string name="field_description">Description</string>
+
+    <!-- Communities (list) -->
+    <string name="communities_create">Create community</string>
+    <string name="communities_search">Search communities</string>
+    <string name="communities_trending">🔥 Trending now</string>
+    <string name="communities_popular">Popular communities</string>
+    <string name="communities_others">Other communities</string>
+    <string name="communities_featured">Featured posts</string>
+    <string name="communities_empty_title">No communities yet</string>
+    <string name="communities_empty_subtitle">Create the first one with the + button.</string>
+    <string name="community_created">Community created</string>
+    <string name="create_community_title">New community</string>
+    <string name="create_community_add_cover">Tap to add a cover</string>
+    <string name="field_emoji">Emoji</string>
+    <string name="create">Create</string>
+
+    <!-- Community (feed) -->
+    <string name="community_edit">Edit community</string>
+    <string name="community_tab_posts">Posts</string>
+    <string name="community_tab_members">Members</string>
+    <string name="community_tab_about">About</string>
+    <string name="community_new_post">New post</string>
+    <string name="community_post_published">Posted</string>
+    <string name="community_members_count">%d members</string>
+    <string name="community_founder">Founder</string>
+    <string name="community_expel">Remove</string>
+    <string name="community_no_members">No members yet</string>
+    <string name="community_about_description">Description</string>
+    <string name="community_created_on">Created on %s</string>
+    <string name="community_featured">Featured</string>
+    <string name="community_feature">Feature</string>
+    <string name="community_unfeature">Unfeature</string>
+    <string name="community_tag_all">All</string>
+    <string name="community_user">Anonymous</string>
+    <string name="community_like">Like</string>
+    <string name="community_unlike">Unlike</string>
+    <string name="feed_empty_filtered_title">No posts with that tag</string>
+    <string name="feed_empty_title">No posts yet</string>
+    <string name="feed_empty_filtered_sub">Try another tag or clear the filter.</string>
+    <string name="feed_empty_signin">Sign in to write the first post.</string>
+    <string name="feed_empty_join">Join the community to post.</string>
+    <string name="feed_empty_first">Tap the + button to write the first post.</string>
+    <!-- Create post -->
+    <string name="post_make_poll">Make it a poll</string>
+    <string name="post_question">Question</string>
+    <string name="post_what">What\'s on your mind?</string>
+    <string name="post_tag">Tag</string>
+    <string name="post_tag_none">None</string>
+    <string name="post_options">Options</string>
+    <string name="post_option_n">Option %d</string>
+    <string name="post_remove_option">Remove option</string>
+    <string name="post_add_option">+ Add option</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="publish">Publish</string>
+    <string name="change_cover">Tap to change the cover</string>
+    <string name="post_tag_my_plant">My plant</string>
+    <string name="post_tag_question">Question</string>
+    <string name="post_tag_pest_sos">Pest / SOS</string>
+    <string name="post_tag_before_after">Before/after</string>
 </resources>

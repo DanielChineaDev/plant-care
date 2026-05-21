@@ -164,4 +164,72 @@
     <string name="search_clear_filters">Limpiar filtros</string>
     <string name="search_empty_filters">Ningún resultado con los filtros actuales</string>
     <string name="search_no_results">Sin resultados para «%s»</string>
+
+    <!-- Comun social -->
+    <string name="join_action">Unirme</string>
+    <string name="leave_action">Salir</string>
+    <string name="error_generic">Error</string>
+    <string name="field_name">Nombre</string>
+    <string name="field_description">Descripción</string>
+
+    <!-- Comunidades (lista) -->
+    <string name="communities_create">Crear comunidad</string>
+    <string name="communities_search">Buscar comunidades</string>
+    <string name="communities_trending">🔥 Trending ahora</string>
+    <string name="communities_popular">Comunidades populares</string>
+    <string name="communities_others">Otras comunidades</string>
+    <string name="communities_featured">Publicaciones destacadas</string>
+    <string name="communities_empty_title">Aún no hay comunidades</string>
+    <string name="communities_empty_subtitle">Crea la primera con el botón +.</string>
+    <string name="community_created">Comunidad creada</string>
+    <string name="create_community_title">Nueva comunidad</string>
+    <string name="create_community_add_cover">Tocar para añadir portada</string>
+    <string name="field_emoji">Emoji</string>
+    <string name="create">Crear</string>
+
+    <!-- Comunidad (feed) -->
+    <string name="community_edit">Editar comunidad</string>
+    <string name="community_tab_posts">Publicaciones</string>
+    <string name="community_tab_members">Miembros</string>
+    <string name="community_tab_about">Sobre</string>
+    <string name="community_new_post">Nuevo post</string>
+    <string name="community_post_published">Publicado</string>
+    <string name="community_members_count">%d miembros</string>
+    <string name="community_founder">Fundador</string>
+    <string name="community_expel">Expulsar</string>
+    <string name="community_no_members">Aún no hay miembros</string>
+    <string name="community_about_description">Descripción</string>
+    <string name="community_created_on">Creada el %s</string>
+    <string name="community_featured">Destacado</string>
+    <string name="community_feature">Destacar</string>
+    <string name="community_unfeature">Quitar destacado</string>
+    <string name="community_tag_all">Todas</string>
+    <string name="community_user">Anónimo</string>
+    <string name="community_like">Like</string>
+    <string name="community_unlike">Quitar like</string>
+    <string name="feed_empty_filtered_title">Sin publicaciones con esa etiqueta</string>
+    <string name="feed_empty_title">Aún no hay publicaciones</string>
+    <string name="feed_empty_filtered_sub">Prueba con otra etiqueta o quita el filtro.</string>
+    <string name="feed_empty_signin">Inicia sesión para escribir el primer post.</string>
+    <string name="feed_empty_join">Únete a la comunidad para publicar.</string>
+    <string name="feed_empty_first">Pulsa el botón + para escribir el primer post.</string>
+    <!-- Crear post -->
+    <string name="post_make_poll">Convertir en encuesta</string>
+    <string name="post_question">Pregunta</string>
+    <string name="post_what">¿Qué quieres contar?</string>
+    <string name="post_tag">Etiqueta</string>
+    <string name="post_tag_none">Ninguna</string>
+    <string name="post_options">Opciones</string>
+    <string name="post_option_n">Opción %d</string>
+    <string name="post_remove_option">Quitar opción</string>
+    <string name="post_add_option">+ Añadir opción</string>
+    <string name="camera">Cámara</string>
+    <string name="gallery">Galería</string>
+    <string name="remove_photo">Quitar foto</string>
+    <string name="publish">Publicar</string>
+    <string name="change_cover">Tocar para cambiar portada</string>
+    <string name="post_tag_my_plant">Mi planta</string>
+    <string name="post_tag_question">Pregunta</string>
+    <string name="post_tag_pest_sos">Plaga / SOS</string>
+    <string name="post_tag_before_after">Antes/después</string>
 </resources>

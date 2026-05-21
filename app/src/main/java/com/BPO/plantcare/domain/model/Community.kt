@@ -42,11 +42,15 @@ data class CommunityPost(
  * Etiqueta/categoria de un post de comunidad. Sirve para filtrar el feed.
  * El [key] es lo que se persiste en Firestore; [label] es el texto visible.
  */
-enum class PostTag(val key: String, val label: String, val emoji: String) {
-    MyPlant("my_plant", "Mi planta", "🪴"),
-    Question("question", "Pregunta", "❓"),
-    PestSos("pest_sos", "Plaga / SOS", "🚨"),
-    BeforeAfter("before_after", "Antes/después", "🔄");
+enum class PostTag(
+    val key: String,
+    @androidx.annotation.StringRes val labelRes: Int,
+    val emoji: String,
+) {
+    MyPlant("my_plant", com.BPO.plantcare.R.string.post_tag_my_plant, "🪴"),
+    Question("question", com.BPO.plantcare.R.string.post_tag_question, "❓"),
+    PestSos("pest_sos", com.BPO.plantcare.R.string.post_tag_pest_sos, "🚨"),
+    BeforeAfter("before_after", com.BPO.plantcare.R.string.post_tag_before_after, "🔄");
 
     companion object {
         fun fromKey(key: String?): PostTag? = entries.firstOrNull { it.key == key }
