@@ -42,9 +42,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.GlobalSearchResult
 
 /**
@@ -68,10 +70,10 @@ fun GlobalSearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Buscar") },
+                title = { Text(stringResource(R.string.nav_search)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -89,23 +91,23 @@ fun GlobalSearchScreen(
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onQueryChange("") }) {
-                            Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                            Icon(Icons.Outlined.Clear, contentDescription = stringResource(R.string.clear))
                         }
                     }
                 },
-                placeholder = { Text("Especies, comunidades o usuarios") },
+                placeholder = { Text(stringResource(R.string.globalsearch_placeholder)) },
             )
 
             when {
                 query.length < 2 -> Hint(
-                    text = "Escribe al menos 2 letras para empezar.",
+                    text = stringResource(R.string.globalsearch_hint_short),
                 )
                 loading -> Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) { CircularProgressIndicator() }
                 results.isEmpty() -> Hint(
-                    text = "Sin resultados para \"$query\".",
+                    text = stringResource(R.string.globalsearch_no_results, query),
                 )
                 else -> ResultsList(
                     results = results,
@@ -136,19 +138,19 @@ private fun ResultsList(
         val users = grouped[GlobalSearchResult.UserResult::class].orEmpty()
 
         if (species.isNotEmpty()) {
-            item { SectionTitle("Especies") }
+            item { SectionTitle(stringResource(R.string.globalsearch_section_species)) }
             items(species, key = { it.id }) { r ->
                 ResultRow(result = r, onClick = { onSpeciesClick((r as GlobalSearchResult.Species).scientificName) })
             }
         }
         if (communities.isNotEmpty()) {
-            item { SectionTitle("Comunidades") }
+            item { SectionTitle(stringResource(R.string.globalsearch_section_communities)) }
             items(communities, key = { it.id }) { r ->
                 ResultRow(result = r, onClick = { onCommunityClick(r.id) })
             }
         }
         if (users.isNotEmpty()) {
-            item { SectionTitle("Usuarios") }
+            item { SectionTitle(stringResource(R.string.globalsearch_section_users)) }
             items(users, key = { it.id }) { r ->
                 ResultRow(result = r, onClick = { onUserClick(r.id) })
             }

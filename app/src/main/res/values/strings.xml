@@ -348,4 +348,39 @@
     <string name="care_toxic">⚠ Tóxica para mascotas</string>
     <string name="care_genus_title">Datos aproximados del género %s</string>
     <string name="care_genus_desc">Tu especie aún no está en el catálogo. Estos cuidados son los de %s, una pariente cercana. Pueden variar ligeramente.</string>
+
+    <!-- Tiempo relativo -->
+    <string name="time_min">hace %d min</string>
+    <string name="time_hours">hace %d h</string>
+    <string name="time_days">hace %d d</string>
+
+    <!-- Notificaciones -->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notif_mark_all">Marcar todas</string>
+    <string name="notif_read">Leída</string>
+    <string name="notif_empty_title">Sin notificaciones</string>
+    <string name="notif_empty_desc">Te avisaremos cuando alguien interactúe con tus publicaciones o se una a tus comunidades.</string>
+    <string name="notif_someone">Alguien</string>
+    <string name="notif_like">%s le ha dado like a tu publicación</string>
+    <string name="notif_comment">%s ha comentado tu publicación</string>
+    <string name="notif_join">%s se ha unido a tu comunidad</string>
+    <string name="notif_unknown">%s ha interactuado contigo</string>
+
+    <!-- Busqueda global -->
+    <string name="globalsearch_placeholder">Especies, comunidades o usuarios</string>
+    <string name="globalsearch_hint_short">Escribe al menos 2 letras para empezar.</string>
+    <string name="globalsearch_no_results">Sin resultados para «%s».</string>
+    <string name="globalsearch_section_species">Especies</string>
+    <string name="globalsearch_section_communities">Comunidades</string>
+    <string name="globalsearch_section_users">Usuarios</string>
+
+    <!-- Detalle de post -->
+    <string name="post_detail_title">Publicación</string>
+    <string name="post_report_title">Reportar publicación</string>
+    <string name="post_report_action">Reportar</string>
+    <string name="post_comment_posted">Comentario publicado</string>
+    <string name="post_reported_thanks">Gracias, hemos recibido tu reporte</string>
+    <string name="post_comments_count">Comentarios (%d)</string>
+    <string name="post_no_comments">Aún no hay comentarios.</string>
+    <string name="post_comment_placeholder">Escribe un comentario</string>
 </resources>

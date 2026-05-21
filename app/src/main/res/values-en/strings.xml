@@ -348,4 +348,39 @@
     <string name="care_toxic">⚠ Toxic to pets</string>
     <string name="care_genus_title">Approximate data for genus %s</string>
     <string name="care_genus_desc">Your species isn\'t in the catalog yet. This care is for %s, a close relative. It may vary slightly.</string>
+
+    <!-- Relative time -->
+    <string name="time_min">%d min ago</string>
+    <string name="time_hours">%d h ago</string>
+    <string name="time_days">%d d ago</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notif_mark_all">Mark all</string>
+    <string name="notif_read">Read</string>
+    <string name="notif_empty_title">No notifications</string>
+    <string name="notif_empty_desc">We\'ll let you know when someone interacts with your posts or joins your communities.</string>
+    <string name="notif_someone">Someone</string>
+    <string name="notif_like">%s liked your post</string>
+    <string name="notif_comment">%s commented on your post</string>
+    <string name="notif_join">%s joined your community</string>
+    <string name="notif_unknown">%s interacted with you</string>
+
+    <!-- Global search -->
+    <string name="globalsearch_placeholder">Species, communities or users</string>
+    <string name="globalsearch_hint_short">Type at least 2 letters to start.</string>
+    <string name="globalsearch_no_results">No results for \"%s\".</string>
+    <string name="globalsearch_section_species">Species</string>
+    <string name="globalsearch_section_communities">Communities</string>
+    <string name="globalsearch_section_users">Users</string>
+
+    <!-- Post detail -->
+    <string name="post_detail_title">Post</string>
+    <string name="post_report_title">Report post</string>
+    <string name="post_report_action">Report</string>
+    <string name="post_comment_posted">Comment posted</string>
+    <string name="post_reported_thanks">Thanks, we\'ve received your report</string>
+    <string name="post_comments_count">Comments (%d)</string>
+    <string name="post_no_comments">No comments yet.</string>
+    <string name="post_comment_placeholder">Write a comment</string>
 </resources>

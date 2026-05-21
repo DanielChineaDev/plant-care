@@ -36,11 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.AppNotification
 import com.BPO.plantcare.domain.model.AppNotificationType
 import java.text.DateFormat
@@ -65,16 +67,16 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notificaciones") },
+                title = { Text(stringResource(R.string.notifications_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (notifications.any { !it.read }) {
                         TextButton(onClick = viewModel::markAllAsRead) {
-                            Text("Marcar todas")
+                            Text(stringResource(R.string.notif_mark_all))
                         }
                     }
                 },
@@ -179,7 +181,7 @@ private fun NotificationRow(
             if (notification.read) {
                 Icon(
                     imageVector = Icons.Outlined.Done,
-                    contentDescription = "Leida",
+                    contentDescription = stringResource(R.string.notif_read),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp),
                 )
@@ -200,12 +202,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.size(12.dp))
             Text(
-                text = "Sin notificaciones",
+                text = stringResource(R.string.notif_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Te avisaremos cuando alguien interactue con tus publicaciones o se una a tus comunidades.",
+                text = stringResource(R.string.notif_empty_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -230,16 +232,18 @@ private fun tintFor(type: AppNotificationType) = when (type) {
     AppNotificationType.Unknown -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
+@Composable
 private fun title(n: AppNotification): String {
-    val who = n.fromName?.takeIf { it.isNotBlank() } ?: "Alguien"
+    val who = n.fromName?.takeIf { it.isNotBlank() } ?: stringResource(R.string.notif_someone)
     return when (n.type) {
-        AppNotificationType.PostLike -> "$who le ha dado like a tu publicacion"
-        AppNotificationType.PostComment -> "$who ha comentado tu publicacion"
-        AppNotificationType.CommunityJoin -> "$who se ha unido a tu comunidad"
-        AppNotificationType.Unknown -> "$who hizo algo"
+        AppNotificationType.PostLike -> stringResource(R.string.notif_like, who)
+        AppNotificationType.PostComment -> stringResource(R.string.notif_comment, who)
+        AppNotificationType.CommunityJoin -> stringResource(R.string.notif_join, who)
+        AppNotificationType.Unknown -> stringResource(R.string.notif_unknown, who)
     }
 }
 
+@Composable
 private fun formatTime(ts: Long): String {
     val now = System.currentTimeMillis()
     val diff = now - ts
@@ -247,10 +251,10 @@ private fun formatTime(ts: Long): String {
     val hours = diff / 3_600_000
     val days = diff / 86_400_000
     return when {
-        minutes < 1 -> "ahora"
-        minutes < 60 -> "hace ${minutes} min"
-        hours < 24 -> "hace ${hours} h"
-        days < 7 -> "hace ${days} d"
+        minutes < 1 -> stringResource(R.string.time_now)
+        minutes < 60 -> stringResource(R.string.time_min, minutes.toInt())
+        hours < 24 -> stringResource(R.string.time_hours, hours.toInt())
+        days < 7 -> stringResource(R.string.time_days, days.toInt())
         else -> DateFormat.getDateInstance(DateFormat.SHORT).format(Date(ts))
     }
 }
