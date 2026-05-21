@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 
 @Composable
 fun AuthScreen(
@@ -65,14 +67,12 @@ fun AuthScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    val resetSentMsg = stringResource(R.string.auth_reset_sent)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                AuthEvent.PasswordResetSent ->
-                    snackbarHostState.showSnackbar(
-                        "Te hemos enviado un email para restablecer la contrasena",
-                    )
+                AuthEvent.PasswordResetSent -> snackbarHostState.showSnackbar(resetSentMsg)
             }
         }
     }
@@ -104,7 +104,7 @@ fun AuthScreen(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = "Tus plantas siempre felices",
+                    text = stringResource(R.string.auth_tagline),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -118,12 +118,12 @@ fun AuthScreen(
                     Tab(
                         selected = state.mode == AuthMode.Login,
                         onClick = { viewModel.setMode(AuthMode.Login) },
-                        text = { Text("Iniciar sesion") },
+                        text = { Text(stringResource(R.string.auth_login)) },
                     )
                     Tab(
                         selected = state.mode == AuthMode.Register,
                         onClick = { viewModel.setMode(AuthMode.Register) },
-                        text = { Text("Crear cuenta") },
+                        text = { Text(stringResource(R.string.auth_register)) },
                     )
                 }
 
@@ -133,7 +133,7 @@ fun AuthScreen(
                     OutlinedTextField(
                         value = state.displayName,
                         onValueChange = viewModel::onDisplayNameChange,
-                        label = { Text("Nombre") },
+                        label = { Text(stringResource(R.string.field_name)) },
                         leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -147,7 +147,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = viewModel::onEmailChange,
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.auth_email)) },
                     leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -160,7 +160,7 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = state.password,
                     onValueChange = viewModel::onPasswordChange,
-                    label = { Text("Contrasena") },
+                    label = { Text(stringResource(R.string.auth_password)) },
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None
@@ -170,8 +170,8 @@ fun AuthScreen(
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Outlined.VisibilityOff
                                 else Icons.Outlined.Visibility,
-                                contentDescription = if (passwordVisible) "Ocultar contrasena"
-                                else "Mostrar contrasena",
+                                contentDescription = if (passwordVisible) stringResource(R.string.auth_password_hide)
+                                else stringResource(R.string.auth_password_show),
                             )
                         }
                     },
@@ -198,7 +198,7 @@ fun AuthScreen(
                         onClick = viewModel::sendPasswordReset,
                         modifier = Modifier.align(Alignment.End),
                     ) {
-                        Text("Recuperar contrasena")
+                        Text(stringResource(R.string.auth_forgot))
                     }
                 }
 
@@ -217,7 +217,8 @@ fun AuthScreen(
                         )
                     } else {
                         Text(
-                            text = if (state.mode == AuthMode.Login) "Entrar" else "Crear cuenta",
+                            text = if (state.mode == AuthMode.Login) stringResource(R.string.auth_enter)
+                            else stringResource(R.string.auth_register),
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -231,7 +232,7 @@ fun AuthScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f))
                     Text(
-                        text = "  o  ",
+                        text = "  ${stringResource(R.string.auth_or)}  ",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -245,15 +246,15 @@ fun AuthScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                 ) {
-                    Text("Continuar con Google")
+                    Text(stringResource(R.string.auth_google))
                 }
 
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
                     text = if (state.mode == AuthMode.Login)
-                        "Al continuar aceptas que guardemos los datos minimos necesarios para que la app funcione."
+                        stringResource(R.string.auth_terms_login)
                     else
-                        "Al crear una cuenta aceptas que guardemos tu email y nombre publico.",
+                        stringResource(R.string.auth_terms_register),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

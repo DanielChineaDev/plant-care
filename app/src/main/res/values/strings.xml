@@ -232,4 +232,20 @@
     <string name="post_tag_question">Pregunta</string>
     <string name="post_tag_pest_sos">Plaga / SOS</string>
     <string name="post_tag_before_after">Antes/después</string>
+
+    <!-- Login / registro -->
+    <string name="auth_tagline">Tus plantas siempre felices</string>
+    <string name="auth_login">Iniciar sesión</string>
+    <string name="auth_register">Crear cuenta</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_password_show">Mostrar contraseña</string>
+    <string name="auth_password_hide">Ocultar contraseña</string>
+    <string name="auth_forgot">Recuperar contraseña</string>
+    <string name="auth_enter">Entrar</string>
+    <string name="auth_or">o</string>
+    <string name="auth_google">Continuar con Google</string>
+    <string name="auth_terms_login">Al continuar aceptas que guardemos los datos mínimos necesarios para que la app funcione.</string>
+    <string name="auth_terms_register">Al crear una cuenta aceptas que guardemos tu email y nombre público.</string>
+    <string name="auth_reset_sent">Te hemos enviado un email para restablecer la contraseña</string>
 </resources>

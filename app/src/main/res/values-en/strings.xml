@@ -232,4 +232,20 @@
     <string name="post_tag_question">Question</string>
     <string name="post_tag_pest_sos">Pest / SOS</string>
     <string name="post_tag_before_after">Before/after</string>
+
+    <!-- Login / register -->
+    <string name="auth_tagline">Your plants always happy</string>
+    <string name="auth_login">Sign in</string>
+    <string name="auth_register">Create account</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_password_show">Show password</string>
+    <string name="auth_password_hide">Hide password</string>
+    <string name="auth_forgot">Forgot password</string>
+    <string name="auth_enter">Enter</string>
+    <string name="auth_or">or</string>
+    <string name="auth_google">Continue with Google</string>
+    <string name="auth_terms_login">By continuing you agree that we store the minimum data needed for the app to work.</string>
+    <string name="auth_terms_register">By creating an account you agree that we store your email and public name.</string>
+    <string name="auth_reset_sent">We\'ve sent you an email to reset your password</string>
 </resources>
