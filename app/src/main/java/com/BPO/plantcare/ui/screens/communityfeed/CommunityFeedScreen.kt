@@ -897,13 +897,13 @@ private fun EditCommunityDialog(
                     when {
                         preview != null -> AsyncImage(
                             model = preview,
-                            contentDescription = "Portada",
+                            contentDescription = stringResource(R.string.community_cover),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize(),
                         )
                         community.photoUrl != null -> AsyncImage(
                             model = community.photoUrl,
-                            contentDescription = "Portada",
+                            contentDescription = stringResource(R.string.community_cover),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize(),
                         )

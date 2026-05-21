@@ -35,9 +35,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.PlantPhoto
 import java.io.File
 import java.text.DateFormat
@@ -84,7 +86,7 @@ fun PhotoViewerScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.Outlined.Close,
-                            contentDescription = "Cerrar",
+                            contentDescription = stringResource(R.string.close),
                             tint = Color.White,
                         )
                     }

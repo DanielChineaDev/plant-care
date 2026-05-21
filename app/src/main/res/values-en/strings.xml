@@ -599,4 +599,9 @@
     <string name="cw_fertilize_label">Fertilize every N days</string>
     <string name="cw_light_level">Light level</string>
     <string name="cw_publish">Publish</string>
+
+    <!-- Misc -->
+    <string name="poll_your_vote">Your vote</string>
+    <string name="community_cover">Cover</string>
+    <string name="identify_photo_desc">Identified photo</string>
 </resources>

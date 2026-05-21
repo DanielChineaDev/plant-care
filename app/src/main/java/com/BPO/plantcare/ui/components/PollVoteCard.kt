@@ -22,8 +22,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Poll
 
 /**
@@ -105,7 +107,7 @@ private fun PollOptionRow(
             if (selected) {
                 Icon(
                     imageVector = Icons.Outlined.Check,
-                    contentDescription = "Tu voto",
+                    contentDescription = stringResource(R.string.poll_your_vote),
                     modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.size(6.dp))

@@ -57,7 +57,7 @@ fun ResultsView(
         item {
             AsyncImage(
                 model = photoUri,
-                contentDescription = "Foto identificada",
+                contentDescription = stringResource(R.string.identify_photo_desc),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp),

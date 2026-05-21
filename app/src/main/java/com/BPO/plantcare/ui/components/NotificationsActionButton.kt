@@ -10,8 +10,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 
 /**
  * Icono campana con badge de no leidas para usar en `actions` de las
@@ -33,7 +35,7 @@ fun NotificationsActionButton(
                 }
             },
         ) {
-            Icon(Icons.Outlined.Notifications, contentDescription = "Notificaciones")
+            Icon(Icons.Outlined.Notifications, contentDescription = stringResource(R.string.notifications_title))
         }
     }
 }

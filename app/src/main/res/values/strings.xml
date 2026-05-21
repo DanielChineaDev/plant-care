@@ -599,4 +599,9 @@
     <string name="cw_fertilize_label">Abono cada N días</string>
     <string name="cw_light_level">Nivel de luz</string>
     <string name="cw_publish">Publicar</string>
+
+    <!-- Varios -->
+    <string name="poll_your_vote">Tu voto</string>
+    <string name="community_cover">Portada</string>
+    <string name="identify_photo_desc">Foto identificada</string>
 </resources>
