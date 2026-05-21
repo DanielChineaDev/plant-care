@@ -303,4 +303,16 @@
     <string name="public_profile_private_title">Private collection</string>
     <string name="public_profile_private_desc">This user hasn\'t made their plant collection public.</string>
     <string name="public_profile_achievements">Achievements (%d)</string>
+
+    <!-- Plant status -->
+    <string name="status_healthy">Happy</string>
+    <string name="status_attention">Needs care</string>
+    <string name="status_thirsty">Thirsty</string>
+    <string name="status_not_watered">Not watered yet</string>
+
+    <!-- Plant sort -->
+    <string name="sort_recently_added">Recent</string>
+    <string name="sort_alphabetical">A-Z</string>
+    <string name="sort_next_watering">Next watering</string>
+    <string name="sort_status">Status</string>
 </resources>

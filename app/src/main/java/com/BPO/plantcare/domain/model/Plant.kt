@@ -23,11 +23,14 @@ data class Plant(
             ?: scientificName
 }
 
-enum class PlantStatus(val emoji: String, val label: String) {
-    Healthy(emoji = "😊", label = "Feliz"),         // 😊
-    Attention(emoji = "😐", label = "Atenta"),       // 😐
-    Thirsty(emoji = "🥵", label = "Sedienta"),       // 🥵
-    NotWatered(emoji = "🌱", label = "Sin regar aún"), // 🌱
+enum class PlantStatus(
+    val emoji: String,
+    @androidx.annotation.StringRes val labelRes: Int,
+) {
+    Healthy(emoji = "😊", labelRes = com.BPO.plantcare.R.string.status_healthy),
+    Attention(emoji = "😐", labelRes = com.BPO.plantcare.R.string.status_attention),
+    Thirsty(emoji = "🥵", labelRes = com.BPO.plantcare.R.string.status_thirsty),
+    NotWatered(emoji = "🌱", labelRes = com.BPO.plantcare.R.string.status_not_watered),
 }
 
 /**

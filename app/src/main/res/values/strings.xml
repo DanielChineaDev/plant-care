@@ -303,4 +303,16 @@
     <string name="public_profile_private_title">Colección privada</string>
     <string name="public_profile_private_desc">Este usuario no ha hecho pública su colección de plantas.</string>
     <string name="public_profile_achievements">Logros (%d)</string>
+
+    <!-- Estado de planta -->
+    <string name="status_healthy">Feliz</string>
+    <string name="status_attention">Atenta</string>
+    <string name="status_thirsty">Sedienta</string>
+    <string name="status_not_watered">Sin regar aún</string>
+
+    <!-- Orden de plantas -->
+    <string name="sort_recently_added">Recientes</string>
+    <string name="sort_alphabetical">A-Z</string>
+    <string name="sort_next_watering">Próximo riego</string>
+    <string name="sort_status">Estado</string>
 </resources>

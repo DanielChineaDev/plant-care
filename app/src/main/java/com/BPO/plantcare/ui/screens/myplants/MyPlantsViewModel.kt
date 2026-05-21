@@ -22,11 +22,11 @@ import javax.inject.Inject
 
 enum class PlantsFilter { All, NeedsAttention, Healthy, NotWatered }
 
-enum class PlantsSort(val label: String) {
-    RecentlyAdded("Reciente"),
-    Alphabetical("A-Z"),
-    NextWatering("Proximo riego"),
-    Status("Estado"),
+enum class PlantsSort(@androidx.annotation.StringRes val labelRes: Int) {
+    RecentlyAdded(com.BPO.plantcare.R.string.sort_recently_added),
+    Alphabetical(com.BPO.plantcare.R.string.sort_alphabetical),
+    NextWatering(com.BPO.plantcare.R.string.sort_next_watering),
+    Status(com.BPO.plantcare.R.string.sort_status),
 }
 
 enum class PlantsViewMode { Grid, List }

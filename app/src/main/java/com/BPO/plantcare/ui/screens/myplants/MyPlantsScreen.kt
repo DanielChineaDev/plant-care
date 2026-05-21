@@ -260,7 +260,7 @@ private fun SortMenu(current: PlantsSort, onSelect: (PlantsSort) -> Unit) {
         ) {
             PlantsSort.entries.forEach { sort ->
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text(sort.label) },
+                    text = { Text(stringResource(sort.labelRes)) },
                     onClick = {
                         onSelect(sort)
                         expanded = false
@@ -389,7 +389,7 @@ private fun PlantListItem(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${status.emoji} ${status.label}",
+                    text = "${status.emoji} ${stringResource(status.labelRes)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -627,7 +627,7 @@ private fun StatusBadge(status: PlantStatus, modifier: Modifier = Modifier) {
             .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
-            text = "${status.emoji} ${status.label}",
+            text = "${status.emoji} ${stringResource(status.labelRes)}",
             style = MaterialTheme.typography.labelMedium,
             color = Color.White,
             fontWeight = FontWeight.SemiBold,

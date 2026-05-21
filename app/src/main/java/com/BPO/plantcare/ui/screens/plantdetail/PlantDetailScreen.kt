@@ -459,7 +459,7 @@ private fun TitleSection(plant: Plant) {
         AssistChip(
             onClick = {},
             enabled = false,
-            label = { Text("${status.emoji} ${status.label}") },
+            label = { Text("${status.emoji} ${androidx.compose.ui.res.stringResource(status.labelRes)}") },
             colors = AssistChipDefaults.assistChipColors(
                 disabledContainerColor = statusColor(status).copy(alpha = 0.9f),
                 disabledLabelColor = Color.White,
