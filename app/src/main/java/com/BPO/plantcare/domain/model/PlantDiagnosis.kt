@@ -3,19 +3,19 @@ package com.BPO.plantcare.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class DiagnosisCategory(val label: String) {
-    PEST("Plaga"),
-    FUNGAL("Hongo"),
-    BACTERIAL("Bacteria"),
-    VIRAL("Virus"),
-    PHYSIOLOGICAL("Problema fisiologico"),
+enum class DiagnosisCategory(@androidx.annotation.StringRes val labelRes: Int) {
+    PEST(com.BPO.plantcare.R.string.diag_cat_pest),
+    FUNGAL(com.BPO.plantcare.R.string.diag_cat_fungal),
+    BACTERIAL(com.BPO.plantcare.R.string.diag_cat_bacterial),
+    VIRAL(com.BPO.plantcare.R.string.diag_cat_viral),
+    PHYSIOLOGICAL(com.BPO.plantcare.R.string.diag_cat_physiological),
 }
 
 @Serializable
-enum class DiagnosisSeverity(val label: String) {
-    LOW("Leve"),
-    MEDIUM("Moderada"),
-    HIGH("Grave"),
+enum class DiagnosisSeverity(@androidx.annotation.StringRes val labelRes: Int) {
+    LOW(com.BPO.plantcare.R.string.diag_sev_low),
+    MEDIUM(com.BPO.plantcare.R.string.diag_sev_medium),
+    HIGH(com.BPO.plantcare.R.string.diag_sev_high),
 }
 
 @Serializable

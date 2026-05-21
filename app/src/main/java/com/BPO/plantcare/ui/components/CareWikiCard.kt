@@ -30,9 +30,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.CareWikiAggregate
 import com.BPO.plantcare.domain.model.CareWikiContribution
 
@@ -61,14 +63,14 @@ fun CareWikiCard(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Wiki de la comunidad",
+                    text = stringResource(R.string.cw_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
             }
             Spacer(modifier = Modifier.size(4.dp))
             Text(
-                text = "${aggregate.contributionCount} contribuciones de otros usuarios para esta especie.",
+                text = stringResource(R.string.cw_count, aggregate.contributionCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -77,13 +79,13 @@ fun CareWikiCard(
             if (aggregate.contributionCount > 0) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     aggregate.medianWateringDays?.let {
-                        StatChip(label = "Riego (mediana)", value = "$it d")
+                        StatChip(label = stringResource(R.string.cw_water_median), value = stringResource(R.string.cw_days_short, it))
                     }
                     aggregate.medianFertilizeDays?.let {
-                        StatChip(label = "Abono (mediana)", value = "$it d")
+                        StatChip(label = stringResource(R.string.cw_fertilize_median), value = stringResource(R.string.cw_days_short, it))
                     }
                     aggregate.majorityLightLevel?.let {
-                        StatChip(label = "Luz", value = lightLabel(it))
+                        StatChip(label = stringResource(R.string.cw_light), value = lightLabel(it))
                     }
                 }
                 Spacer(modifier = Modifier.size(12.dp))
@@ -96,7 +98,7 @@ fun CareWikiCard(
                 }
             } else {
                 Text(
-                    text = "Aun no hay contribuciones. Se el primero en compartir como cuidas esta planta.",
+                    text = stringResource(R.string.cw_empty),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -110,7 +112,7 @@ fun CareWikiCard(
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Aportar mis cuidados")
+                    Text(stringResource(R.string.cw_contribute))
                 }
             }
         }
@@ -149,14 +151,14 @@ private fun ContributionRow(
     Column(modifier = Modifier.padding(vertical = 6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = contribution.authorName?.takeIf { it.isNotBlank() } ?: "Usuario",
+                text = contribution.authorName?.takeIf { it.isNotBlank() } ?: stringResource(R.string.cw_user),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f),
             )
             if (contribution.approved) {
                 Text(
-                    text = "✓ Verificada",
+                    text = stringResource(R.string.cw_verified),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
@@ -164,9 +166,9 @@ private fun ContributionRow(
             }
         }
         val bits = mutableListOf<String>()
-        contribution.wateringDays?.let { bits += "Riega cada $it d" }
-        contribution.fertilizeDays?.let { bits += "Abono cada $it d" }
-        contribution.lightLevel?.let { bits += "Luz: ${lightLabel(it)}" }
+        contribution.wateringDays?.let { bits += stringResource(R.string.cw_water_every, it) }
+        contribution.fertilizeDays?.let { bits += stringResource(R.string.cw_fertilize_every, it) }
+        contribution.lightLevel?.let { bits += stringResource(R.string.cw_light_value, lightLabel(it)) }
         Text(
             text = bits.joinToString(" · "),
             style = MaterialTheme.typography.bodySmall,
@@ -184,18 +186,19 @@ private fun ContributionRow(
                 modifier = Modifier.padding(top = 2.dp),
             ) {
                 Text(
-                    if (contribution.approved) "Quitar verificacion"
-                    else "Marcar como verificada",
+                    if (contribution.approved) stringResource(R.string.cw_unverify)
+                    else stringResource(R.string.cw_verify),
                 )
             }
         }
     }
 }
 
+@Composable
 private fun lightLabel(key: String): String = when (key.lowercase()) {
-    "low" -> "Poca"
-    "medium" -> "Media"
-    "high" -> "Mucha"
+    "low" -> stringResource(R.string.cw_light_low)
+    "medium" -> stringResource(R.string.cw_light_medium)
+    "high" -> stringResource(R.string.cw_light_high)
     else -> key
 }
 
@@ -220,18 +223,18 @@ fun AddCareWikiContributionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Aportar cuidados") },
+        title = { Text(stringResource(R.string.cw_add_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "Comparte como cuidas tu planta. Al menos un campo es obligatorio.",
+                    text = stringResource(R.string.cw_add_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OutlinedTextField(
                     value = watering,
                     onValueChange = { watering = it.filter { c -> c.isDigit() }.take(3) },
-                    label = { Text("Riega cada N dias") },
+                    label = { Text(stringResource(R.string.cw_water_label)) },
                     singleLine = true,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = KeyboardType.Number,
@@ -240,18 +243,22 @@ fun AddCareWikiContributionDialog(
                 OutlinedTextField(
                     value = fertilize,
                     onValueChange = { fertilize = it.filter { c -> c.isDigit() }.take(3) },
-                    label = { Text("Abono cada N dias") },
+                    label = { Text(stringResource(R.string.cw_fertilize_label)) },
                     singleLine = true,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                     ),
                 )
                 Text(
-                    text = "Nivel de luz",
+                    text = stringResource(R.string.cw_light_level),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("low" to "Poca", "medium" to "Media", "high" to "Mucha").forEach { (key, label) ->
+                    listOf(
+                        "low" to stringResource(R.string.cw_light_low),
+                        "medium" to stringResource(R.string.cw_light_medium),
+                        "high" to stringResource(R.string.cw_light_high),
+                    ).forEach { (key, label) ->
                         FilterChip(
                             selected = light == key,
                             onClick = { light = if (light == key) null else key },
@@ -265,7 +272,7 @@ fun AddCareWikiContributionDialog(
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it.take(280) },
-                    label = { Text("Notas (opcional)") },
+                    label = { Text(stringResource(R.string.report_notes)) },
                     minLines = 2,
                     maxLines = 4,
                 )
@@ -284,10 +291,10 @@ fun AddCareWikiContributionDialog(
                         notes.trim().ifBlank { null },
                     )
                 },
-            ) { Text("Publicar") }
+            ) { Text(stringResource(R.string.cw_publish)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }

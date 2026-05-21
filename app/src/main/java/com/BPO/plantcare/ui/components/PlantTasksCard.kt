@@ -32,10 +32,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.PlantTask
 import com.BPO.plantcare.domain.model.PlantTaskType
 import com.BPO.plantcare.domain.model.nextDueAt
@@ -63,13 +65,13 @@ fun PlantTasksCard(
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Tareas de cuidado",
+                text = stringResource(R.string.tasks_card_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.size(4.dp))
             Text(
-                text = "Activa solo las tareas que quieras programar. Cada una tiene su propia frecuencia.",
+                text = stringResource(R.string.tasks_card_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -121,14 +123,14 @@ private fun TaskRow(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = type.label,
+                        text = stringResource(type.labelRes),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = if (enabled && task != null) {
-                            "Cada ${task.intervalDays} dias · " + nextDueLabel(task, plantAddedAt)
-                        } else "Sugerido cada ${type.defaultIntervalDays} dias",
+                            stringResource(R.string.tasks_every_days, task.intervalDays, nextDueLabel(task, plantAddedAt))
+                        } else stringResource(R.string.tasks_suggested_every, type.defaultIntervalDays),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -145,10 +147,10 @@ private fun TaskRow(
                     ) {
                         Icon(Icons.Outlined.Check, contentDescription = null)
                         Spacer(modifier = Modifier.size(6.dp))
-                        Text("Hecho")
+                        Text(stringResource(R.string.tasks_done))
                     }
                     IconButton(onClick = { showIntervalDialog = true }) {
-                        Icon(Icons.Outlined.Edit, contentDescription = "Editar intervalo")
+                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.tasks_edit_interval))
                     }
                 }
             }
@@ -178,11 +180,11 @@ private fun IntervalDialog(
     var text by rememberSaveable { mutableStateOf(initial.toString()) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("${type.label}: frecuencia") },
+        title = { Text(stringResource(R.string.tasks_frequency_title, stringResource(type.labelRes))) },
         text = {
             Column {
                 Text(
-                    text = "Cada cuantos dias?",
+                    text = stringResource(R.string.tasks_how_many_days),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.size(8.dp))
@@ -200,23 +202,24 @@ private fun IntervalDialog(
             TextButton(onClick = {
                 val days = max(1, text.toIntOrNull() ?: type.defaultIntervalDays)
                 onConfirm(days)
-            }) { Text("Guardar") }
+            }) { Text(stringResource(R.string.save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }
 
+@Composable
 private fun nextDueLabel(task: PlantTask, plantAddedAt: Long): String {
     val now = System.currentTimeMillis()
     val due = task.nextDueAt(plantAddedAt)
     val days = ((due - now) / (24L * 60L * 60L * 1000L)).toInt()
     return when {
-        due <= now -> "vence hoy"
-        days == 0 -> "vence hoy"
-        days == 1 -> "manana"
-        days < 30 -> "en $days dias"
+        due <= now -> stringResource(R.string.tasks_due_today)
+        days == 0 -> stringResource(R.string.tasks_due_today)
+        days == 1 -> stringResource(R.string.tasks_due_tomorrow)
+        days < 30 -> stringResource(R.string.tasks_due_in_days, days)
         else -> DateFormat.getDateInstance(DateFormat.SHORT).format(Date(due))
     }
 }

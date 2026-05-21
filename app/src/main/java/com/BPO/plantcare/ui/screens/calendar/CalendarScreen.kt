@@ -45,12 +45,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.CalendarEvent
 import com.BPO.plantcare.domain.model.CalendarEventType
 import com.BPO.plantcare.ui.theme.StatusHealthy
@@ -81,10 +83,10 @@ fun CalendarScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Calendario") },
+                title = { Text(stringResource(R.string.drawer_calendar)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -144,14 +146,14 @@ private fun TodayTasksCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Tareas de hoy",
+                text = stringResource(R.string.cal_today_tasks),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (tasks.isEmpty()) {
                 Text(
-                    text = "✨ Nada pendiente hoy. ¡Buen trabajo!",
+                    text = stringResource(R.string.cal_nothing_today),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -233,7 +235,7 @@ private fun MonthHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPrev) {
-            Icon(Icons.Outlined.ChevronLeft, contentDescription = "Mes anterior")
+            Icon(Icons.Outlined.ChevronLeft, contentDescription = stringResource(R.string.cal_prev_month))
         }
         Text(
             text = yearMonth.month
@@ -245,9 +247,9 @@ private fun MonthHeader(
             textAlign = TextAlign.Center,
         )
         IconButton(onClick = onNext) {
-            Icon(Icons.Outlined.ChevronRight, contentDescription = "Mes siguiente")
+            Icon(Icons.Outlined.ChevronRight, contentDescription = stringResource(R.string.cal_next_month))
         }
-        TextButton(onClick = onToday) { Text("Hoy") }
+        TextButton(onClick = onToday) { Text(stringResource(R.string.cal_today)) }
     }
 }
 
@@ -347,7 +349,7 @@ private fun DayEventsCard(
             Spacer(modifier = Modifier.height(8.dp))
             if (events.isEmpty()) {
                 Text(
-                    text = "Sin eventos este dia.",
+                    text = stringResource(R.string.cal_no_events),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -372,17 +374,26 @@ private fun EventRow(
 ) {
     val today = remember { LocalDate.now() }
     val (icon, tint, label) = when (event.type) {
-        CalendarEventType.Watered -> Triple(Icons.Outlined.WaterDrop, StatusHealthy, "Regada")
+        CalendarEventType.Watered -> Triple(Icons.Outlined.WaterDrop, StatusHealthy, stringResource(R.string.cal_watered))
         CalendarEventType.WateringDue -> {
             val isOverdue = event.date.isBefore(today)
             val color = if (isOverdue) StatusThirsty else StatusWarning
-            Triple(Icons.Outlined.LocalFlorist, color, if (isOverdue) "Atrasada" else "Toca regar")
+            Triple(
+                Icons.Outlined.LocalFlorist,
+                color,
+                if (isOverdue) stringResource(R.string.cal_overdue) else stringResource(R.string.cal_water_due),
+            )
         }
         CalendarEventType.TaskDue -> {
             val isOverdue = event.date.isBefore(today)
             val color = if (isOverdue) StatusThirsty else StatusWarning
-            val labelText = event.task?.type?.label?.let { "$it" } ?: "Tarea"
-            Triple(Icons.Outlined.LocalFlorist, color, if (isOverdue) "$labelText (atrasada)" else labelText)
+            val labelText = event.task?.type?.labelRes?.let { stringResource(it) }
+                ?: stringResource(R.string.cal_task_fallback)
+            Triple(
+                Icons.Outlined.LocalFlorist,
+                color,
+                if (isOverdue) stringResource(R.string.cal_task_overdue, labelText) else labelText,
+            )
         }
     }
     Row(
@@ -422,7 +433,7 @@ private fun EventRow(
                 IconButton(onClick = onWatered) {
                     Icon(
                         Icons.Outlined.WaterDrop,
-                        contentDescription = "Marcar como regada",
+                        contentDescription = stringResource(R.string.cal_mark_watered),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -431,7 +442,7 @@ private fun EventRow(
                 IconButton(onClick = onTaskDone) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
-                        contentDescription = "Marcar tarea como hecha",
+                        contentDescription = stringResource(R.string.cal_mark_task_done),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -440,11 +451,12 @@ private fun EventRow(
     }
 }
 
+@Composable
 private fun formatDate(date: LocalDate): String {
     val locale = Locale.getDefault()
     val dayName = date.dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale)
         .replaceFirstChar { it.titlecase(locale) }
     val monthName = date.month.getDisplayName(TextStyle.FULL_STANDALONE, locale)
         .replaceFirstChar { it.titlecase(locale) }
-    return "$dayName ${date.dayOfMonth} de $monthName"
+    return stringResource(R.string.cal_date_format, dayName, date.dayOfMonth, monthName)
 }

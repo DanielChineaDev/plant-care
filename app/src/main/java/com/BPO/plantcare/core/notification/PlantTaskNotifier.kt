@@ -30,7 +30,12 @@ class PlantTaskNotifier @Inject constructor(
         if (!hasNotificationPermission()) return
 
         val notificationId = notifIdFor(task.id)
-        val title = "${task.type.emoji} ${task.type.label}: ${plant.displayName}"
+        val title = context.getString(
+            R.string.task_notif_title,
+            task.type.emoji,
+            context.getString(task.type.labelRes),
+            plant.displayName,
+        )
 
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -46,7 +51,7 @@ class PlantTaskNotifier @Inject constructor(
             action = TaskActionReceiver.ACTION_DONE,
             taskId = task.id,
             notificationId = notificationId,
-            label = "Hecho",
+            label = context.getString(R.string.notif_action_done),
             extras = null,
         )
         val snooze1h = buildAction(
@@ -60,7 +65,7 @@ class PlantTaskNotifier @Inject constructor(
             action = TaskActionReceiver.ACTION_SNOOZE,
             taskId = task.id,
             notificationId = notificationId,
-            label = "Manana",
+            label = context.getString(R.string.notif_action_tomorrow),
             extras = SNOOZE_TOMORROW,
         )
 
@@ -70,7 +75,7 @@ class PlantTaskNotifier @Inject constructor(
         )
             .setSmallIcon(R.drawable.ic_notification_drop)
             .setContentTitle(title)
-            .setContentText("Tarea pendiente hoy")
+            .setContentText(context.getString(R.string.task_notif_pending))
             .setContentIntent(openPending)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

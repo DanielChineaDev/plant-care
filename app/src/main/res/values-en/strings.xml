@@ -396,6 +396,7 @@
     <string name="identify_photo_captured">Captured photo</string>
     <string name="identify_action">Identify</string>
     <string name="identify_retake">Retake photo</string>
+    <string name="identify_another">Identify another</string>
     <string name="identify_loading">Identifying plant…</string>
     <string name="identify_try_again">Try again</string>
     <string name="identify_perm_rationale">We need camera access to identify your plants.</string>
@@ -483,4 +484,119 @@
     <string name="moderation_actioned">Actioned</string>
     <string name="moderation_empty_title">Queue clear</string>
     <string name="moderation_empty_desc">No pending reports right now.</string>
+
+    <!-- Care tasks -->
+    <string name="task_water">Water</string>
+    <string name="task_fertilize">Fertilize</string>
+    <string name="task_prune">Prune</string>
+    <string name="task_repot">Repot</string>
+    <string name="task_rotate">Rotate</string>
+    <string name="task_clean_leaves">Clean leaves</string>
+    <string name="task_fumigate">Fumigate</string>
+    <string name="tasks_card_title">Care tasks</string>
+    <string name="tasks_card_desc">Enable only the tasks you want to schedule. Each one has its own frequency.</string>
+    <string name="tasks_every_days">Every %1$d days · %2$s</string>
+    <string name="tasks_suggested_every">Suggested every %d days</string>
+    <string name="tasks_done">Done</string>
+    <string name="tasks_edit_interval">Edit interval</string>
+    <string name="tasks_frequency_title">%s: frequency</string>
+    <string name="tasks_how_many_days">Every how many days?</string>
+    <string name="tasks_due_today">due today</string>
+    <string name="tasks_due_tomorrow">tomorrow</string>
+    <string name="tasks_due_in_days">in %d days</string>
+    <string name="task_notif_pending">Task due today</string>
+    <string name="task_notif_title">%1$s %2$s: %3$s</string>
+    <string name="notif_action_done">Done</string>
+    <string name="notif_action_tomorrow">Tomorrow</string>
+
+    <!-- Calendar -->
+    <string name="cal_today_tasks">Today\'s tasks</string>
+    <string name="cal_nothing_today">✨ Nothing due today. Great job!</string>
+    <string name="cal_prev_month">Previous month</string>
+    <string name="cal_next_month">Next month</string>
+    <string name="cal_today">Today</string>
+    <string name="cal_no_events">No events on this day.</string>
+    <string name="cal_watered">Watered</string>
+    <string name="cal_overdue">Overdue</string>
+    <string name="cal_water_due">Time to water</string>
+    <string name="cal_task_fallback">Task</string>
+    <string name="cal_task_overdue">%s (overdue)</string>
+    <string name="cal_mark_watered">Mark as watered</string>
+    <string name="cal_mark_task_done">Mark task as done</string>
+    <string name="cal_date_format">%1$s, %3$s %2$d</string>
+
+    <!-- Light meter -->
+    <string name="lm_title">Measure light</string>
+    <string name="lm_searching">Looking for matches…</string>
+    <string name="lm_happy_plants">Plants that thrive in this light</string>
+    <string name="lm_waiting_reading">Waiting for reading…</string>
+    <string name="lm_lux">%d lux</string>
+    <string name="lm_how_title">How to use it</string>
+    <string name="lm_how_desc">Point your phone screen toward the ceiling where you plan to place the plant. The light sensor measures the lux the spot receives and suggests compatible species.</string>
+    <string name="lm_unavailable_title">Your device has no light sensor.</string>
+    <string name="lm_unavailable_desc">Most tablets and some older phones don\'t include this sensor.</string>
+    <string name="lm_pair_format">%1$s · %2$s</string>
+
+    <!-- Diagnosis -->
+    <string name="diag_cat_pest">Pest</string>
+    <string name="diag_cat_fungal">Fungus</string>
+    <string name="diag_cat_bacterial">Bacteria</string>
+    <string name="diag_cat_viral">Virus</string>
+    <string name="diag_cat_physiological">Physiological issue</string>
+    <string name="diag_sev_low">Mild</string>
+    <string name="diag_sev_medium">Moderate</string>
+    <string name="diag_sev_high">Severe</string>
+    <string name="diag_title">Diagnosis</string>
+    <string name="diag_search_placeholder">Search by name or symptom</string>
+    <string name="diag_no_matches">No matches</string>
+    <string name="diag_no_results">No results for \"%s\"</string>
+    <string name="diag_not_found">Diagnosis not found.</string>
+    <string name="diag_symptoms">Symptoms</string>
+    <string name="diag_causes">Common causes</string>
+    <string name="diag_treatment">Treatment</string>
+    <string name="diag_prevention">Prevention</string>
+
+    <!-- Photo diagnosis -->
+    <string name="dphoto_title">Diagnose</string>
+    <string name="dphoto_photo_desc">Photo to analyze</string>
+    <string name="dphoto_pick">Choose photo</string>
+    <string name="dphoto_change">Change photo</string>
+    <string name="dphoto_analyzing">Analyzing…</string>
+    <string name="dphoto_demo">Demo mode: for now we suggest possibilities from the catalog. We\'ll soon add real AI-powered analysis.</string>
+    <string name="dphoto_no_matches">No matches. Try another photo.</string>
+    <string name="dphoto_confidence">Confidence %d%%</string>
+    <string name="dphoto_hint">Upload a clear photo of the affected leaf to get started.</string>
+
+    <!-- Wikipedia -->
+    <string name="wiki_title">About this plant</string>
+    <string name="wiki_loading">Loading info from Wikipedia…</string>
+    <string name="wiki_not_found">We don\'t have a description for this plant yet.</string>
+    <string name="wiki_error">We couldn\'t load the info. %s</string>
+    <string name="wiki_read_more">Read more on Wikipedia (%s)</string>
+
+    <!-- Community wiki -->
+    <string name="cw_title">Community wiki</string>
+    <string name="cw_count">%d contributions from other users for this species.</string>
+    <string name="cw_water_median">Watering (median)</string>
+    <string name="cw_fertilize_median">Fertilizing (median)</string>
+    <string name="cw_light">Light</string>
+    <string name="cw_days_short">%d d</string>
+    <string name="cw_empty">No contributions yet. Be the first to share how you care for this plant.</string>
+    <string name="cw_contribute">Share my care</string>
+    <string name="cw_user">User</string>
+    <string name="cw_verified">✓ Verified</string>
+    <string name="cw_water_every">Waters every %d d</string>
+    <string name="cw_fertilize_every">Fertilizes every %d d</string>
+    <string name="cw_light_value">Light: %s</string>
+    <string name="cw_unverify">Remove verification</string>
+    <string name="cw_verify">Mark as verified</string>
+    <string name="cw_light_low">Low</string>
+    <string name="cw_light_medium">Medium</string>
+    <string name="cw_light_high">High</string>
+    <string name="cw_add_title">Share care</string>
+    <string name="cw_add_desc">Share how you care for your plant. At least one field is required.</string>
+    <string name="cw_water_label">Water every N days</string>
+    <string name="cw_fertilize_label">Fertilize every N days</string>
+    <string name="cw_light_level">Light level</string>
+    <string name="cw_publish">Publish</string>
 </resources>

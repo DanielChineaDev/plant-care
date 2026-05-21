@@ -47,11 +47,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.DiagnosisCategory
 import com.BPO.plantcare.domain.model.DiagnosisSeverity
 import com.BPO.plantcare.domain.model.PlantDiagnosis
@@ -72,10 +74,10 @@ fun DiagnosisListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Diagnostico") },
+                title = { Text(stringResource(R.string.diag_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -118,12 +120,12 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Busca por nombre o sintoma") },
+        placeholder = { Text(stringResource(R.string.diag_search_placeholder)) },
         leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Outlined.Clear, contentDescription = "Limpiar")
+                    Icon(Icons.Outlined.Clear, contentDescription = stringResource(R.string.clear))
                 }
             }
         },
@@ -149,11 +151,11 @@ private fun CategoryFilters(
             FilterChip(
                 selected = selected == c,
                 onClick = { onToggle(c) },
-                label = { Text(c.label) },
+                label = { Text(stringResource(c.labelRes)) },
             )
         }
         if (selected != null) {
-            TextButton(onClick = onClear) { Text("Limpiar") }
+            TextButton(onClick = onClear) { Text(stringResource(R.string.clear)) }
         }
     }
 }
@@ -187,7 +189,7 @@ private fun DiagnosisCard(diagnosis: PlantDiagnosis, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = diagnosis.category.label,
+                text = stringResource(diagnosis.category.labelRes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -213,7 +215,7 @@ private fun SeverityChip(severity: DiagnosisSeverity) {
     AssistChip(
         onClick = {},
         enabled = false,
-        label = { Text(severity.label, style = MaterialTheme.typography.labelSmall) },
+        label = { Text(stringResource(severity.labelRes), style = MaterialTheme.typography.labelSmall) },
         colors = AssistChipDefaults.assistChipColors(
             disabledContainerColor = color.copy(alpha = 0.85f),
             disabledLabelColor = Color.White,
@@ -235,8 +237,8 @@ private fun EmptyResults(query: String) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = if (query.isBlank()) "Sin coincidencias"
-            else "Sin resultados para \"$query\"",
+            text = if (query.isBlank()) stringResource(R.string.diag_no_matches)
+            else stringResource(R.string.diag_no_results, query),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 12.dp),

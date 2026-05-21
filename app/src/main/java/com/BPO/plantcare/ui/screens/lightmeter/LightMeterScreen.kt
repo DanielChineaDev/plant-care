@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.LightLevel
 import com.BPO.plantcare.domain.model.PlantCareGuide
 
@@ -54,10 +56,10 @@ fun LightMeterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Medir luz") },
+                title = { Text(stringResource(R.string.lm_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -78,8 +80,8 @@ fun LightMeterScreen(
             item { HintCard() }
             item {
                 Text(
-                    text = if (state.candidates.isEmpty()) "Buscando coincidencias..."
-                    else "Plantas que viven felices con esta luz",
+                    text = if (state.candidates.isEmpty()) stringResource(R.string.lm_searching)
+                    else stringResource(R.string.lm_happy_plants),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -115,14 +117,14 @@ private fun ReadingCard(lux: Float?, level: LightLevel?) {
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = lux?.let { "${it.toInt()} lux" } ?: "Esperando lectura...",
+                text = lux?.let { stringResource(R.string.lm_lux, it.toInt()) } ?: stringResource(R.string.lm_waiting_reading),
                 style = MaterialTheme.typography.displaySmall.copy(fontSize = 40.sp),
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             level?.let {
                 Text(
-                    text = androidx.compose.ui.res.stringResource(it.labelRes),
+                    text = stringResource(it.labelRes),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(top = 4.dp),
@@ -140,14 +142,13 @@ private fun HintCard() {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Como usarlo",
+                text = stringResource(R.string.lm_how_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.size(4.dp))
             Text(
-                text = "Apunta la pantalla del movil hacia el techo en el lugar donde piensas colocar la planta. " +
-                        "El sensor de luz mide los lux que recibe la zona y te sugiere especies compatibles.",
+                text = stringResource(R.string.lm_how_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -189,7 +190,7 @@ private fun CandidateRow(guide: PlantCareGuide) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "${androidx.compose.ui.res.stringResource(guide.light.labelRes)} · ${androidx.compose.ui.res.stringResource(guide.difficulty.labelRes)}",
+                        text = stringResource(R.string.lm_pair_format, stringResource(guide.light.labelRes), stringResource(guide.difficulty.labelRes)),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -215,12 +216,12 @@ private fun UnavailableContent(modifier: Modifier = Modifier) {
             modifier = Modifier.size(72.dp),
         )
         Text(
-            text = "Tu dispositivo no tiene sensor de luz.",
+            text = stringResource(R.string.lm_unavailable_title),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 12.dp),
         )
         Text(
-            text = "La mayoria de tablets y algunos moviles antiguos no incluyen este sensor.",
+            text = stringResource(R.string.lm_unavailable_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

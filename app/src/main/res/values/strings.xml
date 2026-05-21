@@ -396,6 +396,7 @@
     <string name="identify_photo_captured">Foto capturada</string>
     <string name="identify_action">Identificar</string>
     <string name="identify_retake">Repetir foto</string>
+    <string name="identify_another">Identificar otra</string>
     <string name="identify_loading">Identificando planta…</string>
     <string name="identify_try_again">Probar de nuevo</string>
     <string name="identify_perm_rationale">Necesitamos acceso a la cámara para identificar tus plantas.</string>
@@ -483,4 +484,119 @@
     <string name="moderation_actioned">Actuado</string>
     <string name="moderation_empty_title">Cola limpia</string>
     <string name="moderation_empty_desc">No hay reportes pendientes ahora mismo.</string>
+
+    <!-- Tareas de cuidado -->
+    <string name="task_water">Regar</string>
+    <string name="task_fertilize">Abonar</string>
+    <string name="task_prune">Podar</string>
+    <string name="task_repot">Trasplantar</string>
+    <string name="task_rotate">Rotar</string>
+    <string name="task_clean_leaves">Limpiar hojas</string>
+    <string name="task_fumigate">Fumigar</string>
+    <string name="tasks_card_title">Tareas de cuidado</string>
+    <string name="tasks_card_desc">Activa solo las tareas que quieras programar. Cada una tiene su propia frecuencia.</string>
+    <string name="tasks_every_days">Cada %1$d días · %2$s</string>
+    <string name="tasks_suggested_every">Sugerido cada %d días</string>
+    <string name="tasks_done">Hecho</string>
+    <string name="tasks_edit_interval">Editar intervalo</string>
+    <string name="tasks_frequency_title">%s: frecuencia</string>
+    <string name="tasks_how_many_days">¿Cada cuántos días?</string>
+    <string name="tasks_due_today">vence hoy</string>
+    <string name="tasks_due_tomorrow">mañana</string>
+    <string name="tasks_due_in_days">en %d días</string>
+    <string name="task_notif_pending">Tarea pendiente hoy</string>
+    <string name="task_notif_title">%1$s %2$s: %3$s</string>
+    <string name="notif_action_done">Hecho</string>
+    <string name="notif_action_tomorrow">Mañana</string>
+
+    <!-- Calendario -->
+    <string name="cal_today_tasks">Tareas de hoy</string>
+    <string name="cal_nothing_today">✨ Nada pendiente hoy. ¡Buen trabajo!</string>
+    <string name="cal_prev_month">Mes anterior</string>
+    <string name="cal_next_month">Mes siguiente</string>
+    <string name="cal_today">Hoy</string>
+    <string name="cal_no_events">Sin eventos este día.</string>
+    <string name="cal_watered">Regada</string>
+    <string name="cal_overdue">Atrasada</string>
+    <string name="cal_water_due">Toca regar</string>
+    <string name="cal_task_fallback">Tarea</string>
+    <string name="cal_task_overdue">%s (atrasada)</string>
+    <string name="cal_mark_watered">Marcar como regada</string>
+    <string name="cal_mark_task_done">Marcar tarea como hecha</string>
+    <string name="cal_date_format">%1$s %2$d de %3$s</string>
+
+    <!-- Medidor de luz -->
+    <string name="lm_title">Medir luz</string>
+    <string name="lm_searching">Buscando coincidencias…</string>
+    <string name="lm_happy_plants">Plantas que viven felices con esta luz</string>
+    <string name="lm_waiting_reading">Esperando lectura…</string>
+    <string name="lm_lux">%d lux</string>
+    <string name="lm_how_title">Cómo usarlo</string>
+    <string name="lm_how_desc">Apunta la pantalla del móvil hacia el techo en el lugar donde piensas colocar la planta. El sensor de luz mide los lux que recibe la zona y te sugiere especies compatibles.</string>
+    <string name="lm_unavailable_title">Tu dispositivo no tiene sensor de luz.</string>
+    <string name="lm_unavailable_desc">La mayoría de tablets y algunos móviles antiguos no incluyen este sensor.</string>
+    <string name="lm_pair_format">%1$s · %2$s</string>
+
+    <!-- Diagnóstico -->
+    <string name="diag_cat_pest">Plaga</string>
+    <string name="diag_cat_fungal">Hongo</string>
+    <string name="diag_cat_bacterial">Bacteria</string>
+    <string name="diag_cat_viral">Virus</string>
+    <string name="diag_cat_physiological">Problema fisiológico</string>
+    <string name="diag_sev_low">Leve</string>
+    <string name="diag_sev_medium">Moderada</string>
+    <string name="diag_sev_high">Grave</string>
+    <string name="diag_title">Diagnóstico</string>
+    <string name="diag_search_placeholder">Busca por nombre o síntoma</string>
+    <string name="diag_no_matches">Sin coincidencias</string>
+    <string name="diag_no_results">Sin resultados para \"%s\"</string>
+    <string name="diag_not_found">Diagnóstico no encontrado.</string>
+    <string name="diag_symptoms">Síntomas</string>
+    <string name="diag_causes">Causas frecuentes</string>
+    <string name="diag_treatment">Tratamiento</string>
+    <string name="diag_prevention">Prevención</string>
+
+    <!-- Diagnóstico por foto -->
+    <string name="dphoto_title">Diagnosticar</string>
+    <string name="dphoto_photo_desc">Foto a analizar</string>
+    <string name="dphoto_pick">Elegir foto</string>
+    <string name="dphoto_change">Cambiar foto</string>
+    <string name="dphoto_analyzing">Analizando…</string>
+    <string name="dphoto_demo">Modo demo: por ahora se sugieren posibilidades del catálogo. Pronto integraremos un análisis real con IA.</string>
+    <string name="dphoto_no_matches">Sin coincidencias. Prueba con otra foto.</string>
+    <string name="dphoto_confidence">Confianza %d%%</string>
+    <string name="dphoto_hint">Sube una foto clara de la hoja afectada para empezar.</string>
+
+    <!-- Wikipedia -->
+    <string name="wiki_title">Sobre esta planta</string>
+    <string name="wiki_loading">Cargando información de Wikipedia…</string>
+    <string name="wiki_not_found">Aún no tenemos descripción para esta planta.</string>
+    <string name="wiki_error">No hemos podido cargar la información. %s</string>
+    <string name="wiki_read_more">Leer más en Wikipedia (%s)</string>
+
+    <!-- Wiki de la comunidad -->
+    <string name="cw_title">Wiki de la comunidad</string>
+    <string name="cw_count">%d contribuciones de otros usuarios para esta especie.</string>
+    <string name="cw_water_median">Riego (mediana)</string>
+    <string name="cw_fertilize_median">Abono (mediana)</string>
+    <string name="cw_light">Luz</string>
+    <string name="cw_days_short">%d d</string>
+    <string name="cw_empty">Aún no hay contribuciones. Sé el primero en compartir cómo cuidas esta planta.</string>
+    <string name="cw_contribute">Aportar mis cuidados</string>
+    <string name="cw_user">Usuario</string>
+    <string name="cw_verified">✓ Verificada</string>
+    <string name="cw_water_every">Riega cada %d d</string>
+    <string name="cw_fertilize_every">Abono cada %d d</string>
+    <string name="cw_light_value">Luz: %s</string>
+    <string name="cw_unverify">Quitar verificación</string>
+    <string name="cw_verify">Marcar como verificada</string>
+    <string name="cw_light_low">Poca</string>
+    <string name="cw_light_medium">Media</string>
+    <string name="cw_light_high">Mucha</string>
+    <string name="cw_add_title">Aportar cuidados</string>
+    <string name="cw_add_desc">Comparte cómo cuidas tu planta. Al menos un campo es obligatorio.</string>
+    <string name="cw_water_label">Riega cada N días</string>
+    <string name="cw_fertilize_label">Abono cada N días</string>
+    <string name="cw_light_level">Nivel de luz</string>
+    <string name="cw_publish">Publicar</string>
 </resources>

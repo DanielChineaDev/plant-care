@@ -20,21 +20,21 @@ package com.BPO.plantcare.domain.model
 enum class PlantTaskType(
     val storageKey: String,
     val emoji: String,
-    val label: String,
+    @androidx.annotation.StringRes val labelRes: Int,
     val defaultIntervalDays: Int,
 ) {
-    Water(storageKey = "water", emoji = "💧", label = "Regar", defaultIntervalDays = 5),
-    Fertilize(storageKey = "fertilize", emoji = "🌿", label = "Abonar", defaultIntervalDays = 30),
-    Prune(storageKey = "prune", emoji = "✂️", label = "Podar", defaultIntervalDays = 90),
-    Repot(storageKey = "repot", emoji = "🪴", label = "Trasplantar", defaultIntervalDays = 365),
-    Rotate(storageKey = "rotate", emoji = "🔄", label = "Rotar", defaultIntervalDays = 14),
+    Water(storageKey = "water", emoji = "💧", labelRes = com.BPO.plantcare.R.string.task_water, defaultIntervalDays = 5),
+    Fertilize(storageKey = "fertilize", emoji = "🌿", labelRes = com.BPO.plantcare.R.string.task_fertilize, defaultIntervalDays = 30),
+    Prune(storageKey = "prune", emoji = "✂️", labelRes = com.BPO.plantcare.R.string.task_prune, defaultIntervalDays = 90),
+    Repot(storageKey = "repot", emoji = "🪴", labelRes = com.BPO.plantcare.R.string.task_repot, defaultIntervalDays = 365),
+    Rotate(storageKey = "rotate", emoji = "🔄", labelRes = com.BPO.plantcare.R.string.task_rotate, defaultIntervalDays = 14),
     CleanLeaves(
         storageKey = "clean_leaves",
         emoji = "🧽",
-        label = "Limpiar hojas",
+        labelRes = com.BPO.plantcare.R.string.task_clean_leaves,
         defaultIntervalDays = 30,
     ),
-    Fumigate(storageKey = "fumigate", emoji = "🪲", label = "Fumigar", defaultIntervalDays = 60);
+    Fumigate(storageKey = "fumigate", emoji = "🪲", labelRes = com.BPO.plantcare.R.string.task_fumigate, defaultIntervalDays = 60);
 
     companion object {
         fun fromStorageKey(key: String?): PlantTaskType? =

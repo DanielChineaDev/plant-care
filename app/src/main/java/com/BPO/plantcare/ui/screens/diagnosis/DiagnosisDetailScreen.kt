@@ -38,11 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.DiagnosisSeverity
 import com.BPO.plantcare.domain.model.PlantDiagnosis
 import com.BPO.plantcare.ui.theme.StatusHealthy
@@ -63,7 +65,7 @@ fun DiagnosisDetailScreen(
                 title = { Text(diagnosis?.name.orEmpty()) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -72,7 +74,7 @@ fun DiagnosisDetailScreen(
         if (diagnosis == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text(
-                    "Diagnostico no encontrado.",
+                    stringResource(R.string.diag_not_found),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -91,23 +93,23 @@ fun DiagnosisDetailScreen(
             HeaderCard(diagnosis)
             SectionCard(
                 icon = Icons.Outlined.Visibility,
-                title = "Sintomas",
+                title = stringResource(R.string.diag_symptoms),
                 items = diagnosis.symptoms,
             )
             SectionCard(
                 icon = Icons.Outlined.WarningAmber,
-                title = "Causas frecuentes",
+                title = stringResource(R.string.diag_causes),
                 items = diagnosis.causes,
             )
             SectionCard(
                 icon = Icons.Outlined.Healing,
-                title = "Tratamiento",
+                title = stringResource(R.string.diag_treatment),
                 items = diagnosis.treatment,
                 accent = true,
             )
             SectionCard(
                 icon = Icons.Outlined.Shield,
-                title = "Prevencion",
+                title = stringResource(R.string.diag_prevention),
                 items = diagnosis.prevention,
             )
             Spacer(modifier = Modifier.size(16.dp))
@@ -161,7 +163,7 @@ private fun HeaderCard(diagnosis: PlantDiagnosis) {
                 AssistChip(
                     onClick = {},
                     enabled = false,
-                    label = { Text(diagnosis.category.label) },
+                    label = { Text(stringResource(diagnosis.category.labelRes)) },
                     colors = AssistChipDefaults.assistChipColors(
                         disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                         disabledLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -175,7 +177,7 @@ private fun HeaderCard(diagnosis: PlantDiagnosis) {
                 AssistChip(
                     onClick = {},
                     enabled = false,
-                    label = { Text(diagnosis.severity.label) },
+                    label = { Text(stringResource(diagnosis.severity.labelRes)) },
                     colors = AssistChipDefaults.assistChipColors(
                         disabledContainerColor = sevColor.copy(alpha = 0.9f),
                         disabledLabelColor = Color.White,

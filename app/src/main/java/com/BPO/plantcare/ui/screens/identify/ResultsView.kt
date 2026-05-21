@@ -90,7 +90,7 @@ fun ResultsView(
             ) {
                 Icon(Icons.Outlined.Refresh, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Identificar otra")
+                Text(stringResource(R.string.identify_another))
             }
         }
     }

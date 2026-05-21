@@ -24,10 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.WikipediaSummary
 import com.BPO.plantcare.ui.screens.common.WikipediaUiState
 
@@ -40,7 +42,7 @@ fun WikipediaCard(
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Sobre esta planta",
+                text = stringResource(R.string.wiki_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -50,7 +52,7 @@ fun WikipediaCard(
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        "Cargando informacion de Wikipedia...",
+                        stringResource(R.string.wiki_loading),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -63,13 +65,13 @@ fun WikipediaCard(
                 )
 
                 is WikipediaUiState.NotFound -> Text(
-                    text = "Aun no tenemos descripcion para esta planta.",
+                    text = stringResource(R.string.wiki_not_found),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 is WikipediaUiState.Error -> Text(
-                    text = "No hemos podido cargar la informacion. ${state.message}",
+                    text = stringResource(R.string.wiki_error, state.message),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -101,7 +103,7 @@ private fun WikipediaContent(summary: WikipediaSummary, onOpenLink: (String) -> 
         TextButton(onClick = { onOpenLink(summary.pageUrl) }) {
             Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Leer mas en Wikipedia (${summary.lang})")
+            Text(stringResource(R.string.wiki_read_more, summary.lang))
         }
     }
 }

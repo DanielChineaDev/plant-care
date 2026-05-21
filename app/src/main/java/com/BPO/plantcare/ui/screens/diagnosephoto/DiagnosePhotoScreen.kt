@@ -39,12 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.BPO.plantcare.domain.model.DiagnosisMatch
 import java.io.File
@@ -76,10 +78,10 @@ fun DiagnosePhotoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Diagnosticar") },
+                title = { Text(stringResource(R.string.dphoto_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -94,7 +96,7 @@ fun DiagnosePhotoScreen(
             state.photoPath?.let { path ->
                 AsyncImage(
                     model = File(path),
-                    contentDescription = "Foto a analizar",
+                    contentDescription = stringResource(R.string.dphoto_photo_desc),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -114,7 +116,7 @@ fun DiagnosePhotoScreen(
             ) {
                 Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text(if (state.photoPath == null) "Elegir foto" else "Cambiar foto")
+                Text(if (state.photoPath == null) stringResource(R.string.dphoto_pick) else stringResource(R.string.dphoto_change))
             }
 
             when {
@@ -125,7 +127,7 @@ fun DiagnosePhotoScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text("Analizando...", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.dphoto_analyzing), style = MaterialTheme.typography.bodySmall)
                     }
                 }
                 state.error != null -> Text(
@@ -160,7 +162,7 @@ private fun DemoBanner() {
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = "Modo demo: por ahora se sugieren posibilidades del catalogo. Pronto integraremos un analisis real con IA.",
+                text = stringResource(R.string.dphoto_demo),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -174,7 +176,7 @@ private fun ResultsList(
 ) {
     if (matches.isEmpty()) {
         Text(
-            text = "Sin coincidencias. Prueba con otra foto.",
+            text = stringResource(R.string.dphoto_no_matches),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -198,7 +200,7 @@ private fun ResultsList(
                                 fontWeight = FontWeight.SemiBold,
                             )
                             Text(
-                                text = "Confianza ${(match.confidence * 100).toInt()}%",
+                                text = stringResource(R.string.dphoto_confidence, (match.confidence * 100).toInt()),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -219,7 +221,7 @@ private fun ResultsList(
 private fun Hint() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
-            text = "Sube una foto clara de la hoja afectada para empezar.",
+            text = stringResource(R.string.dphoto_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
