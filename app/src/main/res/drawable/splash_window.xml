@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fondo de ventana durante el arranque en frio (antes de que cargue Compose):
+  verde de marca con el brote centrado. Evita el flash blanco y enlaza visual-
+  mente con el splash de Compose.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/brand_green" />
+    <item
+        android:width="140dp"
+        android:height="140dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_plantcare_logo_mono" />
+</layer-list>

@@ -1,41 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Logo de PlantCare: hoja estilizada sobre fondo circular verde con
-  una gota de agua en la base. Vector escalable, 192x192 viewport.
-  Usado en el drawer header, login, register y empty states.
+  Logo de PlantCare: brote de dos hojas en blanco sobre un circulo con
+  degradado verde. Vector escalable, viewport 192x192. Usado en el drawer
+  header, login/registro y empty states (fondos claros).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="192dp"
     android:height="192dp"
     android:viewportWidth="192"
     android:viewportHeight="192">
 
-    <!-- Circulo de fondo (verde primary) -->
-    <path
-        android:fillColor="#2E7D32"
-        android:pathData="M96,96 m-92,0 a92,92 0 1,0 184,0 a92,92 0 1,0 -184,0" />
+    <!-- Circulo de fondo con degradado verde -->
+    <path android:pathData="M96,96 m-92,0 a92,92 0 1,0 184,0 a92,92 0 1,0 -184,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="20"
+                android:startY="20"
+                android:endX="172"
+                android:endY="172">
+                <item android:color="#FF43A047" android:offset="0.0" />
+                <item android:color="#FF2E7D32" android:offset="0.55" />
+                <item android:color="#FF1B5E20" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
 
-    <!-- Hoja principal (forma de gota inversa) en blanco -->
+    <!-- Tallo central -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:pathData="M96,150 L96,103" />
+
+    <!-- Hoja derecha -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M96,38
-            C 80,58 60,72 60,100
-            C 60,124 76,142 96,142
-            C 116,142 132,124 132,100
-            C 132,72 112,58 96,38 Z" />
+        android:pathData="M96,104 C103,82 121,68 142,64 C139,87 124,101 96,104 Z" />
 
-    <!-- Nervio central de la hoja, en verde mas oscuro -->
+    <!-- Hoja izquierda -->
     <path
-        android:fillColor="#1B5E20"
-        android:strokeColor="#1B5E20"
+        android:fillColor="#FFFFFF"
+        android:pathData="M96,104 C89,82 71,68 50,64 C53,87 68,101 96,104 Z" />
+
+    <!-- Nervios sutiles -->
+    <path
+        android:strokeColor="#B3FFFFFF"
         android:strokeWidth="3"
-        android:pathData="M96,52
-            L 96,134" />
-
-    <!-- Gotita en la punta inferior, color azul claro -->
+        android:strokeLineCap="round"
+        android:pathData="M98,100 L130,72" />
     <path
-        android:fillColor="#81D4FA"
-        android:pathData="M96,150
-            C 90,158 90,168 96,168
-            C 102,168 102,158 96,150 Z" />
+        android:strokeColor="#B3FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M94,100 L62,72" />
 </vector>

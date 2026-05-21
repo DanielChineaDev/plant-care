@@ -11,10 +11,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -126,13 +128,43 @@ private fun PlantCareRoot(
 
 @Composable
 private fun SplashScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    // Fondo verde de marca que enlaza con el windowBackground del arranque en
+    // frio (sin flash blanco): degradado + brote blanco + nombre + progreso.
+    val brandTop = androidx.compose.ui.graphics.Color(0xFF43A047)
+    val brandMid = androidx.compose.ui.graphics.Color(0xFF2E7D32)
+    val brandBottom = androidx.compose.ui.graphics.Color(0xFF1B5E20)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    listOf(brandTop, brandMid, brandBottom),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
         androidx.compose.foundation.layout.Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(20.dp),
         ) {
-            com.BPO.plantcare.ui.components.PlantCareLogo(size = 96.dp)
-            CircularProgressIndicator()
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(
+                    id = R.drawable.ic_plantcare_logo_mono,
+                ),
+                contentDescription = "PlantCare",
+                modifier = Modifier.size(112.dp),
+            )
+            androidx.compose.material3.Text(
+                text = "PlantCare",
+                style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = androidx.compose.ui.graphics.Color.White,
+            )
+            CircularProgressIndicator(
+                color = androidx.compose.ui.graphics.Color.White,
+                strokeWidth = 3.dp,
+                modifier = Modifier.size(32.dp),
+            )
         }
     }
 }

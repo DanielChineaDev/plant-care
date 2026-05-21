@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Brote de PlantCare en blanco sobre fondo transparente. Para usar encima de
+  fondos de color (splash verde, etc.). Viewport 192x192.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="192dp"
+    android:height="192dp"
+    android:viewportWidth="192"
+    android:viewportHeight="192">
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="11"
+        android:strokeLineCap="round"
+        android:pathData="M96,150 L96,103" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M96,104 C103,82 121,68 142,64 C139,87 124,101 96,104 Z" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M96,104 C89,82 71,68 50,64 C53,87 68,101 96,104 Z" />
+</vector>
