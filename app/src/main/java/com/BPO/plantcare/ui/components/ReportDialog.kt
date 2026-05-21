@@ -18,7 +18,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.ReportReason
 
 /**
@@ -27,20 +29,21 @@ import com.BPO.plantcare.domain.model.ReportReason
  */
 @Composable
 fun ReportDialog(
-    title: String = "Reportar contenido",
+    title: String = "",
     onConfirm: (ReportReason, String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var selectedReason by rememberSaveable { mutableStateOf(ReportReason.Spam) }
     var notes by rememberSaveable { mutableStateOf("") }
+    val dialogTitle = title.ifBlank { stringResource(R.string.report_dialog_title) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
+        title = { Text(dialogTitle) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Elige el motivo principal",
+                    text = stringResource(R.string.report_choose_reason),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -53,13 +56,13 @@ fun ReportDialog(
                             selected = selectedReason == reason,
                             onClick = { selectedReason = reason },
                         )
-                        Text(text = reason.label)
+                        Text(text = stringResource(reason.labelRes))
                     }
                 }
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it.take(280) },
-                    label = { Text("Notas (opcional)") },
+                    label = { Text(stringResource(R.string.report_notes)) },
                     minLines = 2,
                     maxLines = 4,
                     modifier = Modifier.fillMaxWidth(),
@@ -69,10 +72,10 @@ fun ReportDialog(
         confirmButton = {
             Button(
                 onClick = { onConfirm(selectedReason, notes.trim().ifBlank { null }) },
-            ) { Text("Enviar") }
+            ) { Text(stringResource(R.string.report_send)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }

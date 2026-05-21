@@ -30,11 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Report
 
 /**
@@ -53,10 +55,10 @@ fun ModerationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Moderacion") },
+                title = { Text(stringResource(R.string.drawer_moderation)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -91,25 +93,25 @@ private fun ReportCard(
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp)) {
             Text(
-                text = "Motivo: ${report.reason.label}",
+                text = stringResource(R.string.moderation_reason, stringResource(report.reason.labelRes)),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "Tipo: ${report.contentType.storageKey} · Comunidad: ${report.communityId}",
+                text = stringResource(R.string.moderation_type, report.contentType.storageKey, report.communityId),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             report.postId?.let {
                 Text(
-                    text = "Post: $it",
+                    text = stringResource(R.string.moderation_post, it),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             report.commentId?.let {
                 Text(
-                    text = "Comentario: $it",
+                    text = stringResource(R.string.moderation_comment, it),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -129,7 +131,7 @@ private fun ReportCard(
                 ) {
                     Icon(Icons.Outlined.Block, contentDescription = null)
                     Spacer(modifier = Modifier.size(6.dp))
-                    Text("Descartar")
+                    Text(stringResource(R.string.moderation_dismiss))
                 }
                 OutlinedButton(
                     onClick = onActioned,
@@ -137,7 +139,7 @@ private fun ReportCard(
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.size(6.dp))
-                    Text("Actuado")
+                    Text(stringResource(R.string.moderation_actioned))
                 }
             }
         }
@@ -156,12 +158,12 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = "Cola limpia",
+                text = stringResource(R.string.moderation_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "No hay reportes pendientes ahora mismo.",
+                text = stringResource(R.string.moderation_empty_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

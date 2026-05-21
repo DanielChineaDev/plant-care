@@ -462,4 +462,25 @@
     <string name="time_days_ago_full">Hace %d días</string>
     <string name="time_weeks_ago">Hace %d semanas</string>
     <string name="time_months_ago">Hace %d meses</string>
+
+    <!-- Reportar contenido -->
+    <string name="report_dialog_title">Reportar contenido</string>
+    <string name="report_choose_reason">Elige el motivo principal</string>
+    <string name="report_notes">Notas (opcional)</string>
+    <string name="report_send">Enviar</string>
+    <string name="reason_spam">Spam</string>
+    <string name="reason_harassment">Acoso o insultos</string>
+    <string name="reason_misinformation">Información incorrecta</string>
+    <string name="reason_inappropriate">Contenido inapropiado</string>
+    <string name="reason_other">Otro motivo</string>
+
+    <!-- Moderación -->
+    <string name="moderation_reason">Motivo: %s</string>
+    <string name="moderation_type">Tipo: %1$s · Comunidad: %2$s</string>
+    <string name="moderation_post">Post: %s</string>
+    <string name="moderation_comment">Comentario: %s</string>
+    <string name="moderation_dismiss">Descartar</string>
+    <string name="moderation_actioned">Actuado</string>
+    <string name="moderation_empty_title">Cola limpia</string>
+    <string name="moderation_empty_desc">No hay reportes pendientes ahora mismo.</string>
 </resources>

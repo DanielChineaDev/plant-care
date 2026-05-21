@@ -462,4 +462,25 @@
     <string name="time_days_ago_full">%d days ago</string>
     <string name="time_weeks_ago">%d weeks ago</string>
     <string name="time_months_ago">%d months ago</string>
+
+    <!-- Report content -->
+    <string name="report_dialog_title">Report content</string>
+    <string name="report_choose_reason">Choose the main reason</string>
+    <string name="report_notes">Notes (optional)</string>
+    <string name="report_send">Send</string>
+    <string name="reason_spam">Spam</string>
+    <string name="reason_harassment">Harassment or insults</string>
+    <string name="reason_misinformation">Misinformation</string>
+    <string name="reason_inappropriate">Inappropriate content</string>
+    <string name="reason_other">Other reason</string>
+
+    <!-- Moderation -->
+    <string name="moderation_reason">Reason: %s</string>
+    <string name="moderation_type">Type: %1$s · Community: %2$s</string>
+    <string name="moderation_post">Post: %s</string>
+    <string name="moderation_comment">Comment: %s</string>
+    <string name="moderation_dismiss">Dismiss</string>
+    <string name="moderation_actioned">Actioned</string>
+    <string name="moderation_empty_title">Queue clear</string>
+    <string name="moderation_empty_desc">No pending reports right now.</string>
 </resources>

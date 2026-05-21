@@ -27,12 +27,15 @@ enum class ReportedContentType(val storageKey: String) {
     }
 }
 
-enum class ReportReason(val storageKey: String, val label: String) {
-    Spam("spam", "Spam"),
-    Harassment("harassment", "Acoso o insultos"),
-    Misinformation("misinformation", "Informacion incorrecta"),
-    Inappropriate("inappropriate", "Contenido inapropiado"),
-    Other("other", "Otro motivo"),
+enum class ReportReason(
+    val storageKey: String,
+    @androidx.annotation.StringRes val labelRes: Int,
+) {
+    Spam("spam", com.BPO.plantcare.R.string.reason_spam),
+    Harassment("harassment", com.BPO.plantcare.R.string.reason_harassment),
+    Misinformation("misinformation", com.BPO.plantcare.R.string.reason_misinformation),
+    Inappropriate("inappropriate", com.BPO.plantcare.R.string.reason_inappropriate),
+    Other("other", com.BPO.plantcare.R.string.reason_other),
     ;
     companion object {
         fun fromKey(key: String?): ReportReason =
