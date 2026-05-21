@@ -34,10 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.PlantSuggestion
 
 @Composable
@@ -64,7 +66,7 @@ fun ResultsView(
         }
         item {
             Text(
-                text = "Resultados",
+                text = stringResource(R.string.identify_results),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
             )
@@ -125,7 +127,7 @@ private fun SuggestionCard(
                     }
                     suggestion.family?.let {
                         Text(
-                            text = "Familia: $it",
+                            text = stringResource(R.string.identify_family, it),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -155,7 +157,7 @@ private fun SuggestionCard(
                 ) {
                     Icon(Icons.Outlined.Info, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ver detalle")
+                    Text(stringResource(R.string.identify_view_detail))
                 }
                 FilledTonalButton(
                     onClick = onAddClick,
@@ -163,7 +165,7 @@ private fun SuggestionCard(
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Añadir")
+                    Text(stringResource(R.string.add_short))
                 }
             }
         }

@@ -25,8 +25,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.BPO.plantcare.R
 
 /**
  * Pantalla "Herramientas" del drawer: agrupa atajos a utilidades secundarias
@@ -43,10 +45,10 @@ fun ToolsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Herramientas") },
+                title = { Text(stringResource(R.string.drawer_tools)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -62,24 +64,24 @@ fun ToolsScreen(
             item {
                 ToolCard(
                     icon = Icons.Outlined.LightMode,
-                    title = "Medir luz de un sitio",
-                    description = "Usa el sensor del movil para evaluar si una zona tiene luz suficiente para una planta.",
+                    title = stringResource(R.string.tool_light_title),
+                    description = stringResource(R.string.tool_light_desc),
                     onClick = onOpenLightMeter,
                 )
             }
             item {
                 ToolCard(
                     icon = Icons.Outlined.HealthAndSafety,
-                    title = "Diagnostico de plagas",
-                    description = "Catalogo de plagas y enfermedades comunes con sintomas y tratamientos.",
+                    title = stringResource(R.string.tool_diagnosis_title),
+                    description = stringResource(R.string.tool_diagnosis_desc),
                     onClick = onOpenDiagnosis,
                 )
             }
             item {
                 ToolCard(
                     icon = Icons.Outlined.HealthAndSafety,
-                    title = "Diagnosticar planta por foto",
-                    description = "Sube una foto de tu planta y obten sugerencias de posibles plagas o enfermedades. (Modo demo)",
+                    title = stringResource(R.string.tool_diagnose_photo_title),
+                    description = stringResource(R.string.tool_diagnose_photo_desc),
                     onClick = onOpenDiagnosePhoto,
                 )
             }

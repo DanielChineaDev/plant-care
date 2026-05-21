@@ -57,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.BPO.plantcare.R
 import com.BPO.plantcare.core.storage.copyUriToCache
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
@@ -73,6 +74,7 @@ fun IdentifyScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         if (cameraPermission.status !is PermissionStatus.Granted) {
@@ -83,7 +85,8 @@ fun IdentifyScreen(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             val message = when (event) {
-                is IdentifyEvent.PlantAdded -> "${event.displayName} añadida a Mis plantas"
+                is IdentifyEvent.PlantAdded ->
+                    context.getString(R.string.plant_added, event.displayName)
                 is IdentifyEvent.AddFailed -> event.message
             }
             snackbarHostState.showSnackbar(message)
@@ -93,10 +96,10 @@ fun IdentifyScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Identificar planta") },
+                title = { Text(stringResource(R.string.identify_plant)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -216,7 +219,7 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.PhotoLibrary,
-                contentDescription = "Elegir de galeria",
+                contentDescription = stringResource(R.string.identify_choose_gallery),
                 modifier = Modifier.size(24.dp),
             )
         }
@@ -235,7 +238,7 @@ private fun CameraView(onPhotoCaptured: (Uri, File) -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.PhotoCamera,
-                contentDescription = "Capturar foto",
+                contentDescription = stringResource(R.string.identify_capture),
                 modifier = Modifier.size(36.dp),
             )
         }
@@ -252,7 +255,7 @@ private fun CapturedPreview(
     Column(modifier = Modifier.fillMaxSize()) {
         AsyncImage(
             model = photoUri,
-            contentDescription = "Foto capturada",
+            contentDescription = stringResource(R.string.identify_photo_captured),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -266,13 +269,13 @@ private fun CapturedPreview(
             Button(
                 onClick = onIdentify,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Identificar") }
+            ) { Text(stringResource(R.string.identify_action)) }
             OutlinedButton(
                 onClick = onRetake,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(Icons.Outlined.Refresh, contentDescription = null)
-                Text("  Repetir foto")
+                Text("  ${stringResource(R.string.identify_retake)}")
             }
         }
     }
@@ -295,7 +298,7 @@ private fun LoadingOverlay(photoUri: Uri) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator()
                 Text(
-                    text = "Identificando planta...",
+                    text = stringResource(R.string.identify_loading),
                     modifier = Modifier.padding(top = 16.dp),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyLarge,
@@ -338,7 +341,7 @@ private fun ErrorView(
             modifier = Modifier
                 .padding(top = 24.dp)
                 .fillMaxWidth(),
-        ) { Text("Probar de nuevo") }
+        ) { Text(stringResource(R.string.identify_try_again)) }
     }
 }
 
@@ -363,9 +366,9 @@ private fun PermissionRationale(
         )
         Text(
             text = if (shouldShowRationale) {
-                "Necesitamos acceso a la camara para identificar tus plantas."
+                stringResource(R.string.identify_perm_rationale)
             } else {
-                "Concede el permiso de camara para empezar a identificar plantas."
+                stringResource(R.string.identify_perm_denied)
             },
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
@@ -376,7 +379,7 @@ private fun PermissionRationale(
             modifier = Modifier
                 .padding(top = 24.dp)
                 .fillMaxWidth(),
-        ) { Text("Permitir camara") }
+        ) { Text(stringResource(R.string.identify_perm_allow)) }
     }
 }
 

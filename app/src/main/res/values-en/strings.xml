@@ -405,4 +405,12 @@
     <string name="identify_view_detail">View details</string>
     <string name="add_short">Add</string>
     <string name="identify_family">Family: %s</string>
+
+    <!-- Tools -->
+    <string name="tool_light_title">Measure light in a spot</string>
+    <string name="tool_light_desc">Use your phone\'s sensor to check whether an area has enough light for a plant.</string>
+    <string name="tool_diagnosis_title">Pest diagnosis</string>
+    <string name="tool_diagnosis_desc">Catalog of common pests and diseases with symptoms and treatments.</string>
+    <string name="tool_diagnose_photo_title">Diagnose plant by photo</string>
+    <string name="tool_diagnose_photo_desc">Upload a photo of your plant and get suggestions of possible pests or diseases. (Demo mode)</string>
 </resources>
