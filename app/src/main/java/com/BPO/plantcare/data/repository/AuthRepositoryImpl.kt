@@ -293,6 +293,9 @@ class AuthRepositoryImpl @Inject constructor(
             favoritePlants = (doc.get("favoritePlants") as? List<*>)
                 ?.filterIsInstance<String>().orEmpty(),
             badgesPublic = doc.getBoolean("badgesPublic") ?: true,
+            diaryPublic = doc.getBoolean("diaryPublic") ?: false,
+            notesPublic = doc.getBoolean("notesPublic") ?: false,
+            careInfoPublic = doc.getBoolean("careInfoPublic") ?: true,
         )
     }
 
@@ -313,6 +316,9 @@ class AuthRepositoryImpl @Inject constructor(
                 favoritePlants = (doc.get("favoritePlants") as? List<*>)
                     ?.filterIsInstance<String>().orEmpty(),
                 badgesPublic = doc.getBoolean("badgesPublic") ?: true,
+                diaryPublic = doc.getBoolean("diaryPublic") ?: false,
+                notesPublic = doc.getBoolean("notesPublic") ?: false,
+                careInfoPublic = doc.getBoolean("careInfoPublic") ?: true,
             )
         } else {
             val now = System.currentTimeMillis()

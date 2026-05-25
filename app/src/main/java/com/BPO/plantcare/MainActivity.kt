@@ -114,18 +114,31 @@ private fun PlantCareRoot(
 ) {
     val authState by gateViewModel.authState.collectAsStateWithLifecycle()
 
+    // El splash con el logo + spinner se muestra al menos 2s (mas si la
+    // sesion tarda en resolverse) para que de tiempo a verlo en arranques
+    // rapidos. Pasado ese minimo, transicion suave a la app o al login.
+    var minElapsed by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(2000)
+        minElapsed = true
+    }
+    val showSplash = authState is AuthState.Loading || !minElapsed
+
     AnimatedContent(
-        targetState = authState::class,
-        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
+        targetState = showSplash,
+        transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(400)) },
         label = "auth-gate",
-    ) { stateClass ->
-        when (stateClass) {
-            AuthState.Loading::class -> SplashScreen()
-            AuthState.SignedOut::class -> AuthScreen()
-            else -> PlantCareApp(
-                pendingChatUid = pendingChatUid,
-                onDeepLinkConsumed = onDeepLinkConsumed,
-            )
+    ) { splash ->
+        if (splash) {
+            SplashScreen()
+        } else {
+            when (authState) {
+                is AuthState.SignedOut -> AuthScreen()
+                else -> PlantCareApp(
+                    pendingChatUid = pendingChatUid,
+                    onDeepLinkConsumed = onDeepLinkConsumed,
+                )
+            }
         }
     }
 }

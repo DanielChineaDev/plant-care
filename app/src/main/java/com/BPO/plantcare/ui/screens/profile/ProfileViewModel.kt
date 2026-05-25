@@ -8,15 +8,20 @@ import com.BPO.plantcare.core.backup.PlantsBackupExporter
 import com.BPO.plantcare.core.backup.PlantsBackupImporter
 import com.BPO.plantcare.core.location.LocationProvider
 import com.BPO.plantcare.core.work.WateringReminderManager
+import com.BPO.plantcare.domain.model.UserProfile
 import com.BPO.plantcare.domain.model.UserSettings
 import com.BPO.plantcare.domain.repository.AuthRepository
 import com.BPO.plantcare.domain.repository.AuthState
 import com.BPO.plantcare.domain.repository.PreferencesRepository
 import com.BPO.plantcare.domain.repository.PublicProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -58,6 +63,25 @@ class ProfileViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = AuthState.Loading,
     )
+
+    /**
+     * Perfil observado en tiempo real desde Firestore. A diferencia de
+     * [authState] (que carga el perfil una sola vez), este flujo refleja al
+     * instante los cambios de visibilidad escritos por el propio usuario,
+     * para que los Switch de Ajustes se actualicen al pulsarlos.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val profile: StateFlow<UserProfile?> = authRepository.authState
+        .map { (it as? AuthState.SignedIn)?.profile?.uid }
+        .flatMapLatest { uid ->
+            if (uid == null) flowOf(null)
+            else publicProfileRepository.observeUserProfile(uid)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
 
     private val _events = Channel<ProfileEvent>(capacity = Channel.BUFFERED)
     val events = _events.receiveAsFlow()

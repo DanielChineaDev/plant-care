@@ -159,15 +159,24 @@ private fun DrawerHeader(profile: UserProfile?) {
             .background(androidx.compose.ui.graphics.Color(0xFF3E6347))
             .padding(20.dp),
     ) {
-        // Marca arriba (logo + nombre).
+        // Marca arriba (logo cuadrado en tarjeta redondeada, igual que el splash).
         Row(verticalAlignment = Alignment.CenterVertically) {
-            androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(
-                    id = com.BPO.plantcare.R.drawable.ic_plantcare_logo,
-                ),
-                contentDescription = "PlantCare",
-                modifier = Modifier.size(40.dp),
-            )
+            androidx.compose.material3.Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                color = androidx.compose.ui.graphics.Color(0xFFF1F3F0),
+                shadowElevation = 4.dp,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(
+                            id = com.BPO.plantcare.R.drawable.ic_plantcare_logo,
+                        ),
+                        contentDescription = "PlantCare",
+                        modifier = Modifier.size(40.dp),
+                    )
+                }
+            }
             Spacer(modifier = Modifier.size(10.dp))
             Text(
                 text = "PlantCare",

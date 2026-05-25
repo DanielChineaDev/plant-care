@@ -83,6 +83,7 @@ fun ProfileScreen(
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val authState by viewModel.authState.collectAsStateWithLifecycle()
+    val liveProfile by viewModel.profile.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -139,7 +140,8 @@ fun ProfileScreen(
         ) {
             // ===== Mi perfil (ajustes personales / sociales) =====
             val signedInState = authState as? AuthState.SignedIn
-            if (signedInState != null) {
+            val visibilityProfile = liveProfile ?: signedInState?.profile
+            if (visibilityProfile != null) {
                 SectionHeader(stringResource(R.string.settings_section_profile))
                 OutlinedButton(onClick = onEditProfile, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.Person, contentDescription = null)
@@ -147,7 +149,7 @@ fun ProfileScreen(
                     Text(stringResource(R.string.settings_edit_profile))
                 }
                 VisibilityCard(
-                    profile = signedInState.profile,
+                    profile = visibilityProfile,
                     onTogglePublic = viewModel::setCollectionPublic,
                     onToggleDiary = viewModel::setDiaryPublic,
                     onToggleNotes = viewModel::setNotesPublic,
