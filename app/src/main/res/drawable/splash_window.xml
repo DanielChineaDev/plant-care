@@ -1,39 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Fondo de ventana durante el arranque en frio: degradado verde apagado con
-  el icono de la app centrado en un cuadrado con esquinas redondeadas
-  (igual que el icono del launcher). Evita el flash blanco y muestra la
-  identidad visual desde el primer frame.
+  Fondo de la ventana de arranque en frio. Coincide EXACTAMENTE con la
+  pantalla de carga de Compose (mismo gradiente + mismo logo redondeado
+  centrado) para que el paso de la ventana nativa a Compose sea invisible
+  (sin saltos). El logo ya trae las esquinas redondeadas horneadas
+  (transparentes), asi que no hace falta tarjeta de fondo.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Fondo degradado verde apagado -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:type="linear"
-                android:angle="315"
-                android:startColor="@color/brand_green_muted"
-                android:endColor="@color/brand_green_muted_dark" />
+                android:angle="270"
+                android:startColor="#FF4E7A5E"
+                android:centerColor="#FF3E6347"
+                android:endColor="#FF2A4D32" />
         </shape>
     </item>
-    <!-- Cuadrado redondeado (fondo del icono, igual que el launcher) -->
     <item
-        android:width="128dp"
-        android:height="128dp"
-        android:gravity="center">
-        <shape android:shape="rectangle">
-            <corners android:radius="24dp" />
-            <solid android:color="#FFEFEFEF" />
-        </shape>
-    </item>
-    <!-- Logo de la app centrado sobre el cuadrado -->
-    <item
-        android:width="104dp"
-        android:height="104dp"
-        android:gravity="center">
-        <bitmap
-            android:src="@drawable/ic_plantcare_logo"
-            android:gravity="center"
-            android:tileMode="disabled" />
-    </item>
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_splash_logo" />
 </layer-list>

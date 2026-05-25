@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -145,43 +143,27 @@ private fun PlantCareRoot(
 
 @Composable
 private fun SplashScreen() {
-    // Pantalla de carga premium, coherente con el windowBackground del
-    // arranque en frio (degradado verde sage). El logo cuadrado oficial
-    // aparece sobre una tarjeta redondeada blanca (igual que el icono del
-    // launcher) con una animacion suave de entrada (escala + fade).
+    // Pantalla de carga que CONTINUA sin saltos la ventana nativa de arranque
+    // (splash_window.xml): mismo gradiente verde sage y mismo logo redondeado
+    // centrado (ic_splash_logo, con esquinas ya horneadas). Sin spinner ni
+    // texto ni animacion de entrada para que el paso nativo -> Compose sea
+    // invisible; solo una respiracion sutil que arranca en escala 1.0.
     val brandTop = androidx.compose.ui.graphics.Color(0xFF4E7A5E)
     val brandMid = androidx.compose.ui.graphics.Color(0xFF3E6347)
     val brandBottom = androidx.compose.ui.graphics.Color(0xFF2A4D32)
 
     val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "splash")
-    // Respiracion sutil del logo (escala 1.0 <-> 1.04).
     val breathe by transition.animateFloat(
         initialValue = 1f,
         targetValue = 1.04f,
         animationSpec = androidx.compose.animation.core.infiniteRepeatable(
             animation = androidx.compose.animation.core.tween(
-                1400,
+                1600,
                 easing = androidx.compose.animation.core.FastOutSlowInEasing,
             ),
             repeatMode = androidx.compose.animation.core.RepeatMode.Reverse,
         ),
         label = "breathe",
-    )
-    // Entrada: fade + scale-in al montar.
-    var appeared by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { appeared = true }
-    val enterAlpha by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (appeared) 1f else 0f,
-        animationSpec = androidx.compose.animation.core.tween(500),
-        label = "enterAlpha",
-    )
-    val enterScale by androidx.compose.animation.core.animateFloatAsState(
-        targetValue = if (appeared) 1f else 0.8f,
-        animationSpec = androidx.compose.animation.core.tween(
-            500,
-            easing = androidx.compose.animation.core.FastOutSlowInEasing,
-        ),
-        label = "enterScale",
     )
 
     Box(
@@ -194,48 +176,18 @@ private fun SplashScreen() {
             ),
         contentAlignment = Alignment.Center,
     ) {
-        androidx.compose.foundation.layout.Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(24.dp),
-            modifier = Modifier.graphicsLayer {
-                alpha = enterAlpha
-                scaleX = enterScale
-                scaleY = enterScale
-            },
-        ) {
-            // Tarjeta redondeada blanca con el logo cuadrado oficial.
-            androidx.compose.material3.Surface(
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-                color = androidx.compose.ui.graphics.Color(0xFFF1F3F0),
-                shadowElevation = 12.dp,
-                modifier = Modifier
-                    .size(128.dp)
-                    .graphicsLayer {
-                        scaleX = breathe
-                        scaleY = breathe
-                    },
-            ) {
-                androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(
-                        id = R.drawable.ic_plantcare_logo,
-                    ),
-                    contentDescription = "PlantCare",
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            androidx.compose.material3.Text(
-                text = "PlantCare",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = androidx.compose.ui.graphics.Color.White,
-            )
-            CircularProgressIndicator(
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(28.dp),
-            )
-        }
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(
+                id = R.drawable.ic_splash_logo,
+            ),
+            contentDescription = "PlantCare",
+            modifier = Modifier
+                .size(120.dp)
+                .graphicsLayer {
+                    scaleX = breathe
+                    scaleY = breathe
+                },
+        )
     }
 }
 
