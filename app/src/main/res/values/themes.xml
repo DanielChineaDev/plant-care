@@ -2,8 +2,10 @@
 <resources>
 
     <style name="Theme.PlantCare" parent="android:Theme.Material.Light.NoActionBar">
-        <!-- Arranque en frio: ventana con la marca verde + brote, no blanco. -->
-        <item name="android:windowBackground">@drawable/splash_window</item>
+        <!-- Sin splash nativo: la ventana de arranque es solo un color de marca
+             (evita el flash blanco). El splash real con el logo lo pinta Compose
+             (SplashScreen), que ademas controla cuando desaparecer. -->
+        <item name="android:windowBackground">@color/brand_green_muted</item>
         <item name="android:statusBarColor">@color/brand_green_muted</item>
         <item name="android:navigationBarColor">@color/brand_green_muted</item>
     </style>

@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -165,6 +166,19 @@ private fun SplashScreen() {
         ),
         label = "breathe",
     )
+    // Entrada suave del logo (fade + leve escala) sobre el color de marca de
+    // la ventana de arranque. Como la ventana nativa ya no muestra el logo,
+    // esta animacion hace que aparezca con elegancia en vez de "saltar".
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appeared = true }
+    val enter by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(
+            450,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing,
+        ),
+        label = "enter",
+    )
 
     Box(
         modifier = Modifier
@@ -184,8 +198,10 @@ private fun SplashScreen() {
             modifier = Modifier
                 .size(120.dp)
                 .graphicsLayer {
-                    scaleX = breathe
-                    scaleY = breathe
+                    alpha = enter
+                    val s = breathe * (0.9f + 0.1f * enter)
+                    scaleX = s
+                    scaleY = s
                 },
         )
     }
