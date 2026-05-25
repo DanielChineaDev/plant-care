@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Brote de PlantCare en blanco sobre fondo transparente. Para usar encima de
-  fondos de color (splash verde, etc.). Viewport 192x192.
+  Logo PlantCare monocromático: brote de dos hojas en blanco sobre fondo
+  transparente. Para usar sobre fondos de color (splash verde, etc.).
+  Viewport 192×192.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="192dp"
@@ -9,17 +10,53 @@
     android:viewportWidth="192"
     android:viewportHeight="192">
 
+    <!-- Sombra de suelo (blanco semi-transparente) -->
+    <path
+        android:fillColor="#40FFFFFF"
+        android:pathData="M75,151 A22,5.5 0 0,0 117,151 A22,5.5 0 0,0 75,151 Z" />
+
+    <!-- Tallo principal -->
     <path
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="11"
+        android:strokeWidth="10"
         android:strokeLineCap="round"
-        android:pathData="M96,150 L96,103" />
+        android:fillColor="#00000000"
+        android:pathData="M96,148 L96,110" />
 
+    <!-- Rama izquierda -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M96,110 C92,103 82,98 72,93" />
+
+    <!-- Rama derecha -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M96,110 C100,103 109,98 118,90" />
+
+    <!-- Hoja izquierda -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M96,104 C103,82 121,68 142,64 C139,87 124,101 96,104 Z" />
+        android:pathData="M72,93 C57,93 26,73 40,51 C50,36 78,65 72,93 Z" />
 
+    <!-- Hoja izquierda — detalle interior (semi-transparente) -->
+    <path
+        android:fillColor="#30000000"
+        android:pathData="M72,93 C76,82 72,68 60,50 C50,38 46,48 52,60 C60,76 68,88 72,93 Z" />
+
+    <!-- Hoja derecha -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M96,104 C89,82 71,68 50,64 C53,87 68,101 96,104 Z" />
+        android:pathData="M118,90 C133,90 162,68 150,40 C140,18 110,58 118,90 Z" />
+
+    <!-- Hoja derecha — detalle interior (semi-transparente) -->
+    <path
+        android:fillColor="#30000000"
+        android:pathData="M118,90 C114,76 118,58 128,42 C138,28 144,40 138,56 C132,72 122,86 118,90 Z" />
+
 </vector>
