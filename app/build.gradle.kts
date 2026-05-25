@@ -16,9 +16,30 @@ val localProps = Properties().apply {
 }
 val plantNetApiKey: String = localProps.getProperty("PLANTNET_API_KEY", "")
 
+// Credenciales de firma de release. Se leen de keystore.properties (NO se
+// commitea: esta en .gitignore). Si el fichero no existe (p. ej. en CI o en
+// otra maquina sin la clave), la signingConfig queda nula y release usa la
+// firma debug por defecto, para no romper el build de quien no tenga la clave.
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val hasReleaseKeystore = keystoreProps.getProperty("storeFile") != null
+
 android {
     namespace = "com.BPO.plantcare"
     compileSdk = 35
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "com.BPO.plantcare"
@@ -39,6 +60,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
