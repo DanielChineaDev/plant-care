@@ -215,15 +215,14 @@ private fun SplashScreen() {
                         scaleY = breathe
                     },
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    androidx.compose.foundation.Image(
-                        painter = androidx.compose.ui.res.painterResource(
-                            id = R.drawable.ic_plantcare_logo,
-                        ),
-                        contentDescription = "PlantCare",
-                        modifier = Modifier.size(104.dp),
-                    )
-                }
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(
+                        id = R.drawable.ic_plantcare_logo,
+                    ),
+                    contentDescription = "PlantCare",
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
             androidx.compose.material3.Text(
                 text = "PlantCare",

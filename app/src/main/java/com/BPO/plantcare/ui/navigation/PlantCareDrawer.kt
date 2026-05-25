@@ -167,15 +167,14 @@ private fun DrawerHeader(profile: UserProfile?) {
                 shadowElevation = 4.dp,
                 modifier = Modifier.size(48.dp),
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    androidx.compose.foundation.Image(
-                        painter = androidx.compose.ui.res.painterResource(
-                            id = com.BPO.plantcare.R.drawable.ic_plantcare_logo,
-                        ),
-                        contentDescription = "PlantCare",
-                        modifier = Modifier.size(40.dp),
-                    )
-                }
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(
+                        id = com.BPO.plantcare.R.drawable.ic_plantcare_logo,
+                    ),
+                    contentDescription = "PlantCare",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
             Spacer(modifier = Modifier.size(10.dp))
             Text(
