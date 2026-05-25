@@ -45,6 +45,7 @@ import com.BPO.plantcare.ui.screens.notifications.NotificationsScreen
 import com.BPO.plantcare.ui.screens.photoviewer.PhotoViewerScreen
 import com.BPO.plantcare.ui.screens.plantdetail.PlantDetailScreen
 import com.BPO.plantcare.ui.screens.profile.ProfileScreen
+import com.BPO.plantcare.ui.screens.publicplant.PublicPlantDetailScreen
 import com.BPO.plantcare.ui.screens.publicprofile.PublicProfileScreen
 import com.BPO.plantcare.ui.screens.search.SearchScreen
 import com.BPO.plantcare.ui.screens.tools.ToolsScreen
@@ -86,6 +87,11 @@ object Routes {
     fun publicProfile(uid: String) = "$PUBLIC_PROFILE/$uid"
     const val PUBLIC_PROFILE_PATTERN = "$PUBLIC_PROFILE/{${NavArgs.OTHER_UID}}"
 
+    private const val PUBLIC_PLANT = "public_plant"
+    fun publicPlant(uid: String, plantId: String) = "$PUBLIC_PLANT/$uid/$plantId"
+    const val PUBLIC_PLANT_PATTERN =
+        "$PUBLIC_PLANT/{${NavArgs.OTHER_UID}}/{${NavArgs.PUBLIC_PLANT_ID}}"
+
     private const val PLANT_DETAIL = "plant"
     fun plantDetail(plantId: Long) = "$PLANT_DETAIL/$plantId"
     const val PLANT_DETAIL_PATTERN = "$PLANT_DETAIL/{${NavArgs.PLANT_ID}}"
@@ -110,6 +116,7 @@ object NavArgs {
     const val COMMUNITY_ID = "communityId"
     const val POST_ID = "postId"
     const val OTHER_UID = "otherUid"
+    const val PUBLIC_PLANT_ID = "publicPlantId"
 }
 
 private const val ANIM = 280
@@ -434,6 +441,25 @@ fun PlantCareNavHost(
             PublicProfileScreen(
                 onBack = { navController.popBackStack() },
                 onMessageClick = { uid -> navController.navigate(Routes.chat(uid)) },
+                onPlantClick = { uid, plantId ->
+                    navController.navigate(Routes.publicPlant(uid, plantId))
+                },
+            )
+        }
+
+        composable(
+            route = Routes.PUBLIC_PLANT_PATTERN,
+            arguments = listOf(
+                navArgument(NavArgs.OTHER_UID) { type = NavType.StringType },
+                navArgument(NavArgs.PUBLIC_PLANT_ID) { type = NavType.StringType },
+            ),
+            enterTransition = slideEnter,
+            exitTransition = slideExit,
+            popEnterTransition = slidePopEnter,
+            popExitTransition = slidePopExit,
+        ) {
+            PublicPlantDetailScreen(
+                onBack = { navController.popBackStack() },
             )
         }
 

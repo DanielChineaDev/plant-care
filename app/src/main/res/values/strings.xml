@@ -97,6 +97,13 @@
     <string name="settings_about_version">Versión</string>
     <string name="settings_about_help">Ayuda y soporte</string>
 
+    <!-- Detalle público de planta -->
+    <string name="pubplant_owner">Cuidada por</string>
+    <string name="pubplant_notes">Notas</string>
+    <string name="pubplant_diary">Diario fotográfico</string>
+    <string name="pubplant_about">Sobre esta especie</string>
+    <string name="pubplant_title">Planta</string>
+
     <!-- Pantalla Plantas -->
     <string name="plants_change_view">Cambiar vista</string>
     <string name="plants_sort">Ordenar</string>

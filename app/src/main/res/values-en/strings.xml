@@ -97,6 +97,13 @@
     <string name="settings_about_version">Version</string>
     <string name="settings_about_help">Help and support</string>
 
+    <!-- Public plant detail -->
+    <string name="pubplant_owner">Cared for by</string>
+    <string name="pubplant_notes">Notes</string>
+    <string name="pubplant_diary">Photo diary</string>
+    <string name="pubplant_about">About this species</string>
+    <string name="pubplant_title">Plant</string>
+
     <!-- Plants screen -->
     <string name="plants_change_view">Change view</string>
     <string name="plants_sort">Sort</string>

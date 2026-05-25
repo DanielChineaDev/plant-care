@@ -59,6 +59,7 @@ import com.BPO.plantcare.domain.model.UserProfile
 fun PublicProfileScreen(
     onBack: () -> Unit,
     onMessageClick: (uid: String) -> Unit,
+    onPlantClick: (uid: String, plantId: String) -> Unit = { _, _ -> },
     viewModel: PublicProfileViewModel = hiltViewModel(),
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
@@ -92,6 +93,7 @@ fun PublicProfileScreen(
                 plants = plants,
                 achievements = badges,
                 onMessageClick = { onMessageClick(current.uid) },
+                onPlantClick = { plantId -> onPlantClick(current.uid, plantId) },
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
         } else {
@@ -159,6 +161,7 @@ private fun ProfileWithPlants(
     plants: List<PublicPlant>,
     achievements: List<com.BPO.plantcare.domain.model.Achievement>,
     onMessageClick: () -> Unit,
+    onPlantClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -195,15 +198,16 @@ private fun ProfileWithPlants(
             }
         } else {
             items(plants, key = { it.id }) { plant ->
-                PublicPlantCard(plant)
+                PublicPlantCard(plant, onClick = { onPlantClick(plant.id) })
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PublicPlantCard(plant: PublicPlant) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+private fun PublicPlantCard(plant: PublicPlant, onClick: () -> Unit = {}) {
+    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column {
             Box(
                 modifier = Modifier
