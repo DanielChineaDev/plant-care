@@ -15,13 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.LocalFlorist
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -42,9 +39,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -53,11 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.BPO.plantcare.R
 import com.BPO.plantcare.domain.model.Community
-import com.BPO.plantcare.domain.model.Plant
-import com.BPO.plantcare.domain.model.photoModel
 import com.BPO.plantcare.ui.components.FeedPostCard
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
@@ -67,7 +58,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 @Composable
 fun HomeScreen(
     onOpenDrawer: () -> Unit,
-    onPlantClick: (Long) -> Unit,
     onCommunitiesClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onGlobalSearchClick: () -> Unit,
@@ -85,7 +75,6 @@ fun HomeScreen(
             }
         }
     }
-    val recents by viewModel.recentPlants.collectAsStateWithLifecycle()
     val feed by viewModel.feed.collectAsStateWithLifecycle()
     val tab by viewModel.tab.collectAsStateWithLifecycle()
     val hasJoined by viewModel.hasJoinedCommunities.collectAsStateWithLifecycle()
@@ -176,25 +165,6 @@ fun HomeScreen(
                 }
             }
 
-            // Plantas recientes al final como contexto personal por
-            // debajo del feed social. El boton "Identificar" se eliminó
-            // de aqui porque ya hay un FAB grande central en el bottom
-            // bar para esa accion.
-            item {
-                Text(
-                    text = stringResource(R.string.home_recent_plants),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-            item {
-                if (recents.isEmpty()) {
-                    EmptyRecentCard()
-                } else {
-                    RecentPlantsRow(plants = recents, onPlantClick = onPlantClick)
-                }
-            }
         }
         }
     }
@@ -334,96 +304,3 @@ private fun EmptyFeedCard() {
     }
 }
 
-@Composable
-private fun RecentPlantsRow(plants: List<Plant>, onPlantClick: (Long) -> Unit) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 4.dp),
-    ) {
-        items(plants, key = { it.id }) { plant ->
-            RecentPlantTile(plant = plant, onClick = { onPlantClick(plant.id) })
-        }
-    }
-}
-
-@Composable
-private fun RecentPlantTile(plant: Plant, onClick: () -> Unit) {
-    ElevatedCard(
-        onClick = onClick,
-        modifier = Modifier.size(width = 140.dp, height = 180.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                val model = plant.photoModel()
-                if (model != null) {
-                    AsyncImage(
-                        model = model,
-                        contentDescription = plant.displayName,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.LocalFlorist,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp),
-                    )
-                }
-            }
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = plant.displayName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = plant.scientificName,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmptyRecentCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.PhotoLibrary,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(40.dp),
-            )
-            Text(
-                text = stringResource(R.string.home_no_plants),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
