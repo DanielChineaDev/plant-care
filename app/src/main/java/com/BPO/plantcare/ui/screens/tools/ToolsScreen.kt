@@ -40,7 +40,6 @@ fun ToolsScreen(
     onBack: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
-    onOpenDiagnosePhoto: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -75,14 +74,6 @@ fun ToolsScreen(
                     title = stringResource(R.string.tool_diagnosis_title),
                     description = stringResource(R.string.tool_diagnosis_desc),
                     onClick = onOpenDiagnosis,
-                )
-            }
-            item {
-                ToolCard(
-                    icon = Icons.Outlined.HealthAndSafety,
-                    title = stringResource(R.string.tool_diagnose_photo_title),
-                    description = stringResource(R.string.tool_diagnose_photo_desc),
-                    onClick = onOpenDiagnosePhoto,
                 )
             }
         }

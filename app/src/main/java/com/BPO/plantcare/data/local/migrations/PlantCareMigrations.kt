@@ -120,6 +120,19 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
+/**
+ * v7 -> v8: visibilidad publica del diario fotografico y las notas.
+ *   - `photosPublic`: 1 = el diario de fotos se muestra en el perfil publico.
+ *   - `notesPublic`:  1 = las notas se muestran en el perfil publico.
+ * Ambas en 0 (false) para filas existentes (privado por defecto).
+ */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `plants` ADD COLUMN `photosPublic` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `plants` ADD COLUMN `notesPublic` INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
 val ALL_MIGRATIONS = arrayOf(
     MIGRATION_1_2,
     MIGRATION_2_3,
@@ -127,4 +140,5 @@ val ALL_MIGRATIONS = arrayOf(
     MIGRATION_4_5,
     MIGRATION_5_6,
     MIGRATION_6_7,
+    MIGRATION_7_8,
 )

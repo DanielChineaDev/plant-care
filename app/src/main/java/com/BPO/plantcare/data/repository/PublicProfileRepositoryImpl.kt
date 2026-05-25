@@ -86,7 +86,10 @@ class PublicProfileRepositoryImpl @Inject constructor(
                 "commonName" to plant.commonName,
                 "nickname" to plant.nickname,
                 "referenceImageUrl" to plant.referenceImageUrl,
+                "userPhotoUrl" to plant.userPhotoUrl,
                 "addedAt" to plant.addedAt,
+                "photosPublic" to plant.photosPublic,
+                "notesPublic" to plant.notesPublic,
                 "syncedAt" to FieldValue.serverTimestamp(),
             )
             batch.set(doc, data)
@@ -164,7 +167,10 @@ class PublicProfileRepositoryImpl @Inject constructor(
             commonName = getString("commonName"),
             nickname = getString("nickname"),
             referenceImageUrl = getString("referenceImageUrl"),
+            userPhotoUrl = getString("userPhotoUrl"),
             addedAt = getLong("addedAt") ?: (getDate("addedAt") ?: Date(0)).time,
+            photosPublic = getBoolean("photosPublic") ?: false,
+            notesPublic = getBoolean("notesPublic") ?: false,
         )
     }
 

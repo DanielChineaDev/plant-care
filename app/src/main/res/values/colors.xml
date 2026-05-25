@@ -11,4 +11,7 @@
     <!-- Marca PlantCare -->
     <color name="brand_green">#FF2E7D32</color>
     <color name="brand_green_dark">#FF1B5E20</color>
+    <!-- Verde apagado / sage para splash y header del drawer -->
+    <color name="brand_green_muted">#FF3E6347</color>
+    <color name="brand_green_muted_dark">#FF2A4D32</color>
 </resources>

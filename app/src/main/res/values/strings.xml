@@ -447,11 +447,14 @@
     <string name="pd_no_history">Aún no has registrado ningún riego.</string>
     <string name="pd_delete_watering">Eliminar riego</string>
     <string name="pd_location">Ubicación</string>
-    <string name="pd_location_desc">En qué habitación está. Sirve para agrupar tus plantas.</string>
-    <string name="pd_location_hint">Salón, Cocina, Oficina…</string>
+    <string name="pd_location_desc">Elige dónde está tu planta. Sirve para agrupar tu colección.</string>
+    <string name="pd_location_hint">Escribe tu ubicación personalizada…</string>
+    <string name="pd_location_clear">Quitar ubicación</string>
     <string name="pd_my_notes">Mis notas</string>
     <string name="pd_notes_hint">Apunta lo que quieras: cuándo floreció, dónde la compraste, trucos…</string>
     <string name="pd_save_note">Guardar nota</string>
+    <string name="pd_photos_public_title">Diario fotográfico público</string>
+    <string name="pd_photos_public_desc">Los demás podrán ver tus fotos al visitar tu perfil.</string>
     <string name="pd_alias_hint">Cómo la llamas</string>
     <string name="pd_next_never">cuando la riegues por primera vez</string>
     <string name="pd_next_in_days">en %d días</string>

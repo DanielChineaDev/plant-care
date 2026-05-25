@@ -237,7 +237,7 @@ fun PlantCareNavHost(
             MyProfileScreen(
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(Routes.EDIT_PROFILE) },
-                onSpeciesClick = { name -> navController.navigate(Routes.catalogDetail(name)) },
+                onPlantClick = { id -> navController.navigate(Routes.plantDetail(id)) },
             )
         }
 
@@ -333,7 +333,6 @@ fun PlantCareNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
-                onOpenDiagnosePhoto = { navController.navigate(Routes.DIAGNOSE_PHOTO) },
             )
         }
 

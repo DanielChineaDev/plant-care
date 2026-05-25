@@ -22,6 +22,10 @@ data class PlantEntity(
     val isOutdoor: Boolean? = null,
     /** Ubicacion/habitacion donde esta la planta (salon, cocina...). */
     val room: String? = null,
+    /** Diario fotografico visible publicamente. */
+    val photosPublic: Boolean = false,
+    /** Notas visibles publicamente. */
+    val notesPublic: Boolean = false,
 )
 
 fun PlantEntity.toDomain(): Plant = Plant(
@@ -40,6 +44,8 @@ fun PlantEntity.toDomain(): Plant = Plant(
     notes = notes,
     isOutdoor = isOutdoor,
     room = room,
+    photosPublic = photosPublic,
+    notesPublic = notesPublic,
 )
 
 fun Plant.toEntity(): PlantEntity = PlantEntity(
@@ -58,4 +64,6 @@ fun Plant.toEntity(): PlantEntity = PlantEntity(
     notes = notes,
     isOutdoor = isOutdoor,
     room = room,
+    photosPublic = photosPublic,
+    notesPublic = notesPublic,
 )

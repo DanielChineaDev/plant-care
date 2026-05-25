@@ -213,6 +213,20 @@ class PlantDetailViewModel @Inject constructor(
         }
     }
 
+    fun onPhotosPublicChange(enabled: Boolean) {
+        val current = plant.value ?: return
+        viewModelScope.launch {
+            updatePlant(current.copy(photosPublic = enabled))
+        }
+    }
+
+    fun onNotesPublicChange(enabled: Boolean) {
+        val current = plant.value ?: return
+        viewModelScope.launch {
+            updatePlant(current.copy(notesPublic = enabled))
+        }
+    }
+
     fun onMarkWatered() {
         viewModelScope.launch { markWatered(plantId) }
     }

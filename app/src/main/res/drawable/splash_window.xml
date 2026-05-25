@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Fondo de ventana durante el arranque en frio (antes de que cargue Compose):
-  verde de marca con el brote centrado. Evita el flash blanco y enlaza visual-
-  mente con el splash de Compose.
+  Fondo de ventana durante el arranque en frio: degradado verde apagado con
+  el icono de la app centrado en un cuadrado con esquinas redondeadas
+  (igual que el icono del launcher). Evita el flash blanco y muestra la
+  identidad visual desde el primer frame.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/brand_green" />
+    <!-- Fondo degradado verde apagado -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="315"
+                android:startColor="@color/brand_green_muted"
+                android:endColor="@color/brand_green_muted_dark" />
+        </shape>
+    </item>
+    <!-- Cuadrado redondeado (fondo del icono, igual que el launcher) -->
     <item
-        android:width="140dp"
-        android:height="140dp"
-        android:gravity="center"
-        android:drawable="@drawable/ic_plantcare_logo_mono" />
+        android:width="128dp"
+        android:height="128dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <solid android:color="#FFEFEFEF" />
+        </shape>
+    </item>
+    <!-- Logo de la app centrado sobre el cuadrado -->
+    <item
+        android:width="104dp"
+        android:height="104dp"
+        android:gravity="center">
+        <bitmap
+            android:src="@drawable/ic_plantcare_logo"
+            android:gravity="center"
+            android:tileMode="disabled" />
+    </item>
 </layer-list>

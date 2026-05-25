@@ -74,6 +74,8 @@ class PlantCloudDataSource @Inject constructor(
         "notes" to notes,
         "isOutdoor" to isOutdoor,
         "room" to room,
+        "photosPublic" to photosPublic,
+        "notesPublic" to notesPublic,
     )
 
     private fun DocumentSnapshot.toPlant(): Plant? {
@@ -95,6 +97,8 @@ class PlantCloudDataSource @Inject constructor(
             notes = getString("notes"),
             isOutdoor = getBoolean("isOutdoor"),
             room = getString("room"),
+            photosPublic = getBoolean("photosPublic") ?: false,
+            notesPublic = getBoolean("notesPublic") ?: false,
         )
     }
 

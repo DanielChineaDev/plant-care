@@ -212,9 +212,10 @@ private fun PublicPlantCard(plant: PublicPlant) {
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 contentAlignment = Alignment.Center,
             ) {
-                if (plant.referenceImageUrl != null) {
+                val photoUrl = plant.userPhotoUrl ?: plant.referenceImageUrl
+                if (photoUrl != null) {
                     AsyncImage(
-                        model = plant.referenceImageUrl,
+                        model = photoUrl,
                         contentDescription = plant.displayName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

@@ -14,7 +14,13 @@ data class PublicPlant(
     val commonName: String?,
     val nickname: String?,
     val referenceImageUrl: String?,
+    /** Foto principal subida por el usuario a Firebase Storage. */
+    val userPhotoUrl: String? = null,
     val addedAt: Long,
+    /** Si el propietario ha marcado el diario fotografico como publico. */
+    val photosPublic: Boolean = false,
+    /** Si el propietario ha marcado las notas como publicas. */
+    val notesPublic: Boolean = false,
 ) {
     val displayName: String
         get() = nickname?.takeIf { it.isNotBlank() }

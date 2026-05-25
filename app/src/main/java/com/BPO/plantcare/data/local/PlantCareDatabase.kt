@@ -18,7 +18,7 @@ import com.BPO.plantcare.data.local.entity.WateringLogEntity
         PlantPhotoEntity::class,
         PlantTaskEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false,
 )
 abstract class PlantCareDatabase : RoomDatabase() {

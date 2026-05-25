@@ -76,7 +76,7 @@ import com.BPO.plantcare.domain.model.UserProfile
 fun MyProfileScreen(
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
-    onSpeciesClick: (scientificName: String) -> Unit = {},
+    onPlantClick: (plantId: Long) -> Unit = {},
     viewModel: MyProfileViewModel = hiltViewModel(),
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
@@ -159,7 +159,7 @@ fun MyProfileScreen(
                 }
             } else {
                 items(plants, key = { it.id }) { plant ->
-                    PublicPlantCard(plant, onClick = { onSpeciesClick(plant.scientificName) })
+                    PublicPlantCard(plant, onClick = { onPlantClick(plant.id.toLongOrNull() ?: 0L) })
                 }
             }
         }
@@ -402,6 +402,7 @@ private fun AchievementBadge(achievement: Achievement, onClick: () -> Unit) {
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -418,9 +419,10 @@ private fun PublicPlantCard(plant: PublicPlant, onClick: () -> Unit = {}) {
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 contentAlignment = Alignment.Center,
             ) {
-                if (plant.referenceImageUrl != null) {
+                val photoUrl = plant.userPhotoUrl ?: plant.referenceImageUrl
+                if (photoUrl != null) {
                     AsyncImage(
-                        model = plant.referenceImageUrl,
+                        model = photoUrl,
                         contentDescription = plant.displayName,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

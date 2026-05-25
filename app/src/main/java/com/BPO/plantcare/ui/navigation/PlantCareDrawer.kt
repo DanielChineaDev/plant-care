@@ -156,7 +156,7 @@ private fun DrawerHeader(profile: UserProfile?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(androidx.compose.ui.graphics.Color(0xFF3E6347))
             .padding(20.dp),
     ) {
         // Marca arriba (logo + nombre).
@@ -173,7 +173,7 @@ private fun DrawerHeader(profile: UserProfile?) {
                 text = "PlantCare",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = Color.White,
             )
         }
         Spacer(modifier = Modifier.size(16.dp))
@@ -194,7 +194,7 @@ private fun DrawerHeader(profile: UserProfile?) {
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(androidx.compose.ui.graphics.Color(0xFF2A4D32)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -211,13 +211,13 @@ private fun DrawerHeader(profile: UserProfile?) {
                     text = profile?.displayName ?: stringResource(R.string.user_default),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = Color.White,
                 )
                 profile?.email?.let {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                        color = Color.White.copy(alpha = 0.75f),
                     )
                 }
             }

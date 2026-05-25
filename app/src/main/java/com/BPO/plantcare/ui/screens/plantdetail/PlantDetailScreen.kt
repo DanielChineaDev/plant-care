@@ -8,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +47,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +59,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -294,8 +298,12 @@ fun PlantDetailScreen(
                     NotesAndRoomCard(
                         notes = current.notes.orEmpty(),
                         room = current.room.orEmpty(),
+                        photosPublic = current.photosPublic,
+                        notesPublic = current.notesPublic,
                         onNotesChange = viewModel::onNotesChange,
                         onRoomChange = viewModel::onRoomChange,
+                        onPhotosPublicChange = viewModel::onPhotosPublicChange,
+                        onNotesPublicChange = viewModel::onNotesPublicChange,
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -764,24 +772,44 @@ private fun HistoryCard(history: List<WateringLog>, onDeleteLog: (WateringLog) -
     }
 }
 
+/** Tags de ubicacion predefinidos + etiqueta para el campo personalizado. */
+private val PRESET_ROOM_TAGS = listOf(
+    "🛋️ Salón",
+    "🍳 Cocina",
+    "🛏️ Dormitorio",
+    "🚿 Baño",
+    "🌿 Terraza",
+    "🌻 Jardín",
+    "💼 Oficina",
+    "🪟 Balcón",
+)
+
 /**
- * Tab "Notas": una nota libre tipo sticky note (se guarda al perder foco /
- * cada vez que el texto cambia con debounce implicito del repo) y el campo
- * de ubicacion/habitacion.
+ * Tab "Notas": ubicacion con tags preestablecidos, nota libre tipo sticky
+ * note y switches de privacidad (diario fotografico / notas publicas).
  */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun NotesAndRoomCard(
     notes: String,
     room: String,
+    photosPublic: Boolean,
+    notesPublic: Boolean,
     onNotesChange: (String) -> Unit,
     onRoomChange: (String) -> Unit,
+    onPhotosPublicChange: (Boolean) -> Unit,
+    onNotesPublicChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var notesText by rememberSaveable(notes) { mutableStateOf(notes) }
-    var roomText by rememberSaveable(room) { mutableStateOf(room) }
+    // Si el valor actual no esta entre los presets, es un tag personalizado.
+    val isPreset = room.isEmpty() || PRESET_ROOM_TAGS.contains(room)
+    var customTag by rememberSaveable { mutableStateOf(if (isPreset) "" else room) }
+    var showCustomInput by rememberSaveable { mutableStateOf(!isPreset) }
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        // Ubicacion
+
+        // ---- Ubicacion con tags ----
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -794,36 +822,94 @@ private fun NotesAndRoomCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = roomText,
-                    onValueChange = { roomText = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    placeholder = { Text(stringResource(R.string.pd_location_hint)) },
-                    trailingIcon = {
-                        if (roomText != room) {
-                            TextButton(onClick = { onRoomChange(roomText) }) { Text(stringResource(R.string.save)) }
-                        }
-                    },
-                )
+                Spacer(modifier = Modifier.height(12.dp))
+                // Grid de chips preestablecidos
+                androidx.compose.foundation.layout.FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    PRESET_ROOM_TAGS.forEach { tag ->
+                        FilterChip(
+                            selected = room == tag,
+                            onClick = {
+                                showCustomInput = false
+                                onRoomChange(if (room == tag) "" else tag)
+                            },
+                            label = { Text(tag) },
+                        )
+                    }
+                    // Chip "Otro" para tag personalizado
+                    FilterChip(
+                        selected = showCustomInput,
+                        onClick = { showCustomInput = !showCustomInput },
+                        label = { Text("✏️ Otro") },
+                    )
+                }
+                // Input personalizado (visible solo si se pulso "Otro")
+                if (showCustomInput) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = customTag,
+                        onValueChange = { customTag = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        placeholder = { Text(stringResource(R.string.pd_location_hint)) },
+                        trailingIcon = {
+                            if (customTag.isNotBlank() && customTag != room) {
+                                TextButton(onClick = { onRoomChange(customTag) }) {
+                                    Text(stringResource(R.string.save))
+                                }
+                            }
+                        },
+                    )
+                }
+                // Mostrar tag seleccionado si es preset
+                if (!showCustomInput && room.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TextButton(
+                        onClick = { onRoomChange("") },
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+                    ) {
+                        Text(
+                            stringResource(R.string.pd_location_clear),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
             }
         }
 
-        // Notas estilo sticky note
+        // ---- Notas estilo sticky note ----
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             colors = androidx.compose.material3.CardDefaults.elevatedCardColors(
-                containerColor = androidx.compose.ui.graphics.Color(0xFFFFF59D), // amarillo post-it
+                containerColor = androidx.compose.ui.graphics.Color(0xFFFFF59D),
             ),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(R.string.pd_my_notes),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = androidx.compose.ui.graphics.Color(0xFF5D4037),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.pd_my_notes),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = androidx.compose.ui.graphics.Color(0xFF5D4037),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(
+                        checked = notesPublic,
+                        onCheckedChange = onNotesPublicChange,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (notesPublic) "Público" else "Privado",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = androidx.compose.ui.graphics.Color(0xFF5D4037),
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = notesText,
@@ -840,6 +926,33 @@ private fun NotesAndRoomCard(
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text(stringResource(R.string.pd_save_note)) }
                 }
+            }
+        }
+
+        // ---- Privacidad del diario fotografico ----
+        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.pd_photos_public_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.pd_photos_public_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                androidx.compose.material3.Switch(
+                    checked = photosPublic,
+                    onCheckedChange = onPhotosPublicChange,
+                )
             }
         }
     }

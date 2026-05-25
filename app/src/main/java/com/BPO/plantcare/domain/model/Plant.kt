@@ -22,6 +22,10 @@ data class Plant(
     val isOutdoor: Boolean? = null,
     /** Ubicacion/habitacion de la planta (ej. "Salon", "Cocina"). */
     val room: String? = null,
+    /** Si el diario fotografico es visible en el perfil publico del usuario. */
+    val photosPublic: Boolean = false,
+    /** Si las notas son visibles en el perfil publico del usuario. */
+    val notesPublic: Boolean = false,
 ) {
     val displayName: String
         get() = nickname?.takeIf { it.isNotBlank() }

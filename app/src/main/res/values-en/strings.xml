@@ -447,11 +447,14 @@
     <string name="pd_no_history">You haven\'t logged any watering yet.</string>
     <string name="pd_delete_watering">Delete watering</string>
     <string name="pd_location">Location</string>
-    <string name="pd_location_desc">Which room it\'s in. Useful to group your plants.</string>
-    <string name="pd_location_hint">Living room, Kitchen, Office…</string>
+    <string name="pd_location_desc">Choose where your plant lives. Useful to group your collection.</string>
+    <string name="pd_location_hint">Enter a custom location…</string>
+    <string name="pd_location_clear">Remove location</string>
     <string name="pd_my_notes">My notes</string>
     <string name="pd_notes_hint">Note anything: when it bloomed, where you bought it, tips…</string>
     <string name="pd_save_note">Save note</string>
+    <string name="pd_photos_public_title">Public photo diary</string>
+    <string name="pd_photos_public_desc">Others can see your photos when visiting your profile.</string>
     <string name="pd_alias_hint">What you call it</string>
     <string name="pd_next_never">when you water it for the first time</string>
     <string name="pd_next_in_days">in %d days</string>
