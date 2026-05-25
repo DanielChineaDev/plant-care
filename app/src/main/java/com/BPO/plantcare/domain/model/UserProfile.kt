@@ -30,4 +30,12 @@ data class UserProfile(
     val favoritePlants: List<String> = emptyList(),
     /** Si las insignias/logros del usuario son visibles para los demas. */
     val badgesPublic: Boolean = true,
+    /**
+     * Visibilidad centralizada de la informacion de las plantas en su detalle
+     * publico. Todas dependen ademas de [isCollectionPublic] (si la coleccion
+     * es privada no se muestra nada).
+     */
+    val diaryPublic: Boolean = false,
+    val notesPublic: Boolean = false,
+    val careInfoPublic: Boolean = true,
 )

@@ -76,6 +76,27 @@
     <string name="settings_event_private">Private collection</string>
     <string name="settings_event_resynced">Public collection resynced</string>
 
+    <!-- Settings: sections and visibility -->
+    <string name="settings_section_profile">My profile</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_section_language">Language</string>
+    <string name="settings_section_about">App info</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_edit_profile">Edit profile and photo</string>
+    <string name="settings_vis_title">Visibility and privacy</string>
+    <string name="settings_vis_diary">Photo diary</string>
+    <string name="settings_vis_diary_desc">Others can see your plants\' photo diary.</string>
+    <string name="settings_vis_notes">Notes / description</string>
+    <string name="settings_vis_notes_desc">Others can see your plants\' notes.</string>
+    <string name="settings_vis_care">Care information</string>
+    <string name="settings_vis_care_desc">Show watering and basic care in the public detail.</string>
+    <string name="settings_vis_badges">Badges and achievements</string>
+    <string name="settings_vis_badges_desc">Show your achievements on your public profile.</string>
+    <string name="settings_about_version">Version</string>
+    <string name="settings_about_help">Help and support</string>
+
     <!-- Plants screen -->
     <string name="plants_change_view">Change view</string>
     <string name="plants_sort">Sort</string>

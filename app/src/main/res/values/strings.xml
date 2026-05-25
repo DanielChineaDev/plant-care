@@ -76,6 +76,27 @@
     <string name="settings_event_private">Colección privada</string>
     <string name="settings_event_resynced">Colección pública resincronizada</string>
 
+    <!-- Ajustes: secciones y visibilidad -->
+    <string name="settings_section_profile">Mi perfil</string>
+    <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_section_notifications">Notificaciones</string>
+    <string name="settings_section_preferences">Preferencias</string>
+    <string name="settings_section_language">Idioma</string>
+    <string name="settings_section_about">Información de la app</string>
+    <string name="settings_section_account">Cuenta</string>
+    <string name="settings_edit_profile">Editar perfil y foto</string>
+    <string name="settings_vis_title">Visibilidad y privacidad</string>
+    <string name="settings_vis_diary">Diario fotográfico</string>
+    <string name="settings_vis_diary_desc">Otros podrán ver el diario de fotos de tus plantas.</string>
+    <string name="settings_vis_notes">Notas / descripción</string>
+    <string name="settings_vis_notes_desc">Otros podrán ver las notas de tus plantas.</string>
+    <string name="settings_vis_care">Información de cuidados</string>
+    <string name="settings_vis_care_desc">Mostrar riego y cuidados básicos en el detalle público.</string>
+    <string name="settings_vis_badges">Insignias y logros</string>
+    <string name="settings_vis_badges_desc">Mostrar tus logros en tu perfil público.</string>
+    <string name="settings_about_version">Versión</string>
+    <string name="settings_about_help">Ayuda y soporte</string>
+
     <!-- Pantalla Plantas -->
     <string name="plants_change_view">Cambiar vista</string>
     <string name="plants_sort">Ordenar</string>

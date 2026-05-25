@@ -224,6 +224,7 @@ fun PlantCareNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenLightMeter = { navController.navigate(Routes.LIGHT_METER) },
                 onOpenDiagnosis = { navController.navigate(Routes.DIAGNOSIS_LIST) },
+                onEditProfile = { navController.navigate(Routes.EDIT_PROFILE) },
             )
         }
 

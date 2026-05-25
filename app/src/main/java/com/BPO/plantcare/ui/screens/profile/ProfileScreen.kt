@@ -18,8 +18,10 @@ import android.Manifest
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.NotificationsActive
@@ -76,6 +78,7 @@ fun ProfileScreen(
     onBack: () -> Unit,
     onOpenLightMeter: () -> Unit,
     onOpenDiagnosis: () -> Unit,
+    onEditProfile: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -132,16 +135,38 @@ fun ProfileScreen(
                     top = 24.dp,
                     bottom = padding.calculateBottomPadding() + 24.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // ===== Mi perfil (ajustes personales / sociales) =====
+            val signedInState = authState as? AuthState.SignedIn
+            if (signedInState != null) {
+                SectionHeader(stringResource(R.string.settings_section_profile))
+                OutlinedButton(onClick = onEditProfile, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.Person, contentDescription = null)
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(stringResource(R.string.settings_edit_profile))
+                }
+                VisibilityCard(
+                    profile = signedInState.profile,
+                    onTogglePublic = viewModel::setCollectionPublic,
+                    onToggleDiary = viewModel::setDiaryPublic,
+                    onToggleNotes = viewModel::setNotesPublic,
+                    onToggleCare = viewModel::setCareInfoPublic,
+                    onToggleBadges = viewModel::setBadgesPublic,
+                    onResync = viewModel::resyncPublicCollection,
+                )
+            }
+
+            // ===== Apariencia =====
+            SectionHeader(stringResource(R.string.settings_section_appearance))
             ThemeCard(
                 settings = settings,
                 onSelectPalette = viewModel::setThemePalette,
                 onToggleDynamic = viewModel::setDynamicColor,
             )
 
-            LanguageCard()
-
+            // ===== Notificaciones =====
+            SectionHeader(stringResource(R.string.settings_section_notifications))
             NotificationsCard(
                 settings = settings,
                 onToggle = viewModel::setNotificationsEnabled,
@@ -149,17 +174,17 @@ fun ProfileScreen(
                 onTest = viewModel::testWateringNotification,
             )
 
+            // ===== Preferencias =====
+            SectionHeader(stringResource(R.string.settings_section_preferences))
             SeasonalAdjustCard(
                 settings = settings,
                 onToggle = viewModel::setSeasonalAdjustEnabled,
             )
-
             TravelModeCard(
                 settings = settings,
                 onToggle = viewModel::setTravelEnabled,
                 onRangeChange = viewModel::setTravelRange,
             )
-
             WeatherCard(
                 settings = settings,
                 hasPermission = locationPermission.status is PermissionStatus.Granted,
@@ -169,15 +194,16 @@ fun ProfileScreen(
                 onClearLocation = viewModel::clearLocation,
             )
 
-            val signedInState = authState as? AuthState.SignedIn
-            if (signedInState != null) {
-                PublicCollectionCard(
-                    isPublic = signedInState.profile.isCollectionPublic,
-                    onToggle = viewModel::setCollectionPublic,
-                    onResync = viewModel::resyncPublicCollection,
-                )
-            }
+            // ===== Idioma =====
+            SectionHeader(stringResource(R.string.settings_section_language))
+            LanguageCard()
 
+            // ===== Información de la app =====
+            SectionHeader(stringResource(R.string.settings_section_about))
+            AboutCard()
+
+            // ===== Cuenta =====
+            SectionHeader(stringResource(R.string.settings_section_account))
             SignOutCard(onSignOut = { viewModel.signOut() })
 
             Spacer(modifier = Modifier.size(16.dp))
@@ -709,45 +735,113 @@ private fun HourSelector(hour: Int, onHourChange: (Int) -> Unit) {
 
 private fun formatHour(hour: Int): String = "%02d:00".format(hour)
 
+/** Encabezado de seccion en Ajustes. */
 @Composable
-private fun PublicCollectionCard(
-    isPublic: Boolean,
-    onToggle: (Boolean) -> Unit,
+private fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+    )
+}
+
+/** Fila reutilizable de un toggle con titulo + descripcion + Switch. */
+@Composable
+private fun ToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.45f),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+    }
+}
+
+/**
+ * Centraliza toda la visibilidad social del usuario: perfil/coleccion publica
+ * y, dependientes de esta, el diario, las notas, la info de cuidados y las
+ * insignias. Todo en un solo lugar (Ajustes -> Mi perfil).
+ */
+@Composable
+private fun VisibilityCard(
+    profile: com.BPO.plantcare.domain.model.UserProfile,
+    onTogglePublic: (Boolean) -> Unit,
+    onToggleDiary: (Boolean) -> Unit,
+    onToggleNotes: (Boolean) -> Unit,
+    onToggleCare: (Boolean) -> Unit,
+    onToggleBadges: (Boolean) -> Unit,
     onResync: () -> Unit,
 ) {
+    val isPublic = profile.isCollectionPublic
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = stringResource(R.string.settings_public_title),
+                    text = stringResource(R.string.settings_vis_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_public_toggle),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.settings_public_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(checked = isPublic, onCheckedChange = onToggle)
-            }
+            ToggleRow(
+                title = stringResource(R.string.settings_public_toggle),
+                description = stringResource(R.string.settings_public_desc),
+                checked = isPublic,
+                onCheckedChange = onTogglePublic,
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_vis_diary),
+                description = stringResource(R.string.settings_vis_diary_desc),
+                checked = profile.diaryPublic,
+                onCheckedChange = onToggleDiary,
+                enabled = isPublic,
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_vis_notes),
+                description = stringResource(R.string.settings_vis_notes_desc),
+                checked = profile.notesPublic,
+                onCheckedChange = onToggleNotes,
+                enabled = isPublic,
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_vis_care),
+                description = stringResource(R.string.settings_vis_care_desc),
+                checked = profile.careInfoPublic,
+                onCheckedChange = onToggleCare,
+                enabled = isPublic,
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_vis_badges),
+                description = stringResource(R.string.settings_vis_badges_desc),
+                checked = profile.badgesPublic,
+                onCheckedChange = onToggleBadges,
+                enabled = isPublic,
+            )
             if (isPublic) {
-                Spacer(modifier = Modifier.size(8.dp))
                 OutlinedButton(onClick = onResync, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.settings_public_resync))
                 }
@@ -755,8 +849,41 @@ private fun PublicCollectionCard(
                     text = stringResource(R.string.settings_public_resync_hint),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
                 )
+            }
+        }
+    }
+}
+
+/** Info de la app: version + ayuda. */
+@Composable
+private fun AboutCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Column {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.settings_about_version,
+                        ) + " " + com.BPO.plantcare.BuildConfig.VERSION_NAME,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

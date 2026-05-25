@@ -3,6 +3,7 @@ package com.BPO.plantcare.data.repository
 import com.BPO.plantcare.domain.model.Plant
 import com.BPO.plantcare.domain.model.PublicPlant
 import com.BPO.plantcare.domain.model.UserProfile
+import com.BPO.plantcare.domain.repository.PlantPhotoRepository
 import com.BPO.plantcare.domain.repository.PlantRepository
 import com.BPO.plantcare.domain.repository.PublicProfileRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -24,6 +25,7 @@ class PublicProfileRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
     private val plantRepository: PlantRepository,
+    private val plantPhotoRepository: PlantPhotoRepository,
 ) : PublicProfileRepository {
 
     private fun requireUid(): String =
@@ -53,6 +55,18 @@ class PublicProfileRepositoryImpl @Inject constructor(
         awaitClose { reg.remove() }
     }
 
+    override fun observePublicPlant(uid: String, plantId: String): Flow<PublicPlant?> = callbackFlow {
+        val reg = firestore.collection(USERS).document(uid)
+            .collection(PUBLIC_PLANTS).document(plantId)
+            .addSnapshotListener { snap, err ->
+                if (err != null) {
+                    trySend(null); return@addSnapshotListener
+                }
+                trySend(snap?.toPublicPlant())
+            }
+        awaitClose { reg.remove() }
+    }
+
     override suspend fun setMyCollectionPublic(enabled: Boolean): Result<Unit> = runCatching {
         val uid = requireUid()
         // ORDEN IMPORTANTE en el caso "hacer privada":
@@ -77,10 +91,20 @@ class PublicProfileRepositoryImpl @Inject constructor(
     private suspend fun syncCurrentPlants(uid: String) {
         val plants: List<Plant> = plantRepository.observeAll().first()
         if (plants.isEmpty()) return
+        // Flags de visibilidad centralizados en el perfil del usuario.
+        val userDoc = firestore.collection(USERS).document(uid).get().await()
+        val notesPublic = userDoc.getBoolean("notesPublic") ?: false
+        val diaryPublic = userDoc.getBoolean("diaryPublic") ?: false
+
         val batch = firestore.batch()
         val baseRef = firestore.collection(USERS).document(uid).collection(PUBLIC_PLANTS)
         plants.forEach { plant ->
             val doc = baseRef.document(plant.id.toString())
+            // Diario: solo URLs remotas (las locales no las puede ver otro user).
+            val diaryPhotos: List<String> = if (diaryPublic) {
+                plantPhotoRepository.observeForPlant(plant.id).first()
+                    .mapNotNull { it.remoteUrl }
+            } else emptyList()
             val data = mapOf(
                 "scientificName" to plant.scientificName,
                 "commonName" to plant.commonName,
@@ -88,8 +112,8 @@ class PublicProfileRepositoryImpl @Inject constructor(
                 "referenceImageUrl" to plant.referenceImageUrl,
                 "userPhotoUrl" to plant.userPhotoUrl,
                 "addedAt" to plant.addedAt,
-                "photosPublic" to plant.photosPublic,
-                "notesPublic" to plant.notesPublic,
+                "notes" to (if (notesPublic) plant.notes else null),
+                "diaryPhotos" to diaryPhotos,
                 "syncedAt" to FieldValue.serverTimestamp(),
             )
             batch.set(doc, data)
@@ -140,6 +164,32 @@ class PublicProfileRepositoryImpl @Inject constructor(
             .update("badgesPublic", enabled).await()
     }
 
+    override suspend fun setDiaryPublic(enabled: Boolean): Result<Unit> =
+        updateVisibilityFlag("diaryPublic", enabled)
+
+    override suspend fun setNotesPublic(enabled: Boolean): Result<Unit> =
+        updateVisibilityFlag("notesPublic", enabled)
+
+    override suspend fun setCareInfoPublic(enabled: Boolean): Result<Unit> =
+        updateVisibilityFlag("careInfoPublic", enabled)
+
+    /**
+     * Actualiza un flag de visibilidad y, si la coleccion es publica,
+     * resincroniza el mirror para que el cambio se refleje de inmediato
+     * (anadir/quitar notas o fotos del diario).
+     */
+    private suspend fun updateVisibilityFlag(field: String, enabled: Boolean): Result<Unit> =
+        runCatching {
+            val uid = requireUid()
+            firestore.collection(USERS).document(uid).update(field, enabled).await()
+            val isPublic = firestore.collection(USERS).document(uid).get().await()
+                .getBoolean("isCollectionPublic") ?: false
+            if (isPublic) {
+                clearMirror(uid)
+                syncCurrentPlants(uid)
+            }
+        }
+
     private fun DocumentSnapshot.toUserProfile(): UserProfile? {
         if (!exists()) return null
         return UserProfile(
@@ -156,6 +206,9 @@ class PublicProfileRepositoryImpl @Inject constructor(
             favoritePlants = (get("favoritePlants") as? List<*>)
                 ?.filterIsInstance<String>().orEmpty(),
             badgesPublic = getBoolean("badgesPublic") ?: true,
+            diaryPublic = getBoolean("diaryPublic") ?: false,
+            notesPublic = getBoolean("notesPublic") ?: false,
+            careInfoPublic = getBoolean("careInfoPublic") ?: true,
         )
     }
 
@@ -169,8 +222,8 @@ class PublicProfileRepositoryImpl @Inject constructor(
             referenceImageUrl = getString("referenceImageUrl"),
             userPhotoUrl = getString("userPhotoUrl"),
             addedAt = getLong("addedAt") ?: (getDate("addedAt") ?: Date(0)).time,
-            photosPublic = getBoolean("photosPublic") ?: false,
-            notesPublic = getBoolean("notesPublic") ?: false,
+            notes = getString("notes"),
+            diaryPhotos = (get("diaryPhotos") as? List<*>)?.filterIsInstance<String>().orEmpty(),
         )
     }
 

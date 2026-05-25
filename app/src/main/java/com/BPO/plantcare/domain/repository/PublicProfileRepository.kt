@@ -11,6 +11,9 @@ interface PublicProfileRepository {
     /** Plantas publicas del usuario [uid] (vacio si la coleccion es privada). */
     fun observePublicPlants(uid: String): Flow<List<PublicPlant>>
 
+    /** Observa una sola planta publica del usuario [uid]. */
+    fun observePublicPlant(uid: String, plantId: String): Flow<PublicPlant?>
+
     /**
      * Cambia el flag isCollectionPublic del usuario actual.
      * - Si pasa a true: sube todas las plantas locales como public mirror.
@@ -29,4 +32,13 @@ interface PublicProfileRepository {
 
     /** Cambia la visibilidad publica de las insignias del usuario actual. */
     suspend fun setBadgesPublic(enabled: Boolean): Result<Unit>
+
+    /** Visibilidad del diario fotografico en el detalle publico de plantas. */
+    suspend fun setDiaryPublic(enabled: Boolean): Result<Unit>
+
+    /** Visibilidad de las notas/descripcion en el detalle publico de plantas. */
+    suspend fun setNotesPublic(enabled: Boolean): Result<Unit>
+
+    /** Visibilidad de la info basica de cuidados en el detalle publico. */
+    suspend fun setCareInfoPublic(enabled: Boolean): Result<Unit>
 }

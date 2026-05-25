@@ -298,12 +298,8 @@ fun PlantDetailScreen(
                     NotesAndRoomCard(
                         notes = current.notes.orEmpty(),
                         room = current.room.orEmpty(),
-                        photosPublic = current.photosPublic,
-                        notesPublic = current.notesPublic,
                         onNotesChange = viewModel::onNotesChange,
                         onRoomChange = viewModel::onRoomChange,
-                        onPhotosPublicChange = viewModel::onPhotosPublicChange,
-                        onNotesPublicChange = viewModel::onNotesPublicChange,
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -785,20 +781,17 @@ private val PRESET_ROOM_TAGS = listOf(
 )
 
 /**
- * Tab "Notas": ubicacion con tags preestablecidos, nota libre tipo sticky
- * note y switches de privacidad (diario fotografico / notas publicas).
+ * Tab "Notas": ubicacion con tags preestablecidos y nota libre tipo sticky
+ * note. La visibilidad publica de notas/diario se gestiona de forma
+ * centralizada en Ajustes -> Mi perfil.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun NotesAndRoomCard(
     notes: String,
     room: String,
-    photosPublic: Boolean,
-    notesPublic: Boolean,
     onNotesChange: (String) -> Unit,
     onRoomChange: (String) -> Unit,
-    onPhotosPublicChange: (Boolean) -> Unit,
-    onNotesPublicChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var notesText by rememberSaveable(notes) { mutableStateOf(notes) }
@@ -888,28 +881,12 @@ private fun NotesAndRoomCard(
             ),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.pd_my_notes),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = androidx.compose.ui.graphics.Color(0xFF5D4037),
-                        modifier = Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = notesPublic,
-                        onCheckedChange = onNotesPublicChange,
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (notesPublic) "Público" else "Privado",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = androidx.compose.ui.graphics.Color(0xFF5D4037),
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.pd_my_notes),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = androidx.compose.ui.graphics.Color(0xFF5D4037),
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = notesText,
@@ -926,33 +903,6 @@ private fun NotesAndRoomCard(
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text(stringResource(R.string.pd_save_note)) }
                 }
-            }
-        }
-
-        // ---- Privacidad del diario fotografico ----
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.pd_photos_public_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = stringResource(R.string.pd_photos_public_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                androidx.compose.material3.Switch(
-                    checked = photosPublic,
-                    onCheckedChange = onPhotosPublicChange,
-                )
             }
         }
     }

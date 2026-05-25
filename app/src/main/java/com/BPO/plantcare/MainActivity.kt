@@ -7,10 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -31,6 +34,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -128,11 +132,45 @@ private fun PlantCareRoot(
 
 @Composable
 private fun SplashScreen() {
-    // Fondo verde de marca que enlaza con el windowBackground del arranque en
-    // frio (sin flash blanco): degradado + brote blanco + nombre + progreso.
-    val brandTop = androidx.compose.ui.graphics.Color(0xFF43A047)
-    val brandMid = androidx.compose.ui.graphics.Color(0xFF2E7D32)
-    val brandBottom = androidx.compose.ui.graphics.Color(0xFF1B5E20)
+    // Pantalla de carga premium, coherente con el windowBackground del
+    // arranque en frio (degradado verde sage). El logo cuadrado oficial
+    // aparece sobre una tarjeta redondeada blanca (igual que el icono del
+    // launcher) con una animacion suave de entrada (escala + fade).
+    val brandTop = androidx.compose.ui.graphics.Color(0xFF4E7A5E)
+    val brandMid = androidx.compose.ui.graphics.Color(0xFF3E6347)
+    val brandBottom = androidx.compose.ui.graphics.Color(0xFF2A4D32)
+
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "splash")
+    // Respiracion sutil del logo (escala 1.0 <-> 1.04).
+    val breathe by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.04f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(
+                1400,
+                easing = androidx.compose.animation.core.FastOutSlowInEasing,
+            ),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse,
+        ),
+        label = "breathe",
+    )
+    // Entrada: fade + scale-in al montar.
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appeared = true }
+    val enterAlpha by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(500),
+        label = "enterAlpha",
+    )
+    val enterScale by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (appeared) 1f else 0.8f,
+        animationSpec = androidx.compose.animation.core.tween(
+            500,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing,
+        ),
+        label = "enterScale",
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -145,25 +183,45 @@ private fun SplashScreen() {
     ) {
         androidx.compose.foundation.layout.Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(20.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(24.dp),
+            modifier = Modifier.graphicsLayer {
+                alpha = enterAlpha
+                scaleX = enterScale
+                scaleY = enterScale
+            },
         ) {
-            androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(
-                    id = R.drawable.ic_plantcare_logo_mono,
-                ),
-                contentDescription = "PlantCare",
-                modifier = Modifier.size(112.dp),
-            )
+            // Tarjeta redondeada blanca con el logo cuadrado oficial.
+            androidx.compose.material3.Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+                color = androidx.compose.ui.graphics.Color(0xFFF1F3F0),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .size(128.dp)
+                    .graphicsLayer {
+                        scaleX = breathe
+                        scaleY = breathe
+                    },
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(
+                            id = R.drawable.ic_plantcare_logo,
+                        ),
+                        contentDescription = "PlantCare",
+                        modifier = Modifier.size(104.dp),
+                    )
+                }
+            }
             androidx.compose.material3.Text(
                 text = "PlantCare",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
+                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = androidx.compose.ui.graphics.Color.White,
             )
             CircularProgressIndicator(
-                color = androidx.compose.ui.graphics.Color.White,
+                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
                 strokeWidth = 3.dp,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
             )
         }
     }

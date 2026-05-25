@@ -168,4 +168,17 @@ class ProfileViewModel @Inject constructor(
             )
         }
     }
+
+    fun setBadgesPublic(enabled: Boolean) = updateVisibility { publicProfileRepository.setBadgesPublic(enabled) }
+    fun setDiaryPublic(enabled: Boolean) = updateVisibility { publicProfileRepository.setDiaryPublic(enabled) }
+    fun setNotesPublic(enabled: Boolean) = updateVisibility { publicProfileRepository.setNotesPublic(enabled) }
+    fun setCareInfoPublic(enabled: Boolean) = updateVisibility { publicProfileRepository.setCareInfoPublic(enabled) }
+
+    private fun updateVisibility(action: suspend () -> Result<Unit>) {
+        viewModelScope.launch {
+            action().onFailure {
+                _events.send(ProfileEvent.PublicError(it.localizedMessage.orEmpty()))
+            }
+        }
+    }
 }
